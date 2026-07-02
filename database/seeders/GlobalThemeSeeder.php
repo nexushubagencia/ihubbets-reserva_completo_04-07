@@ -14,7 +14,7 @@ class GlobalThemeSeeder extends Seeder
                 'name' => 'Verde IHUB Master',
                 'slug' => 'verde-claro',
                 'colors' => [
-                    "border_color" => "#e8e8e8",
+                    "border_color" => "#dedede",
                     "primary_color" => "#35aa71",
                     "sidebar_color" => "#173133",
                     "footer_bg_color" => "#f0f0f0",
@@ -73,7 +73,7 @@ class GlobalThemeSeeder extends Seeder
                 'name' => 'Deep Blue Onyx',
                 'slug' => 'azul-escuro',
                 'colors' => [
-                    "border_color" => "#e8e8e8",
+                    "border_color" => "#dedede",
                     "primary_color" => "#0d47a1",
                     "sidebar_color" => "#0a192f",
                     "footer_bg_color" => "#ffffff",
@@ -132,7 +132,7 @@ class GlobalThemeSeeder extends Seeder
                 'name' => 'Cyber Purple',
                 'slug' => 'roxo',
                 'colors' => [
-                    "border_color" => "#e8e8e8",
+                    "border_color" => "#dedede",
                     "primary_color" => "#8e24aa",
                     "sidebar_color" => "#1e0b36",
                     "footer_bg_color" => "#ffffff",
@@ -189,7 +189,7 @@ class GlobalThemeSeeder extends Seeder
                 'name' => 'Amarelo Premium',
                 'slug' => 'amarelo-premium',
                 'colors' => [
-                    "border_color" => "#e8e8e8",
+                    "border_color" => "#dedede",
                     "primary_color" => "#ffc800",
                     "sidebar_color" => "#0d0d0d",
                     "footer_bg_color" => "#ffffff",
@@ -248,7 +248,7 @@ class GlobalThemeSeeder extends Seeder
                 'name' => 'Vermelho',
                 'slug' => 'vermelho',
                 'colors' => [
-                    "border_color" => "#e8e8e8",
+                    "border_color" => "#dedede",
                     "primary_color" => "#d32f2f",
                     "sidebar_color" => "#173133",
                     "footer_bg_color" => "#f0f0f0",
@@ -307,7 +307,7 @@ class GlobalThemeSeeder extends Seeder
                 'name' => 'Vermelho e Preto',
                 'slug' => 'vermelho-preto',
                 'colors' => [
-                    "border_color" => "#e8e8e8",
+                    "border_color" => "#dedede",
                     "primary_color" => "#d32f2f",
                     "sidebar_color" => "#1a1a1a",
                     "footer_bg_color" => "#ffffff",
