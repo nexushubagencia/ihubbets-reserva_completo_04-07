@@ -7,6 +7,7 @@ RUN apt-get update -y && apt-get upgrade -y && \
     zlib1g-dev \
     libxml2-dev \
     libzip-dev \
+    libonig-dev \
     zip \
     unzip \
     libmagickwand-dev \
