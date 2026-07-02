@@ -326,6 +326,7 @@ Route::middleware(['auth', 'admin', 'tenant', 'activity'])->prefix('admin')->gro
     Route::get('regulamento', [SettingsController::class, 'regulamentoView'])->name('admin.regulamento');
     Route::get('regulamento/list', [SettingsController::class, 'regulamentoList'])->name('admin.regulamento.list');
     Route::post('regulamento/update/{id}', [SettingsController::class, 'regulamentoUpdate'])->name('admin.regulamento.update');
+    Route::post('regulamento/upload-image', [SettingsController::class, 'regulamentoUploadImage'])->name('admin.regulamento.upload-image');
     
     Route::get('about-us', [SettingsController::class, 'aboutView'])->name('admin.settings.about');
     Route::post('about-us', [SettingsController::class, 'updateAbout'])->name('admin.settings.about.update');

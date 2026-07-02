@@ -435,6 +435,25 @@ class SettingsController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function regulamentoUploadImage(Request $request)
+    {
+        if (!$request->hasFile('image')) {
+            return response()->json(['error' => 'Nenhuma imagem enviada'], 400);
+        }
+
+        $siteId = config('tenant.site_id', 1);
+        $file = $request->file('image');
+        $fileName = 'reg_' . time() . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+        $tenantDir = 'storage/tenant_' . $siteId . '/regulamento';
+
+        if (!file_exists(public_path($tenantDir))) {
+            mkdir(public_path($tenantDir), 0755, true);
+        }
+
+        $file->move(public_path($tenantDir), $fileName);
+        return response()->json('/' . $tenantDir . '/' . $fileName);
+    }
+
     /**
      * Gera o CSS dinâmico baseado nas configurações da banca.
      * Suporta Cores Personalizadas ou Temas Pré-definidos.
