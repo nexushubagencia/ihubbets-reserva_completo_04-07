@@ -1304,7 +1304,7 @@
         <!-- Banner Sidebar -->
         <div class="banner-sidebar mt-2" v-if="sidebarBanners && sidebarBanners.length > 0">
           <div v-for="(banner, index) in sidebarBanners" :key="'sb-'+index" style="margin-bottom: 10px;">
-            <a :href="banner.link || '#'" target="_blank">
+            <a :href="banner.link || '#'">
               <img :src="banner.image || banner.img" style="width: 100%; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             </a>
           </div>
@@ -1420,7 +1420,7 @@
                   <div id="carouselbanners" data-ride="carousel" class="carousel slide mb-3" v-if="mainBanners.length > 0">
                     <div class="carousel-inner">
                       <div v-for="(banner, index) in mainBanners" :key="'banner-'+index" :class="['item', { active: index === 0 }]">
-                        <a :href="banner.link || '#'" target="_blank"><img :src="banner.image" class="w-100"></a>
+                        <a :href="banner.link || '#'"><img :src="banner.image" class="w-100"></a>
                       </div>
                     </div> 
                     <a href="#carouselbanners" data-slide="prev" class="left carousel-control"><span class="glyphicon glyphicon-chevron-left"></span></a> 
@@ -1818,7 +1818,7 @@
             <!-- Banner Abaixo do Bilhete -->
             <div class="banner-below-ticket mt-1" v-if="belowTicketBanners.length > 0">
               <div v-for="(banner, index) in belowTicketBanners" :key="'btb-'+index" class="mb-2">
-                <a :href="banner.link || '#'" target="_blank">
+                <a :href="banner.link || '#'">
                   <img :src="banner.image || banner.img" style="width: 100%; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 </a>
               </div>
