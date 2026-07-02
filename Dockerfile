@@ -1,51 +1,46 @@
 FROM php:8.3-apache
 
-# Instala dependências do sistema
-RUN apt-get update -y && apt-get upgrade -y && \
-    apt-get install -y \
+# Install PHP extensions
+RUN apt-get update && apt-get install -y \
     libpng-dev \
-    zlib1g-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
     libxml2-dev \
     libzip-dev \
     libonig-dev \
     zip \
     unzip \
-    libmagickwand-dev \
-    --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+    curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Instala extensões PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
-    pecl install imagick && docker-php-ext-enable imagick
-
-# Instala Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Configura Apache
-COPY apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+# Fix MPM - disable event, use prefork only
+RUN a2dismod mpm_event 2>/dev/null || true
+RUN a2enmod mpm_prefork 2>/dev/null || true
 RUN a2enmod rewrite
 
-# PHP settings para alto volume
-RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
-    sed -i 's/max_execution_time = 30/max_execution_time = 300/' "$PHP_INI_DIR/php.ini" && \
-    sed -i 's/max_input_time = 60/max_input_time = 300/' "$PHP_INI_DIR/php.ini" && \
-    sed -i 's/memory_limit = 128M/memory_limit = 1024M/' "$PHP_INI_DIR/php.ini" && \
-    sed -i 's/post_max_size = 8M/post_max_size = 1024M/' "$PHP_INI_DIR/php.ini" && \
-    sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 1024M/' "$PHP_INI_DIR/php.ini" && \
-    sed -i 's/max_input_vars = 1000/max_input_vars = 100000/' "$PHP_INI_DIR/php.ini"
+# Install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copia os arquivos da aplicação
-COPY . /var/www/html
+COPY . .
 
-# Permissões para produção (descomentar)
-# RUN chown -R www-data:www-data /var/www/html && \
-#     chmod -R 755 /var/www/html/storage && \
-#     chmod -R 755 /var/www/html/bootstrap/cache && \
-#     composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader && \
-#     php artisan config:cache && \
-#     php artisan route:cache && \
-#     php artisan view:cache
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+RUN echo "upload_max_filesize = 64M" >> /usr/local/etc/php/php.ini \
+    && echo "post_max_size = 64M" >> /usr/local/etc/php/php.ini \
+    && echo "memory_limit = 512M" >> /usr/local/etc/php/php.ini \
+    && echo "max_execution_time = 300" >> /usr/local/etc/php/php.ini
 
 EXPOSE 80
+
+CMD ["apache2-foreground"]
