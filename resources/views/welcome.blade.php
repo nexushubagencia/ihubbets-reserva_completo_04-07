@@ -152,6 +152,107 @@
         .carousel-card .offer-badge {
             color: var(--destaque_btn_text--color, #fff) !important;
         }
+
+        /* Botao Cadastre-se - hover limpo sem filter brightness */
+        .btn-cadastrar-demo,
+        .btn-cadastro,
+        .btn-register,
+        a.btn-cadastrar-demo,
+        a[data-target="#modal-register"] {
+            background-color: var(--btn_cadastrar--color) !important;
+            color: var(--btn_cadastrar_text--color, #fff) !important;
+            border: none !important;
+            transition: all 0.3s ease !important;
+            filter: none !important;
+        }
+        .btn-cadastrar-demo:hover,
+        .btn-cadastro:hover,
+        .btn-register:hover,
+        a.btn-cadastrar-demo:hover,
+        a[data-target="#modal-register"]:hover {
+            background-color: var(--btn_cadastrar_hover--color, var(--btn_cadastrar--color)) !important;
+            color: var(--btn_cadastrar_text--color, #fff) !important;
+            filter: none !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* Botao Entrar - hover limpo */
+        .btn-acessar-demo,
+        a.btn-acessar-demo,
+        a[data-target="#modal-login"] {
+            background-color: var(--btn_entrar--color) !important;
+            color: var(--btn_entrar_text--color, #fff) !important;
+            border: none !important;
+            transition: all 0.3s ease !important;
+            filter: none !important;
+        }
+        .btn-acessar-demo:hover,
+        .btn-acessar-demo:focus,
+        .btn-acessar-demo:active,
+        a.btn-acessar-demo:hover,
+        a[data-target="#modal-login"]:hover {
+            background-color: var(--btn_entrar_hover--color, var(--btn_entrar--color)) !important;
+            color: var(--btn_entrar_text--color, #fff) !important;
+            filter: none !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* Botao de busca (lupa) - texto azul em fundo amarelo */
+        .input-group-btn .btn,
+        .search-btn,
+        .sidebar-form .btn,
+        .input-group-search .btn,
+        .input-group-search .input-group-addon,
+        .input-group-btn .btn-flat {
+            color: var(--search_icon_text--color, #fff) !important;
+        }
+
+        /* Botao +0 (odds plus) - texto azul em fundo amarelo */
+        .plus-odd-nexus,
+        .plus-odd,
+        .btn-plus-odd,
+        .plus-odd-nexus:hover,
+        .plus-odd:hover {
+            color: var(--odds_plus_button_text--color, #fff) !important;
+        }
+
+        /* Share button - texto azul em fundo amarelo */
+        .btn-share-nexus,
+        .btn-share {
+            color: var(--share_button_text--color, #fff) !important;
+        }
+
+        /* Botao valor rapido do cupom - texto azul em fundo amarelo */
+        .btn-valor-rapido,
+        .valores-rapidos .btn,
+        .btn-valor,
+        .value-btn-group .btn-valor,
+        .ticket-values .btn {
+            color: var(--cupom_valor_btn_text--color, #fff) !important;
+        }
+
+        /* Botao de odd C/E/F - texto azul em fundo amarelo */
+        .btn-home-nexus,
+        .btn-home {
+            color: var(--odd_button_text--color, #fff) !important;
+        }
+        .btn-home-nexus strong {
+            color: var(--odd_button_text--color, #fff) !important;
+        }
+
+        /* Modality active item */
+        .modality-item-demo a.ativo {
+            color: var(--modalidade_ativa_text--color, var(--menu_active_text--color, #fff)) !important;
+        }
+
+        /* Modalidade inativa - texto azul */
+        .menu-jogos li a,
+        .nav-esportes li a,
+        .sports-menu-item {
+            color: var(--sidebar_text--color, #fff) !important;
+        }
     </style>
 </body>
 
