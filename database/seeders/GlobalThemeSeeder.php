@@ -315,7 +315,7 @@ class GlobalThemeSeeder extends Seeder
                     "background_color" => "#f5f5f5",
                     "btn_entrar_color" => "#d32f2f",
                     "menu_hover_color" => "#d32f2f",
-                    "footer_text_color" => "#cccccc",
+                    "footer_text_color" => "#555555",
                     "menu_button_color" => "#d32f2f",
                     "cupom_header_color" => "#1a1a1a",
                     "sidebar_text_color" => "#ffffff",
