@@ -113,36 +113,36 @@
 
     <!-- THEME OVERRIDE: Replace hardcoded color:#fff with CSS variables for themed elements -->
     <style id="theme-text-override">
-        /* === ODDS BUTTONS (C, E, F) - fundo branco, texto escuro, borda verde === */
+        /* === ODDS BUTTONS (C, E, F) - verde com branco === */
         .btn-home-nexus,
         .btn-home-nexus:hover,
         .btn-home-nexus:focus,
         .btn-home-nexus.selecionado {
-            background: var(--btn_cef--color, #ffffff) !important;
-            color: var(--odd_button_text--color, #002776) !important;
-            border: 1px solid var(--odd_button_border--color, #009b3a) !important;
+            background: var(--btn_cef--color, #009b3a) !important;
+            color: var(--odd_button_text--color, #ffffff) !important;
+            border: 1px solid var(--odd_button_border--color, #007a2e) !important;
         }
         .btn-home-nexus strong {
-            color: var(--odd_button_text--color, #002776) !important;
+            color: var(--odd_button_text--color, #ffffff) !important;
         }
         .btn-home-nexus:hover {
-            background: var(--odd_button_hover_bg--color, #009b3a) !important;
+            background: var(--odd_button_hover_bg--color, #002776) !important;
             color: var(--odd_button_hover_text--color, #ffffff) !important;
         }
         .btn-home-nexus.selecionado {
-            background: var(--btn_selecionado-color, #009b3a) !important;
+            background: var(--btn_selecionado-color, #002776) !important;
             color: #ffffff !important;
-            border-color: var(--btn_selecionado-color, #009b3a) !important;
+            border-color: var(--btn_selecionado-color, #002776) !important;
         }
         .btn-apostas .btn,
         .container-lista-jogos .btn {
-            background-color: var(--btn_cef--color, #ffffff) !important;
-            color: var(--odd_button_text--color, #002776) !important;
-            border: 1px solid var(--odd_button_border--color, #009b3a) !important;
+            background-color: var(--btn_cef--color, #009b3a) !important;
+            color: var(--odd_button_text--color, #ffffff) !important;
+            border: 1px solid var(--odd_button_border--color, #007a2e) !important;
         }
         .btn-apostas .btn:hover,
         .container-lista-jogos .btn:hover {
-            background-color: var(--odd_button_hover_bg--color, #009b3a) !important;
+            background-color: var(--odd_button_hover_bg--color, #002776) !important;
             color: var(--odd_button_hover_text--color, #ffffff) !important;
         }
 
