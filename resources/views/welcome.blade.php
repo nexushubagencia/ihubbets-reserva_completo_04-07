@@ -110,6 +110,49 @@
 
     <script src="/js/banner-engine.js?v={{ time() }}"></script>
     <script src="/js/front_nexus_hibrido.js?v={{ time() }}"></script>
+
+    <!-- THEME OVERRIDE: Replace hardcoded color:#fff with CSS variables for themed elements -->
+    <style id="theme-text-override">
+        /* Active sport modality tab (e.g. FUTEBOL, LUTA) - gold bg needs black text */
+        .modality-item-demo a.ativo {
+            color: var(--menu_active_text--color, #fff) !important;
+        }
+        /* Active day tab (e.g. "Hoje", "Amanhã") */
+        .day-tab.active a,
+        .day-tab.active span,
+        .day-tab.active strong {
+            color: var(--menu_active_text--color, #fff) !important;
+        }
+        /* Cupon championship header */
+        .header-campeonato-cupon {
+            color: var(--card_header_text--color, #fff) !important;
+        }
+        /* Trophy and star icons on colored backgrounds */
+        .fa-trophy,
+        .fa-star {
+            color: var(--menu_active_text--color, #fff) !important;
+        }
+        /* Sidebar menu header (e.g. "FUTEBOL", "MAIS APOSTAS") */
+        .sidebar-menu .header {
+            color: var(--sidebar_header_text--color, #FFF) !important;
+        }
+        /* Active menu-jogos item text */
+        .menu-jogos li.ativo a {
+            color: var(--menu_active_text--color, #fff) !important;
+        }
+        /* Carousel header text */
+        .carousel-header {
+            color: var(--destaque_header_text--color, #fff) !important;
+        }
+        /* Carousel control buttons */
+        .control-btn {
+            color: var(--destaque_header_text--color, #fff) !important;
+        }
+        /* Featured offer badge */
+        .carousel-card .offer-badge {
+            color: var(--destaque_btn_text--color, #fff) !important;
+        }
+    </style>
 </body>
 
 </html>

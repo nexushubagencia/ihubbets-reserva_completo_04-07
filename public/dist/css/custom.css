@@ -1948,3 +1948,5 @@ body.modal-open .brand-link span {
  . m o d a l - t i t l e   . f a - s t a r   {   c o l o r :   # 0 6 0 6 0 6   ! i m p o r t a n t ;   }  
   
  
+/* Theme-aware text colors are handled in welcome.blade.php <style#theme-text-override> */
+/* Uses CSS variables (var(--menu_active_text--color)) so each theme controls its own text color */
