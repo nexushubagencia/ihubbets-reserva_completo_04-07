@@ -113,47 +113,119 @@
 
     <!-- THEME OVERRIDE: Replace hardcoded color:#fff with CSS variables for themed elements -->
     <style id="theme-text-override">
-        /* Active sport modality tab (e.g. FUTEBOL, LUTA) - gold bg needs black text */
-        .modality-item-demo a.ativo {
-            color: var(--menu_active_text--color, #fff) !important;
+        /* === ODDS BUTTONS (C, E, F) - fundo branco, texto escuro, borda verde === */
+        .btn-home-nexus,
+        .btn-home-nexus:hover,
+        .btn-home-nexus:focus,
+        .btn-home-nexus.selecionado {
+            background: var(--btn_cef--color, #ffffff) !important;
+            color: var(--odd_button_text--color, #002776) !important;
+            border: 1px solid var(--odd_button_border--color, #009b3a) !important;
         }
-        /* Active day tab (e.g. "Hoje", "Amanhã") */
+        .btn-home-nexus strong {
+            color: var(--odd_button_text--color, #002776) !important;
+        }
+        .btn-home-nexus:hover {
+            background: var(--odd_button_hover_bg--color, #009b3a) !important;
+            color: var(--odd_button_hover_text--color, #ffffff) !important;
+        }
+        .btn-home-nexus.selecionado {
+            background: var(--btn_selecionado-color, #009b3a) !important;
+            color: #ffffff !important;
+            border-color: var(--btn_selecionado-color, #009b3a) !important;
+        }
+        .btn-apostas .btn,
+        .container-lista-jogos .btn {
+            background-color: var(--btn_cef--color, #ffffff) !important;
+            color: var(--odd_button_text--color, #002776) !important;
+            border: 1px solid var(--odd_button_border--color, #009b3a) !important;
+        }
+        .btn-apostas .btn:hover,
+        .container-lista-jogos .btn:hover {
+            background-color: var(--odd_button_hover_bg--color, #009b3a) !important;
+            color: var(--odd_button_hover_text--color, #ffffff) !important;
+        }
+
+        /* === +0 BOTAO (odds plus) - verde com branco === */
+        .plus-odd-nexus,
+        .plus-odd,
+        .btn-plus-odd,
+        .plus-odd-nexus:hover,
+        .plus-odd:hover {
+            background: var(--odds_plus_button--color, #009b3a) !important;
+            color: var(--odds_plus_button_text--color, #ffffff) !important;
+        }
+
+        /* === SHARE BOTAO - verde com branco === */
+        .btn-share-nexus,
+        .btn-share {
+            background: var(--share_button_bg--color, #009b3a) !important;
+            color: var(--share_button_text--color, #ffffff) !important;
+        }
+
+        /* === CUPOM VALOR BOTOES === */
+        .btn-valor-rapido,
+        .valores-rapidos .btn,
+        .btn-valor,
+        .value-btn-group .btn-valor,
+        .ticket-values .btn {
+            color: var(--cupom_valor_btn_text--color, #ffffff) !important;
+        }
+
+        /* === ACTIVE SPORT TAB === */
+        .modality-item-demo a.ativo {
+            color: var(--modalidade_ativa_text--color, var(--menu_active_text--color, #fff)) !important;
+        }
         .day-tab.active a,
         .day-tab.active span,
         .day-tab.active strong {
             color: var(--menu_active_text--color, #fff) !important;
         }
-        /* Cupon championship header */
+        .menu-jogos li.ativo a {
+            color: var(--menu_active_text--color, #fff) !important;
+        }
+
+        /* === SIDEBAR === */
+        .sidebar-menu .header {
+            color: var(--sidebar_header_text--color, #FFF) !important;
+        }
+        .menu-jogos li a,
+        .nav-esportes li a,
+        .sports-menu-item {
+            color: var(--sidebar_text--color, #fff) !important;
+        }
+
+        /* === CAROUSEL / DESTAQUE === */
+        .carousel-header {
+            color: var(--destaque_header_text--color, #fff) !important;
+        }
+        .control-btn {
+            color: var(--destaque_header_text--color, #fff) !important;
+        }
+        .carousel-card .offer-badge {
+            color: var(--destaque_btn_text--color, #fff) !important;
+        }
         .header-campeonato-cupon {
             color: var(--card_header_text--color, #fff) !important;
         }
-        /* Trophy and star icons on colored backgrounds */
+
+        /* === ICONS ON COLORED BG === */
         .fa-trophy,
         .fa-star {
             color: var(--menu_active_text--color, #fff) !important;
         }
-        /* Sidebar menu header (e.g. "FUTEBOL", "MAIS APOSTAS") */
-        .sidebar-menu .header {
-            color: var(--sidebar_header_text--color, #FFF) !important;
-        }
-        /* Active menu-jogos item text */
-        .menu-jogos li.ativo a {
-            color: var(--menu_active_text--color, #fff) !important;
-        }
-        /* Carousel header text */
-        .carousel-header {
-            color: var(--destaque_header_text--color, #fff) !important;
-        }
-        /* Carousel control buttons */
-        .control-btn {
-            color: var(--destaque_header_text--color, #fff) !important;
-        }
-        /* Featured offer badge */
-        .carousel-card .offer-badge {
-            color: var(--destaque_btn_text--color, #fff) !important;
+
+        /* === SEARCH ICON === */
+        .input-group-btn .btn,
+        .search-btn,
+        .sidebar-form .btn,
+        .input-group-search .btn,
+        .input-group-search .input-group-addon,
+        .input-group-btn .btn-flat {
+            color: var(--search_icon_text--color, #fff) !important;
         }
 
-        /* Botao Cadastre-se - hover limpo sem filter brightness */
+        /* === BOTAO CADASTRE-SE === */
         .btn-cadastrar-demo,
         .btn-cadastro,
         .btn-register,
@@ -177,7 +249,7 @@
             transform: translateY(-1px) !important;
         }
 
-        /* Botao Entrar - hover limpo */
+        /* === BOTAO ENTRAR === */
         .btn-acessar-demo,
         a.btn-acessar-demo,
         a[data-target="#modal-login"] {
@@ -197,61 +269,6 @@
             filter: none !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
             transform: translateY(-1px) !important;
-        }
-
-        /* Botao de busca (lupa) - texto azul em fundo amarelo */
-        .input-group-btn .btn,
-        .search-btn,
-        .sidebar-form .btn,
-        .input-group-search .btn,
-        .input-group-search .input-group-addon,
-        .input-group-btn .btn-flat {
-            color: var(--search_icon_text--color, #fff) !important;
-        }
-
-        /* Botao +0 (odds plus) - texto azul em fundo amarelo */
-        .plus-odd-nexus,
-        .plus-odd,
-        .btn-plus-odd,
-        .plus-odd-nexus:hover,
-        .plus-odd:hover {
-            color: var(--odds_plus_button_text--color, #fff) !important;
-        }
-
-        /* Share button - texto azul em fundo amarelo */
-        .btn-share-nexus,
-        .btn-share {
-            color: var(--share_button_text--color, #fff) !important;
-        }
-
-        /* Botao valor rapido do cupom - texto azul em fundo amarelo */
-        .btn-valor-rapido,
-        .valores-rapidos .btn,
-        .btn-valor,
-        .value-btn-group .btn-valor,
-        .ticket-values .btn {
-            color: var(--cupom_valor_btn_text--color, #fff) !important;
-        }
-
-        /* Botao de odd C/E/F - texto azul em fundo amarelo */
-        .btn-home-nexus,
-        .btn-home {
-            color: var(--odd_button_text--color, #fff) !important;
-        }
-        .btn-home-nexus strong {
-            color: var(--odd_button_text--color, #fff) !important;
-        }
-
-        /* Modality active item */
-        .modality-item-demo a.ativo {
-            color: var(--modalidade_ativa_text--color, var(--menu_active_text--color, #fff)) !important;
-        }
-
-        /* Modalidade inativa - texto azul */
-        .menu-jogos li a,
-        .nav-esportes li a,
-        .sports-menu-item {
-            color: var(--sidebar_text--color, #fff) !important;
         }
     </style>
 </body>
