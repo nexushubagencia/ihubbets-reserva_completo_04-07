@@ -310,7 +310,7 @@ class GlobalThemeSeeder extends Seeder
                     "border_color" => "#222222",
                     "primary_color" => "#d32f2f",
                     "sidebar_color" => "#1a1a1a",
-                    "footer_bg_color" => "#1a1a1a",
+                    "footer_bg_color" => "#ffffff",
                     "header_bg_color" => "#1a1a1a",
                     "background_color" => "#f5f5f5",
                     "btn_entrar_color" => "#d32f2f",
