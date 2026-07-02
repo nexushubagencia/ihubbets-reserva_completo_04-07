@@ -1,0 +1,379 @@
+﻿
+  GET|HEAD  / ................................................................................ Api\ApiController@index
+  GET|HEAD  admin ............................................................ admin.home ÔÇ║ Admin\HomeController@index
+  GET|HEAD  admin/about-us ................................. admin.settings.about ÔÇ║ Admin\SettingsController@aboutView
+  POST      admin/about-us ........................ admin.settings.about.update ÔÇ║ Admin\SettingsController@updateAbout
+  GET|HEAD  admin/active-players .................................................. Admin\HomeController@activePlayers
+  POST      admin/add-lancamento ............................................ Admin\CambistaController@storeLancamento
+  GET|HEAD  admin/adm-ligas-list ........................................... admin.adm-ligas-list ÔÇ║ routes/web.php:166
+  GET|HEAD  admin/afiliados .................................. admin.afiliados.index ÔÇ║ Admin\AffiliateController@index
+  POST      admin/afiliados .................................. admin.afiliados.store ÔÇ║ Admin\AffiliateController@store
+  POST      admin/afiliados-config-update ... admin.afiliados.config.update ÔÇ║ Admin\AffiliateController@updateSettings
+  GET|HEAD  admin/afiliados-list ...................................................... Admin\AffiliateController@list
+  PUT       admin/afiliados/{id} ........................... admin.afiliados.update ÔÇ║ Admin\AffiliateController@update
+  DELETE    admin/afiliados/{id} ......................... admin.afiliados.destroy ÔÇ║ Admin\AffiliateController@destroy
+  POST      admin/ajustar-limite .............................................. Admin\CambistaController@ajustarLimite
+  POST      admin/alterar-user ............................................. Admin\ConfiguracaoController@bloquearUser
+  GET|HEAD  admin/api-football ........................... admin.api-football ÔÇ║ Admin\ApiFootballAdminController@index
+  POST      admin/api-football/leagues ................................ Admin\ApiFootballAdminController@updateLeagues
+  POST      admin/api-football/sync ......................................... Admin\ApiFootballAdminController@syncNow
+  POST      admin/approve-withdrawal/{id} .... admin.approve-withdrawal ÔÇ║ Admin\FinanceiroController@approveWithdrawal
+  GET|HEAD  admin/banners ......................................... admin.banners.index ÔÇ║ Admin\BannerController@index
+  POST      admin/banners ......................................... admin.banners.store ÔÇ║ Admin\BannerController@store
+  GET|HEAD  admin/banners-generator ............ admin.banners.generator ÔÇ║ Admin\CanvasBannerController@templateEditor
+  POST      admin/banners/{id} .................................. admin.banners.update ÔÇ║ Admin\BannerController@update
+  DELETE    admin/banners/{id} ................................ admin.banners.destroy ÔÇ║ Admin\BannerController@destroy
+  PUT       admin/bilhete-update/{id} ................................................. Admin\BilheteController@update
+  GET|HEAD  admin/bilhetes ........................................ admin.bilhetes ÔÇ║ Admin\BilheteController@indexView
+  GET|HEAD  admin/bilhetes-list ........................................................ Admin\BilheteController@index
+  POST      admin/bilhetes-search ..................................................... Admin\BilheteController@search
+  PUT       admin/bilhetes/{id} ....................................................... Admin\BilheteController@update
+  POST      admin/bloquear-ligas .............................................. Admin\ConfrontosController@blockLeague
+  POST      admin/bloquear-user ............................................ Admin\ConfiguracaoController@bloquearUser
+  GET|HEAD  admin/bonus .................................................... admin.bonus ÔÇ║ Admin\BonusController@index
+  POST      admin/cadastrar-cambista .................................................. Admin\CambistaController@store
+  GET|HEAD  admin/cadastrar-gerente ........................ admin.gerentes.create ÔÇ║ Admin\GerenteController@storeView
+  POST      admin/cadastrar-gerente .................................................... Admin\GerenteController@store
+  GET|HEAD  admin/cadastrar-gerentes ............................................... Admin\GerenteController@storeView
+  GET|HEAD  admin/caixa-adm-cambista ................................. Admin\FinanceiroController@indexViewAdmCambista
+  GET|HEAD  admin/caixa-adm-gerente ................................... Admin\FinanceiroController@indexViewAdmGerente
+  GET|HEAD  admin/caixa-cambista-list ....................................... Admin\FinanceiroController@caixaCambista
+  GET|HEAD  admin/caixa-gerente-list ......................................... Admin\FinanceiroController@caixaGerente
+  GET|HEAD  admin/caixa-user/{id} ............................................... Admin\FinanceiroController@caixaUser
+  GET|HEAD  admin/cambista/editar/{id} ........................ admin.cambista.edit ÔÇ║ Admin\CambistaController@edtView
+  GET|HEAD  admin/cambistas ............................... admin.cambistas.index ÔÇ║ Admin\CambistaController@indexView
+  PUT       admin/cambistas/{id} ..................................................... Admin\CambistaController@update
+  DELETE    admin/cambistas/{id} .................................................... Admin\CambistaController@destroy
+  GET|HEAD  admin/cassino ....................................... admin.cassino ÔÇ║ Admin\ApostasCassinoController@index
+  GET|HEAD  admin/cassino/{id} ................................................... Admin\ApostasCassinoController@show
+  GET|HEAD  admin/configuracoes ............................... configuracoes ÔÇ║ Admin\ConfiguracaoController@indexView
+  PUT       admin/configuracoes/{id} ............................................. Admin\ConfiguracaoController@update
+  GET|HEAD  admin/confrontos ....................................... confrontos ÔÇ║ Admin\ConfrontosController@indexView
+  GET|HEAD  admin/confrontos-aovivo ............................................ Admin\ConfrontosController@viewAovivo
+  GET|HEAD  admin/confrontos-aovivo-list ...................................... Admin\ConfrontosController@indexAovivo
+  GET|HEAD  admin/confrontos-list ................................................... Admin\ConfrontosController@index
+  PUT       admin/confrontos-odd/{id} ........................................... Admin\ConfrontosController@updateOdd
+  POST      admin/confrontos-search ........................................... Admin\ConfrontosController@searchMatch
+  PUT       admin/confrontos/{id} .................................................. Admin\ConfrontosController@update
+  GET|HEAD  admin/cotacao-loto-quina ............... admin.loto.quina ÔÇ║ Admin\QuininhaSeninhaController@indexViewQuina
+  GET|HEAD  admin/cotacao-loto-sena .................. admin.loto.sena ÔÇ║ Admin\QuininhaSeninhaController@indexViewSena
+  GET|HEAD  admin/dados-banca ................................ admin.dados-banca ÔÇ║ Admin\HomeController@mostraDadosAdm
+  GET|HEAD  admin/dashboard-stats ................................................. Admin\HomeController@relatorioHome
+  DELETE    admin/deletar-gerente/{id} ............................................... Admin\GerenteController@destroy
+  DELETE    admin/deletar-ligas-main/{id} .................................. Admin\ConfiguracaoController@deleteLeague
+  DELETE    admin/deletar-match/{id} .......................................... Admin\ConfrontosController@deleteMatch
+  GET|HEAD  admin/depositos ............................... admin.depositos ÔÇ║ Admin\FinanceiroController@depositosView
+  GET|HEAD  admin/depositos-list ..................... admin.depositos-list ÔÇ║ Admin\FinanceiroController@listDepositos
+  PUT       admin/edit-configuracao/{id} ......................................... Admin\ConfiguracaoController@update
+  GET|HEAD  admin/editar-gerente/{id} ................................................ Admin\GerenteController@edtView
+  PUT       admin/editar-gerente/{id} ................................................. Admin\GerenteController@update
+  GET|HEAD  admin/editar-perfil .................................... admin.profile.edit ÔÇ║ Admin\ProfileController@edit
+  PUT       admin/encerrar-caixa/{id} ........................................ Admin\FinanceiroController@encerraCaixa
+  GET|HEAD  admin/env-config ............................................ admin.env-config ÔÇ║ Admin\EnvController@index
+  POST      admin/env-config .............................................................. Admin\EnvController@update
+  GET|HEAD  admin/featured-matches .............. admin.featured-matches.index ÔÇ║ Admin\FeaturedMatchesController@index
+  GET|HEAD  admin/featured-matches/available featured-matches.available ÔÇ║ Admin\FeaturedMatchesController@getAvailablÔÇª
+  POST      admin/featured-matches/toggle ........... featured-matches.toggle ÔÇ║ Admin\FeaturedMatchesController@toggle
+  POST      admin/featured-matches/update-meta featured-matches.update-meta ÔÇ║ Admin\FeaturedMatchesController@updateMÔÇª
+  GET|HEAD  admin/financeiro-gateways ...... financeiro-gateways ÔÇ║ Admin\ConfiguracaoController@financeiroGatewaysView
+  GET|HEAD  admin/financeiro-pix-usuarios financeiro-pix-usuarios ÔÇ║ Admin\ConfiguracaoController@financeiroPixUsuarioÔÇª
+  GET|HEAD  admin/gerenciamento-riscos .................... admin.riscos ÔÇ║ Admin\GerenciamentoRiscos@viewGerenciamento
+  POST      admin/gerenciamento-riscos-list ......................................... Admin\GerenciamentoRiscos@riscos
+  GET|HEAD  admin/gerenciar-ligas ........................................ Admin\ConfiguracaoController@gerenciarLigas
+  GET|HEAD  admin/gerenciar-ligas-principais admin.ligas.principais ÔÇ║ Admin\ConfiguracaoController@ligasPrincipaisView
+  GET|HEAD  admin/gerenciar-matchs ................... admin.matchs.block ÔÇ║ Admin\MatchManagementController@getPreJogo
+  POST      admin/gerente-lancamento ......................................... Admin\GerenteController@storeLancamento
+  GET|HEAD  admin/gerente/editar/{id} .......................... admin.gerentes.edit ÔÇ║ Admin\GerenteController@edtView
+  GET|HEAD  admin/gerentes .................................. admin.gerentes.index ÔÇ║ Admin\GerenteController@indexView
+  GET|HEAD  admin/gerentes-list .................................. admin.gerentes.list ÔÇ║ Admin\GerenteController@index
+  POST      admin/gerentes-search ................................................. Admin\GerenteController@searchUser
+  PUT       admin/gerentes/{id} ....................................................... Admin\GerenteController@update
+  DELETE    admin/gerentes/{id} ...................................................... Admin\GerenteController@destroy
+  POST      admin/insert-league-main ..................................... Admin\ConfrontosController@insertLeagueMain
+  DELETE    admin/lancamento/deletar/{id} ................................. Admin\CambistaController@destroyLancamento
+  GET|HEAD  admin/lancamentos ........................... admin.lancamentos ÔÇ║ Admin\CambistaController@lancamentosView
+  GET|HEAD  admin/lancamentos-list ..................... admin.lancamentos.list ÔÇ║ Admin\CambistaController@lancamentos
+  GET|HEAD  admin/list-caixa-adm-cambista ................................... Admin\FinanceiroController@caixaCambista
+  GET|HEAD  admin/list-caixa-cambista/{id} .............................. Admin\FinanceiroController@caixaUserCambista
+  GET|HEAD  admin/list-cambistas ............................... admin.list.cambistas ÔÇ║ Admin\CambistaController@index
+  GET|HEAD  admin/list-configuracoes .............................................. Admin\ConfiguracaoController@index
+  GET|HEAD  admin/list-gerente-caixa/{id} ................................ Admin\FinanceiroController@viewCaixaGerente
+  GET|HEAD  admin/list-gerentes .................................................... Admin\HomeController@listGerentes
+  GET|HEAD  admin/list-gerentes-select ......................................... Admin\CambistaController@listGerentes
+  GET|HEAD  admin/list-league-main ......................................... Admin\ConfrontosController@listLeagueMain
+  GET|HEAD  admin/list-ligas-bloqueadas .......... admin.ligas.bloqueadas ÔÇ║ Admin\ConfrontosController@indexLigasBlock
+  GET|HEAD  admin/list-matchs-bloqueadas ....... admin.matchs.bloqueadas ÔÇ║ Admin\ConfrontosController@indexMatchsBlock
+  GET|HEAD  admin/list-taxas-quininha .............................. Admin\QuininhaSeninhaController@listTaxasQuininha
+  GET|HEAD  admin/list-taxas-seninha ................................ Admin\QuininhaSeninhaController@listTaxasSeninha
+  GET|HEAD  admin/loto-resultados .............................. admin.loto.results ÔÇ║ Admin\LotoResultController@index
+  POST      admin/loto-resultados/submit ............... admin.loto.results.submit ÔÇ║ Admin\LotoResultController@submit
+  GET|HEAD  admin/mapa-apostas ............................................... admin.mapa ÔÇ║ Admin\MapaController@index
+  GET|HEAD  admin/mapa-apostas-list ................................................... Admin\MapaController@mapAposta
+  POST      admin/master/banca/criar .......................................... Admin\MasterPanelController@criarBanca
+  POST      admin/master/banca/update ........................................ Admin\MasterPanelController@updateBanca
+  GET|HEAD  admin/master/banca/{id}/backup .... admin.master.banca.backup ÔÇ║ Admin\MasterPanelController@downloadBackup
+  POST      admin/master/banca/{id}/toggle ................................... Admin\MasterPanelController@toggleBanca
+  GET|HEAD  admin/master/bancas ......................... admin.master.bancas ÔÇ║ Admin\MasterPanelController@bancasView
+  GET|HEAD  admin/master/bancas-list .............................................. Admin\MasterPanelController@bancas
+  GET|HEAD  admin/master/dashboard ........................ admin.master.dashboard ÔÇ║ Admin\MasterPanelController@index
+  GET|HEAD  admin/master/extrato-global .................................... Admin\MasterPanelController@extratoGlobal
+  GET|HEAD  admin/master/financeiro ....... admin.master.financeiro ÔÇ║ Admin\MasterPanelController@financeiraMasterView
+  GET|HEAD  admin/master/financeiro-stats .......................................... Admin\MasterPanelController@stats
+  GET|HEAD  admin/master/marketing ................ admin.master.marketing ÔÇ║ Admin\MasterPanelController@marketingView
+  POST      admin/master/marketing/apply-global admin.master.marketing.apply-global ÔÇ║ Admin\MasterPanelController@appÔÇª
+  DELETE    admin/master/marketing/asset/{id} admin.master.marketing.delete-asset ÔÇ║ Admin\MasterPanelController@deletÔÇª
+  GET|HEAD  admin/master/marketing/matches .................................... Admin\MasterPanelController@getMatches
+  POST      admin/master/marketing/save-template admin.master.marketing.save-template ÔÇ║ Admin\MasterPanelController@sÔÇª
+  POST      admin/master/marketing/template/save ............................ Admin\MasterPanelController@saveTemplate
+  DELETE    admin/master/marketing/template/{id} admin.master.marketing.delete-template ÔÇ║ Admin\MasterPanelControllerÔÇª
+  GET|HEAD  admin/master/marketing/ticket/{id} ............................. Admin\MasterPanelController@getTicketData
+  POST      admin/master/marketing/upload-asset admin.master.marketing.upload ÔÇ║ Admin\MasterPanelController@uploadAssÔÇª
+  GET|HEAD  admin/master/ranking .......................... admin.master.ranking ÔÇ║ Admin\MasterPanelController@ranking
+  GET|HEAD  admin/master/temas ............................ admin.master.temas ÔÇ║ Admin\MasterPanelController@temasView
+  POST      admin/master/temas ...................... admin.master.temas.store ÔÇ║ Admin\MasterPanelController@storeTema
+  GET|HEAD  admin/master/temas/criar .......... admin.master.temas.create ÔÇ║ Admin\MasterPanelController@createTemaView
+  PUT       admin/master/temas/{id} ............... admin.master.temas.update ÔÇ║ Admin\MasterPanelController@updateTema
+  DELETE    admin/master/temas/{id} ............... admin.master.temas.delete ÔÇ║ Admin\MasterPanelController@deleteTema
+  POST      admin/master/temas/{id}/duplicate admin.master.temas.duplicate ÔÇ║ Admin\MasterPanelController@duplicateTema
+  GET|HEAD  admin/master/temas/{id}/edit .......... admin.master.temas.edit ÔÇ║ Admin\MasterPanelController@editTemaView
+  GET|HEAD  admin/mercado-user/{id} ................ admin.mercados.user.detail ÔÇ║ Admin\MercadosController@mercadoUser
+  GET|HEAD  admin/mercados ........................................................ Admin\MercadosController@indexView
+  GET|HEAD  admin/mercados-list ....................................................... Admin\MercadosController@index
+  GET|HEAD  admin/mercados-user ............................. admin.mercados.user ÔÇ║ Admin\MercadosController@indexView
+  GET|HEAD  admin/mercados/{id} ........................................................ Admin\MercadosController@show
+  PUT       admin/mercados/{id} ...................................................... Admin\MercadosController@update
+  GET|HEAD  admin/meu-afiliado ............................ admin.meu-afiliado ÔÇ║ Admin\AffiliateController@meuAfiliado
+  POST      admin/meu-afiliado/saque ................. admin.afiliado-saque ÔÇ║ Admin\AffiliateController@solicitarSaque
+  POST      admin/meu-afiliado/tornar ............... admin.tornar-afiliado ÔÇ║ Admin\AffiliateController@tornarAfiliado
+  GET|HEAD  admin/odds ................................................................ Admin\OddsController@indexView
+  POST      admin/odds-list ............................................................... Admin\OddsController@index
+  GET|HEAD  admin/odds-user ................................. admin.odds.user ÔÇ║ Admin\OddsController@indexViewCambista
+  GET|HEAD  admin/odds-user/{id} .............................. admin.odds.user.detail ÔÇ║ Admin\OddsController@oddsUser
+  PUT       admin/odds/{id} .............................................................. Admin\OddsController@update
+  GET|HEAD  admin/palpites-bilhete/{id} ......................................... Admin\BilheteController@getPrintData
+  GET|HEAD  admin/partidas-personalizadas ....... admin.personalized.index ÔÇ║ Admin\PersonalizedMatchesController@index
+  POST      admin/partidas-personalizadas/store . admin.personalized.store ÔÇ║ Admin\PersonalizedMatchesController@store
+  DELETE    admin/partidas-personalizadas/{id} admin.personalized.destroy ÔÇ║ Admin\PersonalizedMatchesController@destrÔÇª
+  POST      admin/partidas-personalizadas/{id}/toggle admin.personalized.toggle ÔÇ║ Admin\PersonalizedMatchesControllerÔÇª
+  POST      admin/partidas-personalizadas/{id}/update admin.personalized.update ÔÇ║ Admin\PersonalizedMatchesControllerÔÇª
+  GET|HEAD  admin/perfil ............................................... admin.profile ÔÇ║ Admin\ProfileController@index
+  POST      admin/perfil/update ................................ admin.profile.update ÔÇ║ Admin\ProfileController@update
+  GET|HEAD  admin/playfiver ................................ admin.playfiver ÔÇ║ Admin\ApiPlayfiverAdminController@index
+  POST      admin/playfiver/config .................................... Admin\ApiPlayfiverAdminController@updateConfig
+  GET|HEAD  admin/promocoes ......................................... admin.promocoes ÔÇ║ Admin\PromocaoController@index
+  POST      admin/promocoes ........................................................... Admin\PromocaoController@store
+  GET|HEAD  admin/promocoes/criar ........................... admin.promocoes.create ÔÇ║ Admin\PromocaoController@create
+  PUT       admin/promocoes/{id} ..................................................... Admin\PromocaoController@update
+  DELETE    admin/promocoes/{id} .................................................... Admin\PromocaoController@destroy
+  GET|HEAD  admin/promocoes/{id}/editar ......................... admin.promocoes.edit ÔÇ║ Admin\PromocaoController@edit
+  GET|HEAD  admin/regulamento ........................... admin.regulamento ÔÇ║ Admin\SettingsController@regulamentoView
+  GET|HEAD  admin/regulamento/list ................. admin.regulamento.list ÔÇ║ Admin\SettingsController@regulamentoList
+  POST      admin/regulamento/update/{id} ...... admin.regulamento.update ÔÇ║ Admin\SettingsController@regulamentoUpdate
+  POST      admin/reject-withdrawal/{id} ....... admin.reject-withdrawal ÔÇ║ Admin\FinanceiroController@rejectWithdrawal
+  GET|HEAD  admin/relatorio-cambista ... admin.reports.cambista ÔÇ║ Admin\RelatorioController@indexViewRelatorioCambista
+  POST      admin/relatorio-cambista-list ................................ Admin\RelatorioController@relatorioCambista
+  GET|HEAD  admin/relatorio-gerente ...... admin.reports.gerente ÔÇ║ Admin\RelatorioController@indexViewRelatorioGerente
+  POST      admin/relatorio-gerente-list .................................. Admin\RelatorioController@relatorioGerente
+  GET|HEAD  admin/relatorio-transacoes ...... admin.reports.transactions ÔÇ║ Admin\TransactionReportController@indexView
+  GET|HEAD  admin/resultados .................................... admin.results ÔÇ║ Admin\ResultController@pendingEvents
+  POST      admin/resultados/cancel ............................. admin.results.cancel ÔÇ║ Admin\ResultController@cancel
+  POST      admin/resultados/submit ............................. admin.results.submit ÔÇ║ Admin\ResultController@submit
+  GET|HEAD  admin/risk-dashboard ............................... admin.risk.dashboard ÔÇ║ Admin\RiskController@dashboard
+  GET|HEAD  admin/risk-map .............................................. admin.risk.map ÔÇ║ Admin\RiskController@betMap
+  GET|HEAD  admin/saques ........................................ admin.saques ÔÇ║ Admin\FinanceiroController@saquesView
+  GET|HEAD  admin/saques-list ......................... admin.saques-list ÔÇ║ Admin\FinanceiroController@listWithdrawals
+  GET|HEAD  admin/scraper ...................................... admin.scraper ÔÇ║ Admin\ApiScraperAdminController@index
+  POST      admin/scraper/config ........................................ Admin\ApiScraperAdminController@updateConfig
+  POST      admin/scraper/start ......................................... Admin\ApiScraperAdminController@startScraper
+  POST      admin/scraper/stop ........................................... Admin\ApiScraperAdminController@stopScraper
+  POST      admin/scraper/sync ............................................... Admin\ApiScraperAdminController@syncNow
+  POST      admin/search-caixa-adm-cambista ........................... Admin\FinanceiroController@searchCaixaCambista
+  POST      admin/search-caixa-adm-gerente ............................. Admin\FinanceiroController@searchCaixaGerente
+  GET|HEAD  admin/search-gerente/{name} ......................................... Admin\GerenteController@searchByName
+  GET|HEAD  admin/settings/general ........................... admin.settings.general ÔÇ║ Admin\SettingsController@index
+  POST      admin/settings/general ................... admin.settings.general.update ÔÇ║ Admin\SettingsController@update
+  GET|HEAD  admin/settings/layout ........................ admin.settings.layout ÔÇ║ Admin\SettingsController@layoutView
+  POST      admin/settings/layout ............... admin.settings.layout.update ÔÇ║ Admin\SettingsController@updateLayout
+  POST      admin/settings/layout/delete-theme admin.settings.layout.delete-theme ÔÇ║ Admin\SettingsController@deleteCuÔÇª
+  POST      admin/settings/layout/save-theme admin.settings.layout.save-theme ÔÇ║ Admin\SettingsController@saveCustomThÔÇª
+  GET|HEAD  admin/show-ligas-principais ....................................... Admin\ConfiguracaoController@showLigas
+  GET|HEAD  admin/traducoes ......................................... admin.traducoes ÔÇ║ Admin\TraducaoController@index
+  POST      admin/traducoes ........................................................... Admin\TraducaoController@store
+  DELETE    admin/traducoes/{id} .................................................... Admin\TraducaoController@destroy
+  POST      admin/update-match ................................................. Admin\ConfrontosController@blockMatch
+  PUT       admin/update-status-quina/{id} ...................... Admin\QuininhaSeninhaController@bloqueiaCotacaoQuina
+  PUT       admin/update-status-sena/{id} ........................ Admin\QuininhaSeninhaController@bloqueiaCotacaoSena
+  PUT       admin/update-taxa-quina/{id} .......................... Admin\QuininhaSeninhaController@alteraCotacaoQuina
+  PUT       admin/update-taxa-sena/{id} ............................ Admin\QuininhaSeninhaController@alteraCotacaoSena
+  POST      admin/update-theme ................................. admin.update-theme ÔÇ║ Admin\UserController@updateTheme
+  POST      admin/user-financial-update/{id} ........................ Admin\ConfiguracaoController@userFinancialUpdate
+  GET|HEAD  admin/validar-pin ............................. admin.validar-pin ÔÇ║ Admin\BilheteController@validarPinView
+  POST      adminlte/darkmode/toggle adminlte.darkmode.toggle ÔÇ║ JeroenNoten\LaravelAdminLte ÔÇ║ DarkModeController@toggÔÇª
+  GET|HEAD  api/admin/featured-matches ................................... Admin\MatchManagementController@getFeatured
+  POST      api/admin/featured-matches ................................. Admin\MatchManagementController@addToFeatured
+  DELETE    api/admin/featured-matches/{id} ....................... Admin\MatchManagementController@removeFromFeatured
+  PUT       api/admin/featured-matches/{id}/meta .................. Admin\MatchManagementController@updateFeaturedMeta
+  GET|HEAD  api/admin/games-list .......................................... Admin\MatchManagementController@getPreJogo
+  GET|HEAD  api/admin/global-markets .................................... Admin\OddsMarketsController@getGlobalMarkets
+  POST      api/admin/global-markets .................................. Admin\OddsMarketsController@updateGlobalMarket
+  GET|HEAD  api/admin/global-odds .......................................... Admin\OddsMarketsController@getGlobalOdds
+  GET|HEAD  api/admin/personalized-matches ................................. Admin\PersonalizedMatchesController@index
+  POST      api/admin/personalized-matches ................................. Admin\PersonalizedMatchesController@store
+  DELETE    api/admin/personalized-matches/{id} .......................... Admin\PersonalizedMatchesController@destroy
+  GET|HEAD  api/admin/user-markets/{userId} ............................... Admin\OddsMarketsController@getUserMarkets
+  POST      api/admin/user-markets/{userId} ............................. Admin\OddsMarketsController@updateUserMarket
+  POST      api/admin/withdrawal/{id}/approve ....................................... Api\WithdrawalController@approve
+  POST      api/admin/withdrawal/{id}/reject ......................................... Api\WithdrawalController@reject
+  GET|HEAD  api/affiliate/config .................................................... Admin\AffiliateController@config
+  POST      api/auth/login ............................................................... Api\ApiAuthController@login
+  POST      api/auth/logout ............................................................. Api\ApiAuthController@logout
+  GET|HEAD  api/auth/me ..................................................................... Api\ApiAuthController@me
+  POST      api/auth/register ......................................................... Api\ApiAuthController@register
+  POST      api/bet .............................................................. Api\BilheteApiController@sendAposta
+  GET|HEAD  api/bilhete-pdf/{id} ................................................................... routes/api.php:96
+  GET|POST|HEAD api/bilhete/{id} ................................................................... routes/api.php:97
+  GET|HEAD  api/bilhetes ........................................................... Api\BilheteApiController@bilhetes
+  POST      api/bonus/apply ............................................................ Api\BonusController@applyCode
+  GET|HEAD  api/bonus/my ................................................................. Api\BonusController@myBonus
+  POST      api/cancela-bilhete/{id} ......................................... Api\BilheteApiController@cancelaBilhete
+  POST      api/change-password ............................................ Api\FrontendAuthController@changePassword
+  GET|HEAD  api/check-bankizi-confirmation-account/geral ........................................... routes/api.php:30
+  GET|HEAD  api/check-confirmation-account/{type} ................................................. routes/api.php:103
+  GET|HEAD  api/check_pix/{id} .................................................................... routes/api.php:106
+  GET|HEAD  api/client-ip .......................................................................... routes/api.php:83
+  GET|HEAD  api/clientes .......................................................................... routes/api.php:107
+  POST      api/close-support-chat ................................................................. routes/api.php:99
+  POST      api/compartilha-imagem ................................................................ routes/api.php:113
+  GET|HEAD  api/compartilha-imagem/{id} ........................................................... routes/api.php:110
+  GET|HEAD  api/concursos-quina ................................ Api\QuininhaSeninhaApiController@viewDiasSorteioQuina
+  GET|HEAD  api/concursos-sena .................................. Api\QuininhaSeninhaApiController@viewDiasSorteioSena
+  GET|HEAD  api/config .............................................................. Api\ConfiguracaoController@index
+  PUT       api/config ............................................................. Api\ConfiguracaoController@update
+  GET|HEAD  api/config/limits ................................................... Api\ConfiguracaoController@getLimits
+  POST      api/deposit/pix .......................................................... Api\PaymentController@createPix
+  GET|HEAD  api/dias-futebol ...................................................... Api\MatchApiController@getDaysList
+  POST      api/edit-password-seller .............................................................. routes/api.php:108
+  GET|HEAD  api/get-banners ........................................................ Api\MatchApiController@getBanners
+  GET|HEAD  api/get-banners.html ................................................... Api\MatchApiController@getBanners
+  GET|HEAD  api/get-carousel ....................................................... Api\MatchApiController@getBanners
+  GET|HEAD  api/get-days-list ..................................................... Api\MatchApiController@getDaysList
+  GET|HEAD  api/get-featured-match ................................................. Api\MatchApiController@getMatches
+  GET|HEAD  api/get-featured-matches ............................................... Api\MatchApiController@getMatches
+  GET|HEAD  api/get-game-list ..................................................................... routes/api.php:144
+  GET|HEAD  api/get-live-market-config ................................... Api\SportsApiController@getLiveMarketConfig
+  GET|HEAD  api/get-modalities ................................................. Api\SportsApiController@getModalities
+  GET|HEAD  api/getbanners ......................................................... Api\MatchApiController@getBanners
+  GET|HEAD  api/getbanners.html .................................................... Api\MatchApiController@getBanners
+  GET|HEAD  api/getcarousel ........................................................ Api\MatchApiController@getBanners
+  GET|HEAD  api/lifetime/{id} ..................................................................... routes/api.php:105
+  GET|HEAD  api/list-blocked-leagues ...................................... Admin\ConfrontosController@indexLigasBlock
+  GET|HEAD  api/list-blocked-live-matches ................................ Admin\ConfrontosController@indexMatchsBlock
+  GET|HEAD  api/list-blocked-matches ..................................... Admin\ConfrontosController@indexMatchsBlock
+  GET|HEAD  api/list-blocked-odds .................................................................. routes/api.php:88
+  GET|HEAD  api/list-limites .............................................................. Api\ApiController@siteInfo
+  GET|HEAD  api/list-matches ....................................................... Api\MatchApiController@getMatches
+  GET|HEAD  api/list-matches.html .................................................. Api\MatchApiController@getMatches
+  GET|HEAD  api/list-users-termos ................................................................. routes/api.php:109
+  POST      api/login ........................................................................ Api\ApiController@login
+  GET|HEAD  api/matches ............................................................ Api\MatchApiController@getMatches
+  POST      api/mercadopago/webhook ......................................... Api\PaymentController@webhookMercadoPago
+  GET|HEAD  api/modalidades .................................................... Api\SportsApiController@getModalities
+  GET|HEAD  api/num-quina ................................................. Api\QuininhaSeninhaApiController@geraQuina
+  GET|HEAD  api/num-sena ................................................... Api\QuininhaSeninhaApiController@geraSena
+  GET|HEAD  api/partidas-home .................................................. Api\MatchApiController@getMatchesHome
+  POST      api/pay-qr-code ....................................................................... routes/api.php:104
+  POST      api/play-game ......................................................................... routes/api.php:145
+  POST      api/print-bilhete-cod ........................................... Api\BilheteApiController@printBilheteCod
+  POST      api/print-bilhete-get-cod .................................... Api\BilheteApiController@printBilheteGetCod
+  POST      api/print-bilhete-get-cod-site ....................................... Api\PublicBetController@showByCupom
+  GET|HEAD  api/print-bilhete-id/{id} ................................................... Api\PublicBetController@show
+  GET|HEAD  api/public/games .............................................. Admin\MatchManagementController@getPreJogo
+  POST      api/public/pre-bet ......................................................... Api\PublicBetController@store
+  GET|HEAD  api/public/pre-bet/{code} ................................................... Api\PublicBetController@show
+  GET|HEAD  api/read-user-notification/{id} ........................................................ routes/api.php:95
+  POST      api/register ......................................................... Api\FrontendAuthController@register
+  GET|HEAD  api/regulamento ............................................................... Api\ApiController@siteInfo
+  POST      api/relatorio-cambista ................................................ Api\BilheteApiController@relatorio
+  GET|HEAD  api/sair ........................................................................ Api\ApiController@logout
+  GET|HEAD  api/saque/history ......................................................... Api\SaqueApiController@history
+  POST      api/saque/request ......................................................... Api\SaqueApiController@request
+  GET|HEAD  api/saque/status/{id} ...................................................... Api\SaqueApiController@status
+  GET|HEAD  api/scraper/export .................................................................... routes/api.php:268
+  POST      api/search-bilhetes ............................................... Api\BilheteApiController@searchBilhete
+  POST      api/send-aposta ............................................................ Api\PublicBetController@store
+  POST      api/send-aposta-auth ................................................. Api\BilheteApiController@sendAposta
+  POST      api/send-aposta-live ............................................. Api\BilheteApiController@sendApostaLive
+  POST      api/send-aposta-live-app ...................................... Api\BilheteApiController@sendApostaLiveApp
+  POST      api/send-aposta-loto ............................................. Api\BilheteApiController@sendApostaLoto
+  POST      api/send-aposta-site ....................................................... Api\PublicBetController@store
+  POST      api/send-aposta-site-auth ........................................ Api\BilheteApiController@sendApostaSite
+  POST      api/send-pre-aposta ........................................................ Api\PublicBetController@store
+  POST      api/send-valid-live ................................................... Api\BilheteApiController@validLive
+  POST      api/send-valid-live-app ............................................ Api\BilheteApiController@validLiveApp
+  GET|HEAD  api/settings .................................................................. Api\ApiController@siteInfo
+  GET|HEAD  api/settings.html ............................................................. Api\ApiController@siteInfo
+  GET|HEAD  api/site-all-matchs ................................................ Api\MatchApiController@getMatchesHome
+  GET|HEAD  api/site-info ................................................................. Api\ApiController@siteInfo
+  GET|HEAD  api/site-info.html ............................................................ Api\ApiController@siteInfo
+  GET|HEAD  api/site-list-leagues ................................................ Api\SportsApiController@listLeagues
+  GET|HEAD  api/site-list-leagues-main ....................................... Api\SportsApiController@listLeaguesMain
+  GET|HEAD  api/site-list-leagues-main-node .................................. Api\SportsApiController@listLeaguesMain
+  GET|HEAD  api/site-list-leagues-main-node.html ............................. Api\SportsApiController@listLeaguesMain
+  GET|HEAD  api/site-list-leagues-main.html .................................. Api\SportsApiController@listLeaguesMain
+  GET|HEAD  api/site-list-leagues.html ........................................... Api\SportsApiController@listLeagues
+  GET|HEAD  api/site-list-odds-live/{id} .............................................. Api\MatchApiController@getOdds
+  GET|HEAD  api/site-list-odds/{id} ................................................... Api\MatchApiController@getOdds
+  GET|HEAD  api/site-live-futebol .............................................. Api\MatchApiController@getMatchesLive
+  GET|HEAD  api/site-partidas-amanha ......................................... Api\MatchApiController@getMatchesAmanha
+  GET|HEAD  api/site-partidas-amanha-main .................................... Api\MatchApiController@getMatchesAmanha
+  GET|HEAD  api/site-partidas-ao-vivo .......................................... Api\MatchApiController@getMatchesLive
+  GET|HEAD  api/site-partidas-depois-amanha ............................ Api\MatchApiController@getMatchesDepoisAmanha
+  GET|HEAD  api/site-partidas-home ............................................. Api\MatchApiController@getMatchesHome
+  GET|HEAD  api/site-partidas-home-main ........................................ Api\MatchApiController@getMatchesHome
+  GET|HEAD  api/site-partidas-modalidade/{modality} ...................... Api\MatchApiController@getMatchesByModality
+  GET|HEAD  api/site-partidas-search/{search} ................................ Api\MatchApiController@getMatchesSearch
+  POST      api/site-search-league ............................................... Api\MatchApiController@searchLeague
+  POST      api/site-search-times .................................................. Api\MatchApiController@searchTeam
+  GET|HEAD  api/siteinfo .................................................................. Api\ApiController@siteInfo
+  GET|HEAD  api/siteinfo.html ............................................................. Api\ApiController@siteInfo
+  GET|HEAD  api/soccer/today ................................................... Api\MatchApiController@getMatchesHome
+  GET|HEAD  api/soccer/tomorrow .............................................. Api\MatchApiController@getMatchesAmanha
+  GET|POST|HEAD api/support-chat/{id} ............................................................. routes/api.php:100
+  POST      api/support-create .................................................................... routes/api.php:101
+  POST      api/support-create-message ............................................................ routes/api.php:102
+  GET|POST|HEAD api/support-list ................................................................... routes/api.php:98
+  GET|HEAD  api/taxas-quina ........................................ Api\QuininhaSeninhaApiController@viewCotacaoQuina
+  GET|HEAD  api/taxas-sena .......................................... Api\QuininhaSeninhaApiController@viewCotacaoSena
+  GET|HEAD  api/user ............................................................................... routes/api.php:11
+  GET|HEAD  api/user-logado ............................................................. Api\ApiController@userLogado
+  GET|HEAD  api/user-logado-auth ................................................ Api\BilheteApiController@dadosLogado
+  GET|POST|HEAD api/user-notifications ............................................................. routes/api.php:84
+  POST      api/user-online-send-bet ..................................................... Api\UserBetController@store
+  POST      api/valida-cod ........................................................ Api\BilheteApiController@validaCod
+  POST      api/webhook/mercadopago/{siteId} ................................ Api\PaymentController@webhookMercadoPago
+  POST      api/webhook/paggue .............................................. Api\PaymentController@webhookMercadoPago
+  POST      api/webhook/playfiver .............................................. Api\PlayfiverWebhookController@handle
+  POST      api/webhook/shipay .............................................. Api\PaymentController@webhookMercadoPago
+  POST      api/withdrawal/request ........................................ Api\WithdrawalController@requestWithdrawal
+  GET|HEAD  api/withdrawals ................................................. Api\WithdrawalController@listWithdrawals
+  GET|HEAD  generate-css ......................................... generate-css ÔÇ║ Admin\SettingsController@generateCss
+  GET|HEAD  home ................................................................... home ÔÇ║ Admin\HomeController@index
+  GET|HEAD  login ......................................................... login ÔÇ║ Auth\LoginController@showLoginForm
+  POST      login ......................................................................... Auth\LoginController@login
+  POST      logout .............................................................. logout ÔÇ║ Auth\LoginController@logout
+  GET|HEAD  logout .................................................................... logout.get ÔÇ║ routes/web.php:61
+  GET|HEAD  password/confirm ....................... password.confirm ÔÇ║ Auth\ConfirmPasswordController@showConfirmForm
+  POST      password/confirm .................................................. Auth\ConfirmPasswordController@confirm
+  POST      password/email ......................... password.email ÔÇ║ Auth\ForgotPasswordController@sendResetLinkEmail
+  GET|HEAD  password/reset ...................... password.request ÔÇ║ Auth\ForgotPasswordController@showLinkRequestForm
+  POST      password/reset ...................................... password.update ÔÇ║ Auth\ResetPasswordController@reset
+  GET|HEAD  password/reset/{token} ....................... password.reset ÔÇ║ Auth\ResetPasswordController@showResetForm
+  GET|HEAD  register ......................................... register ÔÇ║ Auth\RegisterController@showRegistrationForm
+  POST      register ................................................................ Auth\RegisterController@register
+  GET|HEAD  share/banner/{id} ....................................................... share.banner ÔÇ║ routes/web.php:49
+  GET|HEAD  storage/{path} storage.local ÔÇ║ vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemServiceProvidÔÇª
+  PUT       storage/{path} storage.local.upload ÔÇ║ vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemServicÔÇª
+  GET|HEAD  up ........... vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationBuilder.php:221
+
+                                                                                                  Showing [375] routes
+

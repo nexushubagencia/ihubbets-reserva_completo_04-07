@@ -1,0 +1,73 @@
+/* Tema: Roxo */
+
+:root {
+    /* SIDEBAR, MENU PRINCIPAL, CONTAINER DO CAMPO DE PESQUISAS, CONTEINER DO CAMPO DE APOSTAS */
+    --sidebar--color: #1e0b36;
+
+    /* CONTAINER DO CAMPO JOGOS, CONTAINER DO CAMPO DE APOSTAS E BARRA DE NAVEGACAO */
+    --container_jogos--color: #8e24aa;
+
+    /* COR CONTEINER LOGO */
+    --logo--color: #7b1fa2;
+
+    /* BOTAO PLUS-ODD, BOTAO SALVAR, BOT�O DE PESQUISA E BOT�O COM VALORES */
+    --btn--color: #036eac;
+
+    /* BOT�O CASA, EMPATE E FORA */
+    --btn_cef--color: #1e262a;
+
+    /* FUNDO DO SITE */
+    --fundo--color: #dddddd;
+
+    /* LINHAS */
+    --linhas--color: #036eac;
+
+    /* HOVER E SELE��O */
+    --btn_selecionado-color: #7b1fa2;
+    --btn_selecionado-border-color: #8e24aa;
+    --hover_menu--color: #7b1fa2;
+    --btn_menu_principal--color: #000000;
+    --btn_salvar_hover--color: #7b1fa2;
+
+    /* COMPATIBILIDADE SIGMA */
+    --color-primary: #8e24aa;
+    --color-primary-hover: #7b1fa2;
+    --color-secondary: #7b1fa2;
+    --color-secondary-hover: #8e24aa;
+    --color-tertiary: #1e0b36;
+    --header--color: #000000;
+    --btn-valor-base--color: #8e24aa;
+    --btn-valor-active--color: #61319f;
+    --btn-valor-border: 0px none !important;
+    --live-color: #cc3333;
+}
+
+/* Ajustes de legibilidade para cabe�alhos de liga */
+.box-header.with-border {
+    background-color: var(--container_jogos--color) !important;
+    color: #ffffff !important;
+    --header--color: #000000;
+    --btn-valor-base--color: #8e24aa;
+    --btn-valor-active--color: #61319f;
+    --btn-valor-border: 0px none !important;
+    --live-color: #cc3333;
+}
+
+.box-header.with-border .box-title {
+    color: #ffffff !important;
+    --header--color: #000000;
+    --btn-valor-base--color: #8e24aa;
+    --btn-valor-active--color: #61319f;
+    --btn-valor-border: 0px none !important;
+    --live-color: #cc3333;
+}
+
+/* Sidebar corrections */
+.main-sidebar {
+    background-color: var(--sidebar--color) !important;
+    --header--color: #000000;
+    --btn-valor-base--color: #8e24aa;
+    --btn-valor-active--color: #61319f;
+    --btn-valor-border: 0px none !important;
+    --live-color: #cc3333;
+}

@@ -1,0 +1,49 @@
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+.phpunit.cache
+/.cursor/
+/.idea
+/.nova
+/.vscode
+/.zed
+/_ide_helper.php
+/Homestead.json
+/Homestead.yaml
+Thumbs.db
+.DS_Store
+
+# Scraper chrome binary (too large for git)
+/scraper-jogadinha/chrome/
+
+# Compiled views
+/storage/framework/views/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/testing/
+
+# Logs
+/storage/logs/*.log
+
+# Compiled assets
+/public/css/
+/public/js/manifest.js
+/public/js/vendor.js
+
+# OS files
+*.log
+Thumbs.db
+
+# Large files
+*.rar
+*.zip
+*.tar.gz
+*.7z

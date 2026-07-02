@@ -1,0 +1,57 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ihub_app
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8000:80"
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - ihub
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: ihub_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ihub_v2
+      MYSQL_USER: ihub
+      MYSQL_PASSWORD: ihub_secret
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - ihub
+    restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: ihub_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ihub
+    restart: unless-stopped
+
+networks:
+  ihub:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local

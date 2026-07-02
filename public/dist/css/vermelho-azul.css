@@ -1,0 +1,53 @@
+/* Tema: Vermelho Azul */
+
+:root {
+    /* SIDEBAR, MENU PRINCIPAL, CONTAINER DO CAMPO DE PESQUISAS, CONTEINER DO CAMPO DE APOSTAS */
+    --sidebar--color: #111827;
+    
+    /* CONTAINER DO CAMPO JOGOS, CONTAINER DO CAMPO DE APOSTAS E BARRA DE NAVEGACAO */
+    --container_jogos--color: #e53935;
+    
+    /* COR CONTEINER LOGO */
+    --logo--color: #1e3a8a;
+    
+    /* BOTAO PLUS-ODD, BOTAO SALVAR, BOTÃO DE PESQUISA E BOTÃO COM VALORES */
+    --btn--color: #ffffff;
+    
+    /* BOTÃO CASA, EMPATE E FORA */
+    --btn_cef--color: #1e262a;
+    
+    /* FUNDO DO SITE */
+    --fundo--color: #dddddd;
+    
+    /* LINHAS */
+    --linhas--color: #ffffff;
+    
+    /* HOVER E SELEÇÃO */
+    --btn_selecionado-color: #1e3a8a;
+    --btn_selecionado-border-color: #e53935;
+    --hover_menu--color: #1e3a8a;
+    --btn_menu_principal--color: #000000;
+    --btn_salvar_hover--color: #1e3a8a;
+
+    /* COMPATIBILIDADE SIGMA */
+    --color-primary: #e53935;
+    --color-primary-hover: #1e3a8a;
+    --color-secondary: #1e3a8a;
+    --color-secondary-hover: #e53935;
+    --color-tertiary: #111827;
+}
+
+/* Ajustes de legibilidade para cabeçalhos de liga */
+.box-header.with-border {
+    background-color: var(--container_jogos--color) !important;
+    color: #ffffff !important;
+}
+
+.box-header.with-border .box-title {
+    color: #ffffff !important;
+}
+
+/* Sidebar corrections */
+.main-sidebar {
+    background-color: var(--sidebar--color) !important;
+}

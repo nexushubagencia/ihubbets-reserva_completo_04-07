@@ -1,0 +1,36 @@
+/* Verde Claro */
+
+:root {
+    /*SIDEBAR, MENU PRINCIPAL, CONTAINER DO CAMPO DE PESQUISAS, CONTEINER DO CAMPO DE APOSTAS
+    E BOTOES CASA|EMPATE|FORA*/
+    --sidebar--color: #173133;
+    /*CONTAINER DO CAMPO JOGOS, CONTAINER DO CAMPO DE APOSTAS E BARRA DE NAVEGACAO*/
+    --container_jogos--color: #35aa71;
+    /*COR CONTEINER LOGO*/
+    --logo--color: #329d6a;
+    /*BOTAO PLUS-ODD, BOTAO SALVAR, BOTÃO DE PESQUISA E BOTÃO COM VALORES*/
+    --btn--color: #1aa6d0;
+    /* BOTÃO CASA, EMPATE E FORA */
+    --btn_cef--color: rgb(30, 38, 42);
+    /*FUNDO DO SITE*/
+    --fundo--color: #dddddd;
+    /*LINHAS*/
+    --linhas--color: #1aa6d0;
+    /*HOVER*/
+    /*ACIONADO QUANDO CLICAR NOS BOTOES DE CASA/EMPATE/FOTA*/
+    --btn_selecionado-color: rgb(41, 118, 163);
+    --btn_selecionado-border-color: rgb(41, 118, 163);
+    /*ACIONADO QUANDO PAUSAR O MOUSE SOBRE O MENU */
+    --hover_menu--color: #339063;
+    /*ACIONADO QUANDO PAUSAR O MOUSE SOBRE O MENU "FUTEBOL", "BASQUETE"...*/
+    --btn_menu_principal--color: #339063;
+    /*HOVER BOTAO PLUS-ODD, BOTAO SALVAR, BOTÃO DE PESQUISA E BOTÃO COM VALORES*/
+    --btn_salvar_hover--color: #1093bb;
+    /* TEMPLATE SIGMA ---------------------------------------------------------------- */
+    --color-primary: #34D399;
+    --color-primary-hover: #10B981;
+    --color-secondary: #10B981;
+    --color-secondary-hover: #059669;
+    --color-tertiary: #059669;
+    /* TEMPLATE SIGMA ---------------------------------------------------------------- */
+}

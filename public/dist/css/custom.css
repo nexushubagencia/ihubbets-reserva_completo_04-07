@@ -1,0 +1,1841 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins&display=swap');
+
+.main-sidebar .sidebar-menu .header,
+.main-sidebar .sidebar-menu>.header,
+.sidebar-menu .header {
+    background: var(--primary-color) !important;
+    color: #FFF !important;
+    padding: 12px 15px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ticket-title-new {
+    background: var(--sidebar--color) !important;
+    color: #FFF !important;
+    line-height: 26px;
+}
+
+.btn-login {
+    background: var(--sidebar--color) !important;
+    color: #FFF !important;
+}
+
+.menu-jogos {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    background: var(--sidebar--color);
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.search-div-content {
+    padding: 2%;
+}
+
+.menu-jogos li {
+    flex: 1 1 auto;
+    text-align: left;
+}
+
+.menu-jogos li.ativo {
+    background: var(--sidebar--color);
+}
+
+.menu-jogos li a {
+    display: block;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.menu-jogos a:hover {
+    background: var(--btn_menu_principal--color);
+}
+
+.menu-jogos li.ativo a {
+    color: #fff;
+}
+
+.cupon-title {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    background: var(--sidebar--color);
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.cupon-title li {
+    flex: 1 1 auto;
+    text-align: left;
+}
+
+.cupon-title li.ativo {
+    background: var(--sidebar--color);
+}
+
+.cupon-title li a {
+    display: block;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.cupon-title li.ativo a {
+    color: #fff;
+}
+
+.box-cupon {
+    width: 100%;
+    height: auto;
+    padding: 5px;
+    /* border-bottom: 1px dashed #222D32; */
+    line-height: 16px;
+}
+
+.box-cupon li {
+    list-style: none;
+}
+
+.ganho-cupon {
+    width: 100%;
+    height: auto;
+    background: var(--primary-color);
+    color: #FFF;
+    font-size: 20px;
+    text-align: center;
+    padding: 5px;
+    margin-top: 15px;
+}
+
+.header-campeonato-cupon {
+    width: 100%;
+    height: auto;
+    padding: 3px 15px 3px 15px;
+    background: var(--primary-color);
+    color: #FFF;
+    font-size: 14px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+
+.delete-palpite-cupon {
+    color: #FFF;
+    float: right;
+    margin-top: 1px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.cupon-confronto {
+    height: auto;
+    font-size: 20;
+    display: block;
+    margin-left: 5px;
+}
+
+.cupon-data {
+    color: var(--live-color, #D73925);
+    margin-left: 5px;
+}
+
+.cupon-right {
+    float: right;
+    margin-right: 5px;
+}
+
+.no-events-selected {
+    color: rgb(221, 221, 221);
+    margin: 5px 5px 5px 5px;
+    /* padding: 40px; */
+    text-align: center;
+    font-weight: 300;
+    /* border: 1px dashed rgb(230, 230, 230); */
+}
+
+.swal2-popup {
+    font-size: 1.3rem !important;
+}
+
+.cupon-left {
+    margin-left: 5px;
+    color: var(--primary-color);
+}
+
+.val-retorno-ind {
+    float: right;
+}
+
+.box-rodape-cupon {
+    width: 100%;
+    height: auto;
+    padding: 5px;
+    padding-bottom: 0px;
+    text-align: center;
+}
+
+.box-rodape-cupon h4 {
+    font-size: 16px;
+}
+
+.btn-apostas .btn {
+    width: 24%;
+    background-color: var(--btn_cef--color, #e7e7e7) !important;
+    line-height: 1.32 !important;
+}
+
+.container-lista-jogos {
+    border: 1px solid var(--linhas--color, #dcdcdc);
+    color: var(--odd_button_text--color, #333);
+    margin: 2px 1px;
+    padding: 8px 0px;
+    background-color: var(--odd_button_bg--color, #f7f7f7);
+    line-height: 21px;
+}
+
+.container-lista-jogos .btn-apostas .btn {
+    width: 24%;
+    background-color: var(--btn_cef--color, #e7e7e7) !important;
+    line-height: 1.32 !important;
+}
+
+.container-lista-jogos .jogos {
+    border-right: 1px solid #ccc;
+}
+
+.container-lista-jogos {
+    border: 1px solid var(--linhas--color, #dcdcdc);
+    color: var(--odd_button_text--color, #333);
+    margin: -1px 0px;
+    padding: 1px 0px 1px 0px;
+    background-color: var(--odd_button_bg--color, #f7f7f7);
+    line-height: 21px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.container-lista-jogos .data-hora span {
+    display: block;
+    text-align: center;
+    color: #999;
+    font-weight: 700;
+    line-height: 14px;
+    font-size: 8pt;
+    margin-top: 9px;
+}
+
+.container-lista-jogos .btn-apostas {
+    font-size: 8pt !important;
+}
+
+
+
+
+.container-lista-jogos .jogos {
+    padding-top: 5px;
+}
+
+.header-campeonato-matchs {
+    width: 100%;
+    height: auto;
+    padding: 4px;
+    background: var(--primary-color);
+    color: #FFF;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 5px 5px 0px 0px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    padding: 7px 10px 7px 13px;
+    margin-bottom: 0px;
+}
+
+.skin-blue .wrapper,
+.skin-blue .main-sidebar,
+.skin-blue .left-side {
+    background-color: var(--sidebar--color) !important;
+}
+
+.header-jogos {
+    background: var(--sidebar--color);
+    color: #FFF;
+    font-family: Arial, Helvetica, sans-serif;
+    position: relative;
+    /* border-radius: 5px !important; */
+    /* padding-top: 18px; */
+    /* padding-bottom: 0px; */
+    /* margin-top: -1%; */
+    border: none !important;
+    margin-top: 0px !important;
+}
+
+.btn-home-header {
+    border: none;
+    float: left;
+    margin: 4px;
+    width: 17%;
+    height: 45px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-home {
+    background: var(--btn_cef--color);
+    border: none;
+    color: #f7f7f7;
+    float: left;
+    margin: 4px;
+    width: 17%;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    margin-top: 8px;
+    cursor: pointer;
+}
+
+.btn-share {
+    background: var(--odds_plus_button--color, #e0992f);
+    border: none;
+    color: #fff;
+    float: left;
+    margin: 4px;
+    width: 35px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    margin-top: 8px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.selecionado {
+    background: var(--btn_selecionado-color);
+    border: none;
+    color: #fff;
+    float: left;
+    margin: 4px;
+    width: 17%;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    margin-top: 8px;
+    border: 1px solid var(--btn_selecionado-border-color);
+    cursor: pointer;
+    /* border-radius: 5px; */
+}
+
+.plus-odd {
+    background: var(--odds_plus_button--color, var(--primary-color));
+    border: none;
+    color: #f7f7f7;
+    float: left;
+    margin: 4px;
+    width: 17%;
+    height: 30px;
+    line-height: 30px !important;
+    text-align: center;
+    margin-top: 8px;
+    cursor: pointer;
+    line-height: 10px;
+}
+
+#nav-mobile {
+    display: none;
+}
+
+#cambita-mobile {
+    display: none;
+}
+
+#cambita-nao-mobile {
+    display: block;
+}
+
+#mobile-more-info {
+    display: none;
+}
+
+#nao-mobile-more-info {
+    display: block;
+}
+
+#mobile {
+    display: none;
+}
+
+#nao-mobile {
+    display: block;
+}
+
+@media screen and (max-width:400px) {
+    body {
+        margin-top: 40px !important;
+    }
+
+    .user-panel {
+        padding: 35px 5px 10px 5px !important;
+        text-align: center !important;
+        overflow: visible !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    #nav-mobile {
+        display: block;
+        padding: 8px;
+        background: #222D32 !important;
+    }
+
+    #cambita-mobile {
+        display: block;
+    }
+
+    #cambita-nao-mobile {
+        display: none;
+    }
+
+    #mobile-more-info {
+        display: block;
+    }
+
+    #nao-mobile-more-info {
+        display: none;
+    }
+
+    #mobile {
+        display: block;
+    }
+
+    #nao-mobile {
+        display: none;
+    }
+
+    #cupom-site {
+        display: none;
+    }
+
+    #tabs-mobile {
+        font-size: 12px;
+    }
+
+    #input-mobile-top {
+        width: 30%;
+        float: left;
+    }
+
+    #btn-finalizar-mobile {
+        float: right;
+    }
+
+    .ganho-mobile {
+        margin-left: 15px;
+        margin-top: 30px;
+        width: 30%;
+        color: #dcdcdc;
+    }
+
+    #btn-zerar-mobile {
+        float: right;
+        margin-left: 10px;
+    }
+
+    .busca-time {
+        position: relative !important;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    body {
+        margin-top: 40px !important;
+    }
+
+    .user-panel {
+        padding: 35px 5px 10px 5px !important;
+        text-align: center !important;
+        overflow: visible !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    #nav-mobile {
+        display: block;
+        margin-bottom: 10px;
+        z-index: 900;
+        padding: 8px;
+        background: #222D32 !important;
+    }
+
+    #cambita-mobile {
+        display: block;
+    }
+
+    #cambita-nao-mobile {
+        display: none;
+    }
+
+    #mobile-more-info {
+        display: block;
+    }
+
+    #nao-mobile-more-info {
+        display: none;
+    }
+
+    #mobile {
+        display: block;
+    }
+
+    #nao-mobile {
+        display: none;
+    }
+
+    #cupom-site {
+        display: none;
+    }
+
+    #tabs-mobile {
+        font-size: 12px !important;
+    }
+
+    #input-mobile-top {
+        width: 30%;
+        float: left;
+    }
+
+    #btn-finalizar-mobile {
+        float: right;
+    }
+
+    .ganho-mobile {
+        margin-left: 15px;
+        margin-top: 30px;
+        width: 30%;
+        color: #dcdcdc;
+    }
+
+    #btn-zerar-mobile {
+        float: right;
+        margin-left: 10px;
+    }
+
+    .busca-time {
+        position: relative !important;
+    }
+
+}
+
+
+
+@media screen and (max-width: 1000px) {
+    .busca-time {
+        position: relative !important;
+    }
+}
+
+.p-0 {
+    padding: 0;
+}
+
+.py-2 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.py-4 {
+    padding-top: 0.75rem;
+    padding-bottom: .75rem;
+}
+
+.py-5 {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.py-6 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+.mr-2 {
+    margin-right: .5rem;
+}
+
+.ml-1 {
+    margin-left: .2rem;
+}
+
+.ml-2 {
+    margin-left: .5rem;
+}
+
+.mr-3 {
+    margin-right: 1.5rem;
+}
+
+.ml-3 {
+    margin-left: 1.5rem;
+}
+
+.mb-2 {
+    margin-bottom: .5rem;
+}
+
+.mb-3 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-2 {
+    margin-top: .5rem;
+}
+
+.text-white {
+    color: white;
+}
+
+.w-100 {
+    width: 100% !important;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.align-items-center {
+    align-items: center !important;
+}
+
+.justify-content-center {
+    justify-content: center !important;
+}
+
+.justify-content-between {
+    justify-content: space-between !important;
+}
+
+#modal-match .modal-header {
+    padding: 0px !important;
+    max-height: 200px;
+    /* background-color: red; */
+}
+
+.banner-sports {
+    background-size: 100% !important;
+    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.2) !important;
+}
+
+.div-banner-Futebol {
+    background: url('/img/soccer/soccer.jpg') center;
+}
+
+.div-banner-Luta {
+    background: url('/img/fight/170909_UFC_Octagon.jpg') center;
+}
+
+.div-banner-Basquete {
+    background: url('/img/basquete/6120-800x600.jpg') center;
+}
+
+.div-banner-Tenis {
+    background: url('/img/tennis/photo-1599586120429-48281b6f0ece.jpg') center;
+}
+
+.div-banner-Volei {
+    background: url('/img/volei/voleibol6.jpg') bottom;
+}
+
+.pointer {
+    cursor: pointer !important;
+}
+
+.ticket-cut {
+    height: 10px;
+    margin: 0 5px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAACCAYAAAB7Xa1eAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuOWwzfk4AAAAaSURBVBhXY5g7f97/2XPn/AcCBmSMQ+I/AwB2eyNBlrqzUQAAAABJRU5ErkJggg==);
+    background-size: 4px 2px;
+    background-repeat: repeat-x;
+    background-position: center;
+    position: relative;
+    box-shadow: 0 1px 0 0 #fff, 0 -1px 0 0 #fff;
+    position: relative;
+}
+
+.ticket-cut::before,
+.ticket-cut::after {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 13px;
+    height: 17px;
+    background-color: #ECF0F5;
+    left: -13px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 0 100% 100% 0;
+    box-shadow: inset 1px 1px 1px #00000042;
+}
+
+.ticket-cut::after {
+    left: unset;
+    right: -14px;
+    transform: scaleX(-1);
+    margin-top: -9px;
+}
+
+.ticket-cut-modal {
+    height: 10px;
+    margin: 0 5px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAACCAYAAAB7Xa1eAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuOWwzfk4AAAAaSURBVBhXY5g7f97/2XPn/AcCBmSMQ+I/AwB2eyNBlrqzUQAAAABJRU5ErkJggg==);
+    background-size: 4px 2px;
+    background-repeat: repeat-x;
+    background-position: center;
+    position: relative;
+    box-shadow: 0 1px 0 0 #fff, 0 -1px 0 0 #fff;
+    position: relative;
+}
+
+.ticket-cut-modal::before,
+.ticket-cut-modal::after {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 13px;
+    height: 17px;
+    background-color: #ECF0F5;
+    left: -11px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 0 100% 100% 0;
+    box-shadow: inset -1px 1px 1px #00000042;
+}
+
+.ticket-cut-modal::after {
+    left: unset;
+    right: -11px;
+    transform: scaleX(-1);
+    margin-top: -9px;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.check-input-pix {
+    vertical-align: middle;
+    margin-top: -3px !important;
+    margin-left: 3px !important;
+}
+
+::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+}
+
+::-webkit-scrollbar-track {
+    background: none;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 12px;
+    border: 4px solid rgba(255, 255, 255, 0);
+    background-clip: content-box;
+    background-color: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--btn_selecionado-color);
+}
+
+.main-footer {
+    z-index: 100;
+    position: inherit;
+}
+
+.pix-block {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    border-radius: 5px;
+    background-color: aliceblue;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+.pix-copy-paste {
+    display: flex;
+    border: 1px dashed #cacaca;
+    padding: 8px 21px 8px 20px;
+    border-radius: 6px;
+    margin: 0 auto;
+    width: 50%;
+    margin-top: 10px;
+}
+
+.pix-copy-paste>a>div {
+    text-overflow: ellipsis;
+    font-weight: 600;
+}
+
+/* --- SIDEBAR FLUIDO E PREMIUM (Desktop) --- */
+@media (min-width: 768px) {
+    .main-sidebar {
+        position: fixed !important;
+        height: 100vh !important;
+        padding-top: 50px !important;
+        /* Altura do header */
+    }
+
+    .sidebar {
+        height: calc(100vh - 50px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-bottom: 20px !important;
+    }
+}
+
+/* Fallback para Mobile */
+@media (max-width: 767px) {
+    .sidebar {
+        padding-top: 15px !important;
+        padding-bottom: 20px !important;
+    }
+}
+
+.user-panel img {
+    width: auto !important;
+    height: auto !important;
+    max-width: 85% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    display: block !important;
+    margin: 0 auto !important;
+}
+
+/* Scrollbar fina estilo Chrome/Moderno */
+.sidebar::-webkit-scrollbar {
+    width: 5px !important;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--btn_selecionado-color) !important;
+}
+
+/* Efeito de Hover nos itens da sidebar */
+.sidebar-menu li a {
+    transition: all 0.2s ease !important;
+}
+
+.sidebar-menu li a:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Estilo do Trofﾃｩu Dourado para Ligas Internacionais */
+.fa-trophy {
+    color: #ffc107 !important;
+    filter: drop-shadow(0 0 2px rgba(255, 193, 7, 0.4));
+}
+
+/* Garantir que a sub-lista (ul) tenha uma transiﾃｧﾃ｣o suave */
+.sidebar-menu ul {
+    transition: all 0.3s ease;
+}
+
+/* Botﾃ｣o de Odds Nexus (Premium) */
+.btn-home-nexus {
+    background: var(--btn_cef--color, #1e262b);
+    color: #fff;
+    border: none !important;
+    border-radius: 2px;
+    padding: 5px 8px;
+    margin: 2px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 70px;
+    height: 32px;
+    text-align: center;
+    box-shadow: none !important;
+    outline: none !important;
+    transition: none !important;
+}
+
+.btn-home-nexus:hover {
+    background: var(--btn_cef--color, #1e262b);
+}
+
+.btn-home-nexus.selecionado {
+    background: var(--btn_selecionado-color, #1aa6d0) !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.btn-home-nexus strong {
+    color: #fff !important;
+    /* Labels C, E, F agora brancos */
+    margin-right: 0px;
+}
+
+.btn-home-nexus.selecionado strong {
+    color: #fff !important;
+}
+
+.plus-odd-nexus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--odds_plus_button--color, #1aa6d0) !important;
+    border-radius: 2px;
+    padding: 5px 12px;
+    color: #fff !important;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 32px;
+    margin: 3px;
+}
+
+.plus-odd-nexus:hover {
+    background: var(--odds_plus_button_hover--color, #158db1) !important;
+}
+
+.btn-share-nexus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--odds_plus_button--color, #e67e22) !important;
+    color: #fff !important;
+    border-radius: 2px;
+    padding: 5px 10px;
+    height: 32px;
+    width: 40px;
+    margin: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-share-nexus:hover {
+    background: var(--odds_plus_button_hover--color, #d35400) !important;
+}
+
+/* Otimizaﾃｧﾃ｣o para a linha de jogos (removida para manter paridade com demo) */
+/* BARRA DE PESQUISA RESPONSIVA */
+.header-jogos-nexus {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--search_bar_bg--color, #f7f7f7);
+    border-bottom: 1px solid var(--linhas--color, #eee);
+    min-height: 55px;
+}
+
+.search-container-nexus {
+    padding: 10px 15px;
+    flex: 1;
+    max-width: 450px;
+}
+
+@media (max-width: 991px) {
+    .header-jogos-nexus {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-container-nexus {
+        max-width: 100%;
+        border-top: 1px solid #eee;
+        padding: 12px 15px;
+    }
+}
+
+/* --- OTIMIZAﾃ�グ DE BANNERS NEXUS --- */
+.banner-sidebar {
+    padding: 8px !important;
+    text-align: center;
+    width: 100% !important;
+}
+
+.banner-sidebar img,
+.banner-below-ticket img {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    transition: transform 0.3s ease;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Remove botﾃｵes de fechar (X) caso existam ou sejam injetados via script/bibliotecas */
+.banner-sidebar .close,
+.banner-sidebar .close-banner,
+.banner-sidebar .btn-close,
+.banner-sidebar [data-dismiss="alert"],
+.banner-below-ticket .close,
+.banner-below-ticket .close-banner,
+.banner-below-ticket .btn-close,
+.banner-below-ticket [data-dismiss="alert"] {
+    display: none !important;
+}
+
+/* Divisor de Ticket com efeito de corte lateral */
+.ticket-divider {
+    position: relative;
+    height: 1px;
+    border-top: 1px dashed #ccc;
+    margin: 15px 0;
+    clear: both;
+}
+
+/* Bolinhas removidas a pedido do usuário */
+.ticket-divider::before,
+.ticket-divider::after {
+    display: none;
+}
+
+.ticket-divider::before {
+    left: -7px;
+}
+
+.ticket-divider::after {
+    right: -7px;
+}
+
+/* Quando PIN modal abre, backdrop fica acima do cupom */
+body.modal-open #modal-pre-aposta ~ .modal-backdrop {
+    z-index: 199999 !important;
+}
+
+/* KPI Cards Dinﾃ｢micos - Integrados ao Tema */
+.small-box.bg-success,
+.info-box.bg-success {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+.small-box.bg-danger,
+.info-box.bg-danger {
+    background-color: #D73925 !important;
+    color: #fff !important;
+}
+
+.small-box.bg-info,
+.info-box.bg-info {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+.small-box.bg-warning,
+.info-box.bg-warning {
+    background-color: #e0992f !important;
+    color: #fff !important;
+}
+
+.small-box.bg-dark,
+.info-box.bg-dark {
+    background-color: var(--sidebar--color, #222d32) !important;
+    color: #fff !important;
+}
+
+
+
+/* === OVERRIDE BOOTSTRAP btn-success PARA SEGUIR O TEMA === */
+.btn-success,
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active,
+.open>.dropdown-toggle.btn-success {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background-color: var(--hover_menu--color, var(--primary-color)) !important;
+    border-color: var(--hover_menu--color, var(--primary-color)) !important;
+}
+
+/* Badge de destaque segue o tema */
+.badge.bg-success,
+.label-success {
+    background-color: var(--primary-color) !important;
+}
+
+/* Barra "JOGOS EM DESTAQUE" e headers similares */
+.header-campeonato-matchs {
+    background: var(--primary-color) !important;
+}
+
+/* Botﾃ｣o APOSTAR no bilhete */
+.btnSendBet {
+    background-color: var(--cupom_apostar_btn--color, var(--primary-color)) !important;
+    border-color: var(--cupom_apostar_btn--color, var(--primary-color)) !important;
+}
+.btnSendBet:hover,
+.btnSendBet:focus {
+    background-color: var(--cupom_apostar_btn_hover--color, var(--btn_salvar_hover--color)) !important;
+    border-color: var(--cupom_apostar_btn_hover--color, var(--btn_salvar_hover--color)) !important;
+}
+
+/* Abas de valores do bilhete (10, 20, 50...) */
+.btn-group .btn.active,
+.btn-group .btn:hover {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+
+/* ============================================================
+   SISTEMA DE TEMA 100% DIN�ｽMICO - IHUB BETS
+   Todas as cores seguem as vari�ｽveis CSS do tema ativo.
+   Para editar as cores, altere os valores no arquivo do tema
+   (ex: roxo.css, laranja.css) ou via painel admin.
+   ============================================================ */
+
+/* --- SIDEBAR HEADERS (MENU PRINCIPAL, ESPECIAIS, LIGAS) --- */
+.main-sidebar .sidebar-menu .header,
+.main-sidebar .sidebar-menu>.header,
+.sidebar-menu .header,
+.sidebar-menu>li.header {
+    background: var(--primary-color) !important;
+    color: #FFF !important;
+}
+
+/* --- BOT�ｽES btn-info (busca, odds, utilit�ｽrios) --- */
+.btn-info,
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+.btn-info.active {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+/* --- BADGES "APOSTAR AGORA" nos cards destaque --- */
+.offer-badge,
+.badge-apostar,
+[class*="apostar-agora"],
+.carousel-card .badge,
+.carousel-card .offer-badge {
+    background: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+/* --- BOT�ｽO +3 (mais odds) --- */
+.plus-odd-nexus,
+.plus-odd-nexus:hover,
+.btn-plus-odd,
+.btn-plus-odd:hover {
+    background: var(--odds_plus_button--color, var(--primary-color)) !important;
+    border-color: var(--odds_plus_button--color, var(--primary-color)) !important;
+    color: #fff !important;
+}
+
+
+
+/* --- BOT�ｽES DE ODDS (C 1.80, E 2.50, F 3.90) --- */
+.btn-odd,
+.btn-valor,
+.btn-apostas .btn,
+.container-lista-jogos .btn {
+    background-color: var(--btn_cef--color) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+}
+
+.btn-odd:hover,
+.btn-valor:hover,
+.btn-apostas .btn:hover,
+.container-lista-jogos .btn:hover {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-odd.active,
+.btn-odd.selecionado,
+.btn-valor.active,
+.selecionado {
+    background: var(--btn_selecionado-color) !important;
+    border: 1px solid var(--btn_selecionado-border-color) !important;
+    color: #fff !important;
+}
+
+/* --- BARRA DE NAVEGA�ｽ�ｽO DO HEADER (FUTEBOL, LUTA, BASQUETE...) --- */
+.header-jogos,
+.nav-esportes,
+.menu-jogos {
+    background: var(--sidebar--color) !important;
+}
+
+/* --- CAMPOS DE PESQUISA (botao lupa) --- */
+.input-group-btn .btn,
+.search-btn {
+    background-color: var(--odds_plus_button--color, var(--primary-color)) !important;
+    border-color: var(--odds_plus_button--color, var(--primary-color)) !important;
+    color: #fff !important;
+}
+
+/* --- LINKS DO FOOTER --- */
+.main-footer a,
+.copyright-link {
+    color: var(--primary-color) !important;
+}
+
+/* --- TICKET/CUPOM: botoes de valor rapido (5, 10, 20, 50, 100) --- */
+.ticket-values .btn,
+.valores-rapidos .btn,
+.btn-valor-rapido {
+    background-color: var(--cupom_valor_btn--color) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+.ticket-values .btn.active,
+.ticket-values .btn:hover,
+.valores-rapidos .btn.active,
+.valores-rapidos .btn:hover,
+.btn-valor-rapido.active,
+.btn-valor-rapido:hover {
+    background-color: var(--cupom_valor_btn_hover--color) !important;
+    border: none !important;
+}
+
+/* --- ABA DE ESPORTES ATIVA (FUTEBOL, LUTA, ETC) --- */
+.nav-esportes li.active a,
+.nav-esportes li.active a:hover,
+.nav-esportes li.active a:focus,
+.menu-jogos li.active a,
+.menu-jogos li.active a:hover,
+.menu-jogos li.active a:focus,
+.day-tab.active,
+.day-tab-demo.active,
+.sports-menu .active a {
+    background-color: var(--menu_active_bg--color) !important;
+    border-color: var(--menu_active_bg--color) !important;
+    color: var(--menu_active_text--color) !important;
+}
+/* ========================================================= */
+/* AJUSTES SOLICITADOS (ENTRAR, CADASTRE-SE, E MODALIDADES)  */
+/* ========================================================= */
+
+/* --- BOTﾃグ ENTRAR --- */
+.btn-acessar-demo,
+a.btn-acessar-demo,
+a[data-target="#modal-login"] {
+    background-color: var(--btn_entrar--color) !important;
+    border-color: var(--btn_login_border--color) !important;
+    color: var(--btn_entrar_text--color) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-acessar-demo:hover,
+a.btn-acessar-demo:hover,
+a[data-target="#modal-login"]:hover {
+    filter: brightness(1.2) !important;
+}
+
+/* --- BOTﾃグ CADASTRE-SE --- */
+.btn-cadastro,
+.btn-register,
+.btn-cadastrar-demo,
+a.btn-cadastrar-demo,
+a[data-target="#modal-register"],
+a.btn[href*="cadastr"],
+a.btn[href*="register"] {
+    background-color: var(--btn_cadastrar--color) !important;
+    border-color: var(--btn_login_border--color) !important;
+    color: var(--btn_cadastrar_text--color) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-cadastro:hover,
+.btn-register:hover,
+.btn-cadastrar-demo:hover,
+a.btn-cadastrar-demo:hover,
+a[data-target="#modal-register"]:hover,
+a.btn[href*="cadastr"]:hover,
+a.btn[href*="register"]:hover {
+    filter: brightness(1.2) !important;
+}
+
+/* --- MODALIDADES (ESPORTES: LUTA, BASQUETE, ETC) --- */
+/* Modulaﾃｧﾃ｣o inativa */
+.menu-jogos li a,
+.nav-esportes li a,
+.sports-menu-item {
+    background-color: var(--sidebar--color) !important;
+    color: var(--sidebar_text--color) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Hover das modalidades inativas (Bem leve) */
+.menu-jogos li a:hover,
+.nav-esportes li a:hover,
+.sports-menu-item:hover {
+    background-color: var(--hover_menu--color) !important;
+    color: var(--menu_hover_text--color) !important;
+}
+
+/* Modalidade Selecionada (Ativa) - Cor bem leve e destacada */
+.menu-jogos li.active a,
+.menu-jogos li a.active,
+.nav-esportes li.active a,
+.sports-menu-item.active,
+.day-tab.active,
+.sports-menu .active a {
+    background-color: var(--menu_active_bg--color) !important;
+    color: var(--menu_active_text--color) !important;
+    font-weight: 700 !important;
+}
+
+/* Conferir Bilhete Branco */
+input[placeholder="Conferir bilhete"],
+input[placeholder="Conferir bilhete"]:focus {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #ccc !important;
+}
+
+/* --- REFOR�ｽO NO CONFERIR BILHETE (BRANCO) --- */
+input[placeholder="Conferir bilhete"],
+.container-pesquisa input,
+#form-bilhete .form-control {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #ccc !important;
+}
+
+input[placeholder="Conferir bilhete"]::placeholder,
+.container-pesquisa input::placeholder,
+#form-bilhete .form-control::placeholder {
+    color: #999999 !important;
+}
+
+/* --- AJUSTES FINAIS SOLICITADOS --- */
+
+/* 2. Cabe�ｽalho do Bilhete em Preto (Foto 2) */
+.box.box-solid.box-default>.box-header,
+.header-bilhete,
+.ticket-header,
+[style*="background: #173133"] {
+    background-color: var(--cupom_header--color, #000000) !important;
+    background: var(--cupom_header--color, #000000) !important;
+    color: #ffffff !important;
+}
+
+/* 3. Remover bordas da aba de dias (Foto 3) */
+.day-tab.active,
+.day-tab-demo.active {
+    border: none !important;
+    border-left: none !important;
+    border-top: none !important;
+    box-shadow: none !important;
+}
+
+/* Ajuste Botﾃｵes de Valor: Base, Hover e Selecionado */
+.btn-valor-rapido,
+.valores-rapidos .btn,
+.btn-valor,
+.value-btn-group .btn-valor,
+.ticket-values .btn {
+    background-color: var(--cupom_valor_btn--color) !important;
+    background: var(--cupom_valor_btn--color) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transition: background 0.3s ease !important;
+}
+
+/* Hover e Selecionado */
+.btn-valor-rapido:hover,
+.btn-valor-rapido.active,
+.valores-rapidos .btn:hover,
+.valores-rapidos .btn.active,
+.btn-valor:hover,
+.btn-valor.active,
+.value-btn-group .btn-valor:hover,
+.value-btn-group .btn-valor.active,
+.ticket-values .btn:hover,
+.ticket-values .btn.active {
+    background-color: var(--cupom_valor_btn_hover--color) !important;
+    background: var(--cupom_valor_btn_hover--color) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: #fff !important;
+}
+
+/* Corrigir texto AO VIVO */
+.tab-ao-vivo, .tab-ao-vivo.active { color: var(--live_text--color, #cc3333) !important;
+    font-weight: bold !important;
+}
+/* --- TOPO NAVBAR (Branco fixo AdminLTE corrigido) --- */
+.main-header, .main-header .navbar { background-color: var(--header_bg--color, var(--sidebar--color)) !important; }
+.main-header .logo { background-color: var(--logo--color, var(--sidebar--color)) !important; }
+
+/* --- BUSCA (Fundo da Barra de Pesquisa / Bilhete) --- */
+.sidebar-form .form-control,
+.input-group-search .form-control {
+    background-color: var(--search_bar_bg--color, #fff) !important;
+    color: var(--search_bar_text--color, #333) !important;
+}
+.sidebar-form input { border-color: transparent !important; }
+
+/* --- MAIS MERCADOS (+ ODDS) FIX --- */
+.plus-odd {
+    background: var(--odds_plus_button--color, var(--primary-color)) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+/* --- ﾍCONE DE LUPA (Bot縊 de Pesquisa) --- */
+.sidebar-form .btn, .input-group-search .btn, .input-group-search .input-group-addon, .input-group-btn .btn-flat {
+    background-color: var(--search_icon_bg--color, var(--primary-color)) !important;
+    color: var(--search_icon_text--color, #fff) !important;
+    border-color: transparent !important;
+}
+
+/* --- ﾍCONES DE LIXEIRA (Cupom) --- */
+.fa-trash, .remove-aposta, .btn-remove {
+    color: var(--cupom_trash--color, #ff0000) !important;
+}
+
+/* --- FIX BUG MOBILE (MENU MOVENDO) --- */
+/* Previne que o Bootstrap adicione padding ao abrir o modal no mobile, o que empurra a tela */
+@media (max-width: 767px) {
+    body.modal-open {
+    background-color: var(--menu_active_bg--color) !important;
+    border-color: var(--menu_active_bg--color) !important;
+    color: var(--menu_active_text--color) !important;
+}
+/* ========================================================= */
+/* AJUSTES SOLICITADOS (ENTRAR, CADASTRE-SE, E MODALIDADES)  */
+/* ========================================================= */
+
+/* --- BOTﾃグ ENTRAR --- */
+.btn-acessar-demo,
+a.btn-acessar-demo,
+a[data-target="#modal-login"] {
+    background-color: var(--btn_entrar--color) !important;
+    border-color: var(--btn_login_border--color) !important;
+    color: var(--btn_entrar_text--color) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-acessar-demo:hover,
+a.btn-acessar-demo:hover,
+a[data-target="#modal-login"]:hover {
+    filter: brightness(1.2) !important;
+}
+
+/* --- BOTﾃグ CADASTRE-SE --- */
+.btn-cadastro,
+.btn-register,
+.btn-cadastrar-demo,
+a.btn-cadastrar-demo,
+a[data-target="#modal-register"],
+a.btn[href*="cadastr"],
+a.btn[href*="register"] {
+    background-color: var(--btn_cadastrar--color) !important;
+    border-color: var(--btn_login_border--color) !important;
+    color: var(--btn_cadastrar_text--color) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-cadastro:hover,
+.btn-register:hover,
+.btn-cadastrar-demo:hover,
+a.btn-cadastrar-demo:hover,
+a[data-target="#modal-register"]:hover,
+a.btn[href*="cadastr"]:hover,
+a.btn[href*="register"]:hover {
+    filter: brightness(1.2) !important;
+}
+
+/* --- MODALIDADES (ESPORTES: LUTA, BASQUETE, ETC) --- */
+/* Modulaﾃｧﾃ｣o inativa */
+.menu-jogos li a,
+.nav-esportes li a,
+.sports-menu-item {
+    background-color: var(--sidebar--color) !important;
+    color: var(--sidebar_text--color) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Hover das modalidades inativas (Bem leve) */
+.menu-jogos li a:hover,
+.nav-esportes li a:hover,
+.sports-menu-item:hover {
+    background-color: var(--hover_menu--color) !important;
+    color: var(--menu_hover_text--color) !important;
+}
+
+/* Modalidade Selecionada (Ativa) - Cor bem leve e destacada */
+.menu-jogos li.active a,
+.menu-jogos li a.active,
+.nav-esportes li.active a,
+.sports-menu-item.active,
+.day-tab.active,
+.sports-menu .active a {
+    background-color: var(--menu_active_bg--color) !important;
+    color: var(--menu_active_text--color) !important;
+    font-weight: 700 !important;
+}
+
+/* Conferir Bilhete Branco */
+input[placeholder="Conferir bilhete"],
+input[placeholder="Conferir bilhete"]:focus {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #ccc !important;
+}
+
+/* --- REFORｽO NO CONFERIR BILHETE (BRANCO) --- */
+input[placeholder="Conferir bilhete"],
+.container-pesquisa input,
+#form-bilhete .form-control {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #ccc !important;
+}
+
+input[placeholder="Conferir bilhete"]::placeholder,
+.container-pesquisa input::placeholder,
+#form-bilhete .form-control::placeholder {
+    color: #999999 !important;
+}
+
+/* --- AJUSTES FINAIS SOLICITADOS --- */
+
+/* 2. Cabeｽalho do Bilhete em Preto (Foto 2) */
+.box.box-solid.box-default>.box-header,
+.header-bilhete,
+.ticket-header,
+[style*="background: #173133"] {
+    background-color: var(--cupom_header--color, #000000) !important;
+    background: var(--cupom_header--color, #000000) !important;
+    color: #ffffff !important;
+}
+
+/* 3. Remover bordas da aba de dias (Foto 3) */
+.day-tab.active,
+.day-tab-demo.active {
+    border: none !important;
+    border-left: none !important;
+    border-top: none !important;
+    box-shadow: none !important;
+}
+
+/* Ajuste Botﾃｵes de Valor: Base, Hover e Selecionado */
+.btn-valor-rapido,
+.valores-rapidos .btn,
+.btn-valor,
+.value-btn-group .btn-valor,
+.ticket-values .btn {
+    background-color: var(--cupom_valor_btn--color) !important;
+    background: var(--cupom_valor_btn--color) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transition: background 0.3s ease !important;
+}
+
+/* Hover e Selecionado */
+.btn-valor-rapido:hover,
+.btn-valor-rapido.active,
+.valores-rapidos .btn:hover,
+.valores-rapidos .btn.active,
+.btn-valor:hover,
+.btn-valor.active,
+.value-btn-group .btn-valor:hover,
+.value-btn-group .btn-valor.active,
+.ticket-values .btn:hover,
+.ticket-values .btn.active {
+    background-color: var(--cupom_valor_btn_hover--color) !important;
+    background: var(--cupom_valor_btn_hover--color) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: #fff !important;
+}
+
+/* Corrigir texto AO VIVO */
+.tab-ao-vivo, .tab-ao-vivo.active { color: var(--live_text--color, #cc3333) !important;
+    font-weight: bold !important;
+}
+/* --- TOPO NAVBAR (Branco fixo AdminLTE corrigido) --- */
+.main-header, .main-header .navbar { background-color: var(--header_bg--color, var(--sidebar--color)) !important; }
+.main-header .logo { background-color: var(--logo--color, var(--sidebar--color)) !important; }
+
+/* --- BUSCA (Fundo da Barra de Pesquisa / Bilhete) --- */
+.sidebar-form .form-control,
+.input-group-search .form-control {
+    background-color: var(--search_bar_bg--color, #fff) !important;
+    color: var(--search_bar_text--color, #333) !important;
+}
+.sidebar-form input { border-color: transparent !important; }
+
+/* --- MAIS MERCADOS (+ ODDS) FIX --- */
+.plus-odd {
+    background: var(--odds_plus_button--color, var(--primary-color)) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+/* --- ﾍCONE DE LUPA (Bot縊 de Pesquisa) --- */
+.sidebar-form .btn, .input-group-search .btn, .input-group-search .input-group-addon, .input-group-btn .btn-flat {
+    background-color: var(--search_icon_bg--color, var(--primary-color)) !important;
+    color: var(--search_icon_text--color, #fff) !important;
+    border-color: transparent !important;
+}
+
+/* --- ﾍCONES DE LIXEIRA (Cupom) --- */
+.fa-trash, .remove-aposta, .btn-remove {
+    color: var(--cupom_trash--color, #ff0000) !important;
+}
+
+/* --- FIX BUG MOBILE (MENU MOVENDO) --- */
+/* Previne que o Bootstrap adicione padding ao abrir o modal no mobile, o que empurra a tela */
+@media (max-width: 767px) {
+    body.modal-open {
+        padding-right: 0 !important;
+        overflow: hidden;
+    }
+}
+
+/* --- FIX DE BACKDROP (SOMBRA DO MODAL) --- */
+/* Bootstrap 3 CSS usa .fade.in para opacity:1, mas o jQuery plugin
+   adiciona a classe .show (Bootstrap 4+). Bridge necessário: */
+.modal-backdrop.in, .modal-backdrop.show {
+    background-color: #000 !important;
+    opacity: 0.5 !important;
+}
+
+/* ═══ FIX CRÍTICO: BRIDGE BOOTSTRAP 3↔4 PARA MODAIS ═══ */
+/* Bootstrap 3 .fade começa com opacity:0 e só ativa com .in
+   Porém o jQuery plugin usa .show. Precisamos fazer .show = .in */
+.modal.fade.show {
+    opacity: 1 !important;
+}
+.modal.fade.show .modal-dialog {
+    -webkit-transform: translate(0, 0) !important;
+    -ms-transform: translate(0, 0) !important;
+    -o-transform: translate(0, 0) !important;
+    transform: translate(0, 0) !important;
+}
+
+/* Garante que o modal fique na frente de tudo quando aberto */
+.modal {
+    z-index: 1050 !important;
+}
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* ═══ FIX: CORES DO TEXTO DENTRO DOS MODAIS ═══ */
+/* O tema dark aplica color:#f8fafc (branco) no body, que herda para
+   dentro dos modais com fundo branco. Isso torna textos invisíveis.
+   Forçamos cores escuras legíveis no conteúdo do modal. */
+
+/* Modal body (área de conteúdo com fundo claro) */
+.modal-content .modal-body {
+    color: #333 !important;
+}
+.modal-content .modal-body a {
+    color: #337ab7;
+}
+.modal-content .modal-body .form-control {
+    color: #333 !important;
+    background-color: #fff !important;
+    border-color: #ccc !important;
+}
+.modal-content .modal-body .input-group-addon {
+    color: #555 !important;
+    background-color: #eee !important;
+    border-color: #ccc !important;
+}
+
+/* Textos específicos dentro do cupom */
+#modal-cupon .modal-body div,
+#modal-cupon .modal-body span,
+#modal-cupon .modal-body strong,
+#modal-cupon .modal-body b,
+#modal-cupon .modal-body p,
+#modal-cupon .modal-body label {
+    color: #333;
+}
+/* Preserva cores nos headers dos jogos (fundo verde/colorido) */
+#modal-cupon [style*="card_header_bg"],
+#modal-cupon [style*="container_jogos"] {
+    color: #fff !important;
+}
+
+/* Modal footer - botão "Li e aceito" e similar */
+.modal-content .modal-footer {
+    background: #f4f4f4 !important;
+    border-top: 1px solid #ddd !important;
+}
+.modal-content .modal-footer .btn {
+    min-width: 120px;
+}
+
+/* ═══ ESTILO REGULAMENTO IGUAL AO DEMO ═══ */
+#modal-regulamento .modal-content {
+    border-radius: 4px !important;
+    border: none !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5) !important;
+}
+
+#modal-regulamento .modal-header {
+    background: #ffffff !important;
+    color: #333 !important;
+    border-bottom: 1px solid #f4f4f4 !important;
+    padding: 15px !important;
+}
+
+#modal-regulamento .modal-title {
+    font-weight: 600 !important;
+    font-size: 18px !important;
+    color: #333 !important;
+}
+
+#modal-regulamento .close {
+    font-size: 21px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    color: #000 !important;
+    text-shadow: 0 1px 0 #fff !important;
+    filter: alpha(opacity=20) !important;
+    opacity: .2 !important;
+}
+
+#modal-regulamento .close:hover {
+    opacity: .5 !important;
+}
+
+#modal-regulamento .modal-body {
+    padding: 15px !important;
+    background: #fff !important;
+}
+
+#modal-regulamento .box.box-primary {
+    border-top-color: #3c8dbc !important;
+    margin-bottom: 0 !important;
+    box-shadow: none !important;
+    border-top: 3px solid #3c8dbc !important;
+}
+
+.regulamento-content-demo {
+    color: #333 !important;
+    font-size: 14px !important;
+    line-height: 1.42857143 !important;
+}
+
+#modal-regulamento .modal-footer {
+    padding: 15px !important;
+    background: #fff !important;
+    border-top: 1px solid #f4f4f4 !important;
+}
+
+/* --- FIX LOGO E SIDEBAR NO MODAL (SEM GARIMBAS) --- */
+body.modal-open .main-header,
+body.modal-open .main-sidebar {
+    z-index: 1045 !important;
+}
+
+/* Libera os modais para aparecerem no PC (AdminLTE Context Fix) */
+body.modal-open .content-wrapper {
+    z-index: auto !important;
+    transform: none !important;
+}
+
+.main-header .logo {
+    background-color: var(--primary-color, #23a73d) !important;
+    color: #ffffff !important;
+}
+
+body.modal-open .logo .logo-lg,
+body.modal-open .logo .logo-mini,
+body.modal-open .user-panel img,
+body.modal-open .brand-link span {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: inline-block !important;
+}
+
+/* Match modal (mais odds) - corpo legível */
+#modal-match .modal-body {
+    color: #333 !important;
+}
+#modal-match .modal-body .odd-group-title,
+#modal-match .modal-body h4,
+#modal-match .modal-body h5 {
+    color: #333 !important;
+}
+
+/* --- ACELERAR O FUNDO ESCURO (BACKDROP) --- */
+.modal-backdrop.fade {
+    opacity: 0;
+    transition: opacity 0.15s linear !important;
+    -webkit-transition: opacity 0.15s linear !important;
+}
+.modal-backdrop.fade.in {
+    opacity: 0.5 !important;
+}
+
+
+ / *   F i x   M o d a l   S t a c k i n g   C o n t e x t s   g l o b a l l y   * / 
+ . m o d a l   { 
+         z - i n d e x :   1 0 0 0 0 0   ! i m p o r t a n t ; 
+ } 
+ . m o d a l - b a c k d r o p   { 
+         z - i n d e x :   9 9 9 9 9   ! i m p o r t a n t ; 
+ } 
+  
+ 
+ / *   F i x   A d m i n L T E   S t a c k i n g   C o n t e x t   * / 
+ . w r a p p e r ,   . c o n t e n t - w r a p p e r   { 
+         z - i n d e x :   a u t o   ! i m p o r t a n t ; 
+ } 
+  
+  
+ / *   F I X   B A C K D R O P   P R E T O   1 0 0 %   * /  
+ . m o d a l - b a c k d r o p   {   o p a c i t y :   0 . 6   ! i m p o r t a n t ;   b a c k g r o u n d - c o l o r :   # 0 0 0   ! i m p o r t a n t ;   }  
+  
+  
+ / *   F I X   B A C K D R O P   D E M O   * /  
+ . m o d a l - b a c k d r o p   {   d i s p l a y :   n o n e   ! i m p o r t a n t ;   }  
+ . m o d a l   {   b a c k g r o u n d :   r g b a ( 0 ,   0 ,   0 ,   0 . 6 )   ! i m p o r t a n t ;   }  
+  
+  
+ / *   F I X   S T A R   C O L O R   * /  
+ . m o d a l - t i t l e   . f a - s t a r   {   c o l o r :   # 0 6 0 6 0 6   ! i m p o r t a n t ;   }  
+  
+ 
