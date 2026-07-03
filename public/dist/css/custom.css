@@ -1398,6 +1398,9 @@ input[placeholder="Conferir bilhete"]::placeholder,
 /* --- TOPO NAVBAR (Branco fixo AdminLTE corrigido) --- */
 .main-header, .main-header .navbar { background-color: var(--header_bg--color, var(--sidebar--color)) !important; }
 .main-header .logo { background-color: var(--primary-color, var(--sidebar--color)) !important; color: #ffffff !important; }
+@media (max-width: 767px) {
+    .main-header .logo { width: auto !important; min-width: 0 !important; display: block !important; }
+}
 
 /* --- BUSCA (Fundo da Barra de Pesquisa / Bilhete) --- */
 .sidebar-form .form-control,
@@ -1429,8 +1432,7 @@ input[placeholder="Conferir bilhete"]::placeholder,
 /* --- FIX BUG MOBILE (MENU MOVENDO) --- */
 @media (max-width: 767px) {
     body.modal-open {
-        padding-right: 0 !important;
-        overflow: hidden;
+        overflow: hidden !important;
     }
 }
 
@@ -1455,9 +1457,7 @@ input[placeholder="Conferir bilhete"]::placeholder,
     transform: translate(0, 0) !important;
 }
 
-/* ═══ Z-INDEX MODAIS (ordem correta) ═══ */
-.modal-backdrop { z-index: 1040 !important; }
-.modal { z-index: 1050 !important; }
+/* ═══ Z-INDEX MODAIS (ordem correta) - managed below ═══ */
 
 /* ═══ FIX: CORES DO TEXTO DENTRO DOS MODAIS ═══ */
 /* O tema dark aplica color:#f8fafc (branco) no body, que herda para
@@ -1673,18 +1673,7 @@ input[placeholder="Conferir bilhete"]::placeholder,
     border-top: 1px solid #f4f4f4 !important;
 }
 
-/* --- FIX LOGO E SIDEBAR NO MODAL (SEM GARIMBAS) --- */
-body.modal-open .main-header,
-body.modal-open .main-sidebar {
-    z-index: 1045 !important;
-}
-
-/* Libera os modais para aparecerem no PC (AdminLTE Context Fix) */
-body.modal-open .content-wrapper {
-    z-index: auto !important;
-    transform: none !important;
-}
-
+/* --- HEADER LOGO (sempre visivel) --- */
 .main-header .logo {
     background-color: var(--primary-color, #23a73d) !important;
     color: #ffffff !important;
@@ -1698,15 +1687,6 @@ body.modal-open .content-wrapper {
 .main-header .sidebar-toggle:hover {
     background-color: var(--header_hamburger_hover--color, var(--header_hamburger--color, #0f2022)) !important;
     opacity: 0.9 !important;
-}
-
-body.modal-open .logo .logo-lg,
-body.modal-open .logo .logo-mini,
-body.modal-open .user-panel img,
-body.modal-open .brand-link span {
-    visibility: visible !important;
-    opacity: 1 !important;
-    display: inline-block !important;
 }
 
 /* Match modal (mais odds) - corpo legível */
@@ -1729,46 +1709,52 @@ body.modal-open .brand-link span {
     opacity: 0.5 !important;
 }
 
-/* Fix AdminLTE stacking context */
+/* ═══════════════════════════════════════════════════════════════
+   MODAL STACKING FIX - CLEAN VERSION
+   ═══════════════════════════════════════════════════════════════
+   Z-index order:
+   1. .modal-backdrop = 1040 (Bootstrap default)
+   2. .main-header    = 1041 (above backdrop, stays visible)
+   3. .modal          = 1050 (Bootstrap default, dialog on top)
+   NOTE: sidebar stays at default z-index so backdrop covers it
+   ═══════════════════════════════════════════════════════════════ */
+
+body.modal-open .modal-backdrop {
+    z-index: 1040 !important;
+    background-color: #000 !important;
+    opacity: 0.5 !important;
+}
+
+body.modal-open .main-header {
+    z-index: 1041 !important;
+}
+
+body.modal-open .modal {
+    z-index: 1050 !important;
+}
+
+body.modal-open .modal .modal-dialog,
+body.modal-open .modal .modal-content {
+    pointer-events: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FIX: PREVINE DESLOCAMENTO AO ABRIR MODAIS
+   ═══════════════════════════════════════════════════════════════
+   O front_nexus_hibrido.js já seta padding-right:0px!important
+   no body quando modal abre. O MutationObserver no welcome.blade.php
+   bloqueia display:flex no logo que causava o shift.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   FIX: PREVINE DESLOCAMENTO AO ABRIR MODAIS (via JavaScript)
+   ═══════════════════════════════════════════════════════════════
+   O JS no master.blade.php mede a scrollbar em tempo real
+   e aplica padding-right no body quando modal abre.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Force logo full width */
+body:not(.sidebar-collapse) .main-header .logo {
+}
+
 .wrapper, .content-wrapper { z-index: auto !important; }
-
-/* Star color in modals */
-.modal-title .fa-star { color: #060606 !important; }
-
-/* Share icon fallback */
-.fa-picture-o, .fa-lg {
-    color: var(--share_button_icon--color, #002776) !important;
-}
-
-
- / *   F i x   M o d a l   S t a c k i n g   C o n t e x t s   g l o b a l l y   * / 
- . m o d a l   { 
-         z - i n d e x :   1 0 0 0 0 0   ! i m p o r t a n t ; 
- } 
- . m o d a l - b a c k d r o p   { 
-         z - i n d e x :   9 9 9 9 9   ! i m p o r t a n t ; 
- } 
-  
- 
- / *   F i x   A d m i n L T E   S t a c k i n g   C o n t e x t   * / 
- . w r a p p e r ,   . c o n t e n t - w r a p p e r   { 
-         z - i n d e x :   a u t o   ! i m p o r t a n t ; 
- } 
-  
-  
- / *   F I X   B A C K D R O P   P R E T O   1 0 0 %   * /  
- . m o d a l - b a c k d r o p   {   o p a c i t y :   0 . 6   ! i m p o r t a n t ;   b a c k g r o u n d - c o l o r :   # 0 0 0   ! i m p o r t a n t ;   }  
-  
-  
- / *   F I X   B A C K D R O P   D E M O   * /  
- . m o d a l - b a c k d r o p   {   d i s p l a y :   n o n e   ! i m p o r t a n t ;   }  
- . m o d a l   {   b a c k g r o u n d :   r g b a ( 0 ,   0 ,   0 ,   0 . 6 )   ! i m p o r t a n t ;   }  
-  
-  
- / *   F I X   S T A R   C O L O R   * /  
- . m o d a l - t i t l e   . f a - s t a r   {   c o l o r :   # 0 6 0 6 0 6   ! i m p o r t a n t ;   }  
-  
- 
-.fa-picture-o, .fa-lg {
-    color: #002776 !important;
-}

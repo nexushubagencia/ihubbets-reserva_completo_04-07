@@ -111,6 +111,50 @@
     <script src="/js/banner-engine.js?v={{ time() }}"></script>
     <script src="/js/front_nexus_hibrido.js?v={{ time() }}"></script>
 
+    <!-- FIX: Bloqueia display:flex e width forçados no logo que causam deslocamento ao abrir modal -->
+    <script>
+    (function(){
+        var logo = document.querySelector('.main-header .logo');
+        var logoLg = document.querySelector('.main-header .logo .logo-lg');
+        var logoMini = document.querySelector('.main-header .logo .logo-mini');
+        if (!logo) return;
+
+        function fixLogo() {
+            var propsToRemove = ['display', 'width', 'min-width', 'align-items'];
+            propsToRemove.forEach(function(p) {
+                if (logo.style.getPropertyPriority(p) === 'important') {
+                    logo.style.removeProperty(p);
+                }
+            });
+        }
+
+        var observer = new MutationObserver(fixLogo);
+        observer.observe(logo, { attributes: true, attributeFilter: ['style'] });
+        if (logoLg) observer.observe(logoLg, { attributes: true, attributeFilter: ['style'] });
+        if (logoMini) observer.observe(logoMini, { attributes: true, attributeFilter: ['style'] });
+        fixLogo();
+    })();
+    </script>
+
+    <!-- CALCULA LARGURA DA SCROLLBAR PARA EVITAR DESLOCAMENTO DO HEADER -->
+    <script>
+    (function(){
+        function calculateScrollbar() {
+            var d = document.createElement('div');
+            d.style.cssText = 'width:100px;height:100px;overflow:scroll;position:absolute;top:-9999px';
+            document.body.appendChild(d);
+            var sw = d.offsetWidth - d.clientWidth;
+            document.body.removeChild(d);
+            document.documentElement.style.setProperty('--scrollbar-w', sw + 'px');
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', calculateScrollbar);
+        } else {
+            calculateScrollbar();
+        }
+    })();
+    </script>
+
     <!-- THEME OVERRIDE - V2.3.0: Cores 100% editaveis por tema -->
     <style id="theme-text-override">
 
