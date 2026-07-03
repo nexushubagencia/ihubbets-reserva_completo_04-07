@@ -111,56 +111,85 @@
     <script src="/js/banner-engine.js?v={{ time() }}"></script>
     <script src="/js/front_nexus_hibrido.js?v={{ time() }}"></script>
 
-    <!-- THEME OVERRIDE: Replace hardcoded color:#fff with CSS variables for themed elements -->
+    <!-- THEME OVERRIDE - V2.3.0: Cores 100% editaveis por tema -->
     <style id="theme-text-override">
-        /* === ODDS BUTTONS (C, E, F) - verde com branco === */
-        .btn-home-nexus,
-        .btn-home-nexus:hover,
-        .btn-home-nexus:focus,
-        .btn-home-nexus.selecionado {
-            background: var(--btn_cef--color, #009b3a) !important;
-            color: var(--odd_button_text--color, #ffffff) !important;
-            border: 1px solid var(--odd_button_border--color, #007a2e) !important;
+
+        /* ============================
+           1. NOMES DOS TIMES
+           ============================ */
+        .team-name {
+            color: var(--team_name_text--color, #333333) !important;
         }
+
+        /* ============================
+           2. COTACOES (C, E, F)
+           Fundo e texto dos botoes de odd
+           ============================ */
+        .btn-home,
+        .btn-home-nexus {
+            background: var(--odd_button_bg--color, #ffffff) !important;
+            color: var(--odd_button_text--color, #333333) !important;
+            border: 1px solid rgba(0,0,0,0.1) !important;
+            transition: none !important;
+        }
+        .btn-home strong,
         .btn-home-nexus strong {
-            color: var(--odd_button_text--color, #ffffff) !important;
+            color: var(--odd_button_text--color, #333333) !important;
         }
+        /* Hover: NAO muda nada - so quando selecionada */
+        .btn-home:hover,
         .btn-home-nexus:hover {
-            background: var(--odd_button_hover_bg--color, #002776) !important;
-            color: var(--odd_button_hover_text--color, #ffffff) !important;
-        }
-        .btn-home-nexus.selecionado {
-            background: var(--btn_selecionado-color, #002776) !important;
-            color: #ffffff !important;
-            border-color: var(--btn_selecionado-color, #002776) !important;
-        }
-        .btn-apostas .btn,
-        .container-lista-jogos .btn {
-            background-color: var(--btn_cef--color, #009b3a) !important;
-            color: var(--odd_button_text--color, #ffffff) !important;
-            border: 1px solid var(--odd_button_border--color, #007a2e) !important;
-        }
-        .btn-apostas .btn:hover,
-        .container-lista-jogos .btn:hover {
-            background-color: var(--odd_button_hover_bg--color, #002776) !important;
-            color: var(--odd_button_hover_text--color, #ffffff) !important;
+            background: var(--odd_button_bg--color, #ffffff) !important;
+            color: var(--odd_button_text--color, #333333) !important;
         }
 
-        /* === +0 BOTAO (odds plus) - verde com branco === */
-        .plus-odd-nexus,
+        /* ============================
+           3. COTACAO SELECIONADA
+           Cor quando o usuario clica
+           ============================ */
+        .btn-home.selecionado,
+        .btn-home-nexus.selecionado,
+        .selecionado {
+            background: var(--odd_btn_hover_bg--color, #35aa71) !important;
+            color: var(--odd_btn_hover_text--color, #ffffff) !important;
+            border: 1px solid var(--btn_selecionado-border-color, #35aa71) !important;
+        }
+        .btn-home.selecionado strong,
+        .btn-home-nexus.selecionado strong {
+            color: var(--odd_btn_hover_text--color, #ffffff) !important;
+        }
+
+        /* ============================
+           4. BOTAO +0 (MAIS MERCADOS)
+           ============================ */
         .plus-odd,
-        .btn-plus-odd,
+        .plus-odd-nexus,
+        .btn-plus-odd {
+            background: var(--odds_plus_button--color, #1aa6d0) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        .plus-odd:hover,
         .plus-odd-nexus:hover,
-        .plus-odd:hover {
-            background: var(--odds_plus_button--color, #009b3a) !important;
-            color: var(--odds_plus_button_text--color, #ffffff) !important;
+        .btn-plus-odd:hover {
+            background: var(--odds_plus_button--color, #1aa6d0) !important;
+            color: #ffffff !important;
         }
 
-        /* === SHARE BOTAO - verde com branco === */
-        .btn-share-nexus,
-        .btn-share {
-            background: var(--share_button_bg--color, #009b3a) !important;
-            color: var(--share_button_text--color, #ffffff) !important;
+        /* ============================
+           5. BOTAO COMPARTILHAR
+           Fundo e icone separados
+           ============================ */
+        .btn-share,
+        .btn-share-nexus {
+            background: var(--share_button_bg--color, #1aa6d0) !important;
+            color: var(--share_button_icon--color, #ffffff) !important;
+            border: none !important;
+        }
+        .btn-share i,
+        .btn-share-nexus i,
+        .fa-picture-o {
+            color: var(--share_button_icon--color, #ffffff) !important;
         }
 
         /* === CUPOM VALOR BOTOES === */

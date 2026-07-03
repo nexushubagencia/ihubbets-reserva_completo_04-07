@@ -1144,7 +1144,7 @@
               style="background-color: var(--search_bar_bg--color, #fff); color: var(--search_bar_text--color, #333); border: 1px solid var(--linhas--color, #eee); border-right: none;"
             />
             <span class="input-group-btn">
-              <button @click="searchBilhete()" class="btn btn-flat" style="background-color: var(--ticket_consult_bg--color, var(--primary_color)); color: #fff; border: 1px solid var(--ticket_consult_bg--color, var(--primary_color));">
+              <button @click="searchBilhete()" class="btn btn-flat" style="background-color: var(--ticket_consult_bg--color, var(--primary-color)); color: #fff; border: 1px solid var(--ticket_consult_bg--color, var(--primary-color));">
                 <i class="fa fa-search"></i>
               </button>
             </span>
@@ -1549,7 +1549,7 @@
                   <div class="input-group" style="width: 100%;">
                     <input type="text" v-model="search" @keyup.enter="searchMatches()" placeholder="Pesquisar por Liga, Time, Horário" class="form-control" style="height: 38px; border-radius: 4px 0 0 4px; border: 1px solid var(--linhas--color, #ddd); border-right: none; box-shadow: none; font-size: 13px; background-color: var(--search_bar_bg--color) !important; color: var(--search_bar_text--color) !important;">
                     <span class="input-group-btn">
-                      <button class="btn btn-info btn-flat" type="button" @click="searchMatches()" style="height: 38px; border-radius: 0 4px 4px 0; border: none; background: var(--search_icon_bg--color, var(--primary_color)) !important; color: #fff !important; padding: 0 15px; transition: filter 0.3s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">
+                      <button class="btn btn-info btn-flat" type="button" @click="searchMatches()" style="height: 38px; border-radius: 0 4px 4px 0; border: none; background: var(--search_icon_bg--color, var(--primary-color)) !important; color: #fff !important; padding: 0 15px; transition: filter 0.3s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">
                         <i class="fa fa-search"></i>
                       </button>
                     </span>
@@ -1645,10 +1645,10 @@
                 <h4 class="header-campeonato-matchs" style="margin-bottom: -1px; display: flex; align-items: center;">
                   <img :src="event.flag" style="width: 20px; height: 14px; margin-right: 8px; border-radius: 2px; object-fit: cover;" @error="$event.target.src = '/img/countries/trophy.svg'">
                   {{ event.league }}
-                  <span v-if="live" style="margin-left: 8px; font-size: 10px; color: #fff; background: #cc3333; padding: 2px 6px; border-radius: 3px; animation: pulse 1.5s infinite;">AO VIVO</span>
+                  <span v-if="live" style="margin-left: 8px; font-size: 10px; color: #fff; background: var(--live-color, #cc3333); padding: 2px 6px; border-radius: 3px; animation: pulse 1.5s infinite;">AO VIVO</span>
                 </h4>
                 <div class="jogo">
-                  <div class="row container-lista-jogos" v-for="match in event.match" :key="match.id" :class="{'live-match-row': live}" :style="live ? 'border-left: 3px solid #cc3333;' : ''">
+                  <div class="row container-lista-jogos" v-for="match in event.match" :key="match.id" :class="{'live-match-row': live}" :style="live ? 'border-left: 3px solid var(--live-color, #cc3333);' : ''">
                     <!-- Teams Info (Layout Clássico) -->
                     <div class="col-lg-6 col-md-6 col-xs-9 jogos">
                       <table style="width: 100%;">
@@ -1656,14 +1656,14 @@
                           <td align="left" width="15%">
                             <img loading="lazy" class="team-logo-img" :src="match.logo_home || '/img/placeholders/shield.png'" :alt="match.home" @error="$event.target.src = '/img/placeholders/shield.png'">
                           </td>
-                          <td align="center" width="30%">
+                          <td align="center" width="30%" class="team-name">
                             {{ match.home }}
                           </td>
                           <td align="center" width="10%">
-                            <strong v-if="live && match.score" style="color: #cc3333; font-size: 16px;">{{ match.score }}</strong>
+                            <strong v-if="live && match.score" style="color: var(--live-color, #cc3333); font-size: 16px;">{{ match.score }}</strong>
                             <strong v-else style="color: #777;">X</strong>
                           </td>
-                          <td align="center" width="30%">
+                          <td align="center" width="30%" class="team-name">
                             {{ match.away }}
                           </td>
                           <td align="right" width="15%">
@@ -1705,13 +1705,13 @@
                       </div>
 
                       <!-- Plus Markets -->
-                      <div title="Mais mercados" class="plus-odd" @click="loadOdd(event.league, match, event)" style="background-color: var(--odds_plus_button--color, #1aa6d0) !important; color: #fff !important;">
+                      <div title="Mais mercados" class="plus-odd" @click="loadOdd(event.league, match, event)">
                         <i class="fa fa-plus"></i>
                         {{ match.count_odd }}
                       </div>
 
                       <!-- Share -->
-                      <div title="Compartilhar banner" class="btn-share" @click="openShareMatch(match, event)" style="background-color: var(--share_button_bg--color, #1aa6d0) !important; color: #fff !important;">
+                      <div title="Compartilhar banner" class="btn-share" @click="openShareMatch(match, event)">
                         <i class="fa fa-picture-o fa-lg"></i>
                       </div>
                     </div>
@@ -1729,7 +1729,7 @@
             <div class="cupom-fixed">
               <div class="box box-widget overflow-hidden" style="margin-bottom: 65px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <!-- Header -->
-                <div class="ticket-title-new box-header" style="background: var(--header--color, #000000) !important; padding: 10px 15px;">
+                <div class="ticket-title-new box-header" style="background: var(--cupom_header--color, var(--sidebar--color, #173133)) !important; padding: 10px 15px;">
                   <h3 class="box-title" style="font-size: 13px !important; font-weight: 400; color: #fff !important; text-transform: uppercase; letter-spacing: 0.5px;">
                     <i class="fa fa-ticket"></i>
                     BILHETE ({{ selection.length }})
@@ -1762,7 +1762,7 @@
                         <div style="font-size: 11px; color: #e74c3c;">{{ select.date | formatDate() }} hs</div>
                         <div style="font-size: 12px; font-weight: 700; color: #333; margin-top: 5px;">{{ select.group_opp }}</div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                          <span style="font-size: 13px; font-weight: 700; color: #3ca569 !important;">
+                          <span style="font-size: 13px; font-weight: 700; color: var(--primary-color, #3ca569) !important;">
                             {{ select.odd }} <span v-if="select.type == 'ao-vivo'" style="font-size: 10px;">({{ select.type }})</span>
                           </span>
                           <span style="font-size: 13px; color: #333;">{{ select.cotacao | formatCotacao() }}</span>
@@ -2531,7 +2531,7 @@
     <!-- MODAL SHARE BANNER -->
     <div class="modal fade" id="modal-share" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-md" role="document">
-        <div class="modal-content" style="background: var(--header--color, #000000); color: #fff; border: 1px solid var(--container_jogos--color);">
+        <div class="modal-content" style="background: var(--cupom_header--color, var(--sidebar--color, #173133)); color: #fff; border: 1px solid var(--container_jogos--color);">
           <div class="modal-header" style="border-bottom: 1px solid #333; padding: 12px 15px;">
             <button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 1;">&times;</button>
             <h4 class="modal-title" style="font-size: 15px;"><i class="fa fa-picture-o"></i> Salve ou copie essa imagem, e compartilhe!</h4>
@@ -3680,7 +3680,7 @@ export default {
         secondary: 'var(--btn--color, var(--container_jogos--color))',
         selected: 'var(--btn_selecionado-color, #23a73d)',
         sidebar: 'var(--sidebar--color, var(--sidebar--color))',
-        cef: 'var(--btn_cef--color, #1a202c)'
+        cef: 'var(--odd_button_bg--color, #1a202c)'
       };
     },
     selectionsIds() {
@@ -5782,16 +5782,16 @@ body {
 
 
 .btn-navigator.ativo {
-    border-bottom: 3px solid var(--modalidade_ativa_color, var(--primary_color));
+    border-bottom: 3px solid var(--modalidade_ativa--color, var(--primary-color));
 }
 
 .modality-item-demo a.ativo {
-    background-color: var(--modalidade_ativa_color, var(--primary_color)) !important;
+    background-color: var(--modalidade_ativa--color, var(--primary-color)) !important;
     color: #fff !important;
 }
 
 .day-tab.active, .day-tab-demo.active {
-    background: var(--modalidade_ativa_color, var(--primary_color)) !important;
+    background: var(--modalidade_ativa--color, var(--primary-color)) !important;
 }
 
 .day-tab.active a, .day-tab.active span, .day-tab.active strong {
@@ -6286,7 +6286,7 @@ body {
 }
 
 .sidebar-menu .header {
-    background: var(--sidebar_header--color, var(--primary_color)) !important;
+    background: var(--sidebar_header--color, var(--primary-color)) !important;
     color: var(--sidebar_header_text--color, #FFF) !important;
     padding: 10px 15px !important;
     font-size: 11px !important;
@@ -6581,7 +6581,7 @@ body {
 }
 
 .carousel-card .offer-badge {
-    background: var(--destaque_btn_bg--color, var(--primary_color)) !important;
+    background: var(--destaque_btn_bg--color, var(--primary-color)) !important;
     color: var(--destaque_btn_text--color, #fff) !important;
     border: none;
     border-radius: 20px;

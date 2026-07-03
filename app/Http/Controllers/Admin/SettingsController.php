@@ -203,7 +203,6 @@ class SettingsController extends Controller
             'odds_plus_button_color',
             'share_button_bg_color',
             'bet_button_color',
-            'bet_main_buttons_color',
             'background_color',
             'border_color',
             'button_selected_color',
@@ -492,13 +491,16 @@ class SettingsController extends Controller
             };
 
             // 1. Cores de Estrutura
-            $primary    = $c('primary_color', '#35aa71');
-            $headerBg   = $c('header_bg_color', $c('sidebar_color', '#173133'));
-            $sidebar    = $c('sidebar_color', '#173133');
-            $gameCont   = $c('game_container_color', '#ffffff');
-            $logoCont   = $c('logo_container_color', $sidebar);
-            $background = $c('background_color', '#f9f9f9');
-            $border     = $c('border_color', '#dddddd');
+            $primary        = $c('primary_color', '#35aa71');
+            $headerBg       = $c('header_bg_color', $c('sidebar_color', '#173133'));
+            $headerLogoText = $c('header_logo_text_color', '#ffffff');
+            $headerHamburger = $c('header_hamburger_color', '#162b2d');
+            $headerHamburgerHover = $c('header_hamburger_hover_color', $this->adjustBrightness($headerHamburger, -15));
+            $sidebar        = $c('sidebar_color', '#173133');
+            $gameCont       = $c('game_container_color', '#ffffff');
+            $logoCont       = $c('logo_container_color', $sidebar);
+            $background     = $c('background_color', '#f9f9f9');
+            $border         = $c('border_color', '#dddddd');
 
             // 2. Sidebar e Busca
             $sidebarText    = $c('sidebar_text_color', '#ffffff');
@@ -516,6 +518,7 @@ class SettingsController extends Controller
             // 3. Jogos e Odds
             $cardHeaderBg       = $c('card_header_bg_color', $primary);
             $cardHeaderText     = $c('card_header_text_color', '#ffffff');
+            $teamNameText       = $c('team_name_text_color', '#333333');
             $oddBtnBg           = $c('odd_button_bg_color', '#ffffff');
             $oddBtnText         = $c('odd_button_text_color', '#333333');
             $oddBtnHoverBg      = $c('odd_button_hover_bg_color', $primary);
@@ -525,7 +528,7 @@ class SettingsController extends Controller
             $oddsPlus           = $c('odds_plus_button_color', '#1aa6d0');
             $oddsPlusHover      = $c('odds_plus_button_hover_color', $this->adjustBrightness($oddsPlus, -20));
             $shareBtnBg         = $c('share_button_bg_color', '#1aa6d0');
-            $betMain            = $c('bet_main_buttons_color', '#1e262a');
+            $shareBtnIcon       = $c('share_button_icon_color', '#ffffff');
             $modAtiva           = $c('modalidade_ativa_color', $primary);
 
             // 4. Destaques
@@ -549,7 +552,7 @@ class SettingsController extends Controller
             $btnLoginBorder   = $c('btn_login_border_color', $primary);
             $btnPrimaryText   = $c('btn_primary_text_color', '#ffffff');
             $actionBtn        = $c('action_button_color', $oddsPlus);
-            $actionBtnHover   = $this->adjustBrightness($actionBtn, -20);
+            $actionBtnHover   = $c('action_button_hover_color', $this->adjustBrightness($actionBtn, -20));
 
             // 7. Rodapé
             $footerBg      = $c('footer_bg_color', $sidebar);
@@ -557,13 +560,34 @@ class SettingsController extends Controller
             $tabActiveBg   = $c('tab_active_bg_color', '#ffffff');
             $tabActiveText = $c('tab_active_text_color', '#333333');
 
+            // 8. Extras (campos do editor que antes eram hardcoded)
+            $sidebarHeader       = $c('sidebar_header_color', $primary);
+            $sidebarHeaderText   = $c('sidebar_header_text_color', '#ffffff');
+            $ticketConsultBg     = $c('ticket_consult_bg_color', $sidebar);
+            $liveColor           = $c('live_color', '#cc3333');
+            $cupomTrash          = $c('cupom_trash_color', '#ff0000');
+            $cupomValorBtnText   = $c('cupom_valor_btn_text_color', '#ffffff');
+            $cupomBodyBg         = $c('cupom_body_bg_color', '#ffffff');
+            $modalidadeAtivaText = $c('modalidade_ativa_text_color', '#ffffff');
+            $modalBg             = $c('modal_bg_color', '#ffffff');
+            $btnEntrarHover      = $c('btn_entrar_hover_color', $this->adjustBrightness($btnEntrar, -20));
+            $btnCadastrarHover   = $c('btn_cadastrar_hover_color', $this->adjustBrightness($btnCadastrar, -20));
+            $oddsPlusHover       = $c('odds_plus_button_hover_color', $this->adjustBrightness($oddsPlus, -20));
+            $btnSelBorder        = $c('button_selected_border_color', $this->adjustBrightness($btnSel, -30));
+            $actionBtnHover      = $c('action_button_hover_color', $this->adjustBrightness($actionBtn, -20));
+            $modalBg           = $background;
+            $cupomBodyBg       = '#ffffff';
+            $cardBg            = '#ffffff';
+
             $css = "
-            /* IHUB DYNAMIC THEME SYSTEM - V2.2.0 - " . time() . " */
+            /* IHUB DYNAMIC THEME SYSTEM - V2.3.0 - " . time() . " */
             :root {
                 /* Estrutura */
                 --primary-color: {$primary};
-                --primary--color: {$primary};
                 --header_bg--color: {$headerBg};
+                --header_logo_text--color: {$headerLogoText};
+                --header_hamburger--color: {$headerHamburger};
+                --header_hamburger_hover--color: {$headerHamburgerHover};
                 --sidebar--color: {$sidebar};
                 --sidebar_text--color: {$sidebarText};
                 --container_jogos--color: {$gameCont};
@@ -577,6 +601,8 @@ class SettingsController extends Controller
                 --btn_menu_principal--color: {$menuBtn};
                 --menu_active_bg--color: {$menuActiveBg};
                 --menu_active_text--color: {$menuActiveText};
+                --sidebar_header--color: {$sidebarHeader};
+                --sidebar_header_text--color: {$sidebarHeaderText};
                 --search_bar_bg--color: {$searchBarBg};
                 --search_bar_text--color: {$searchBarText};
                 --search_icon_bg--color: {$searchIconBg};
@@ -585,6 +611,8 @@ class SettingsController extends Controller
                 /* Jogos e Odds */
                 --card_header_bg--color: {$cardHeaderBg};
                 --card_header_text--color: {$cardHeaderText};
+                --card_bg--color: {$cardBg};
+                --team_name_text--color: {$teamNameText};
                 --odd_button_bg--color: {$oddBtnBg};
                 --odd_button_text--color: {$oddBtnText};
                 --odd_btn_hover_bg--color: {$oddBtnHoverBg};
@@ -594,11 +622,11 @@ class SettingsController extends Controller
                 --odds_plus_button--color: {$oddsPlus};
                 --odds_plus_button_hover--color: {$oddsPlusHover};
                 --share_button_bg--color: {$shareBtnBg};
-                --btn_cef--color: {$betMain};
+                --share_button_icon--color: {$shareBtnIcon};
                 --modalidade_ativa--color: {$modAtiva};
-                
-                /* Compatibility / Fallbacks */
-                --btn--color: {$oddsPlus}; 
+                --modalidade_ativa_text--color: {$modalidadeAtivaText};
+                --live-color: {$liveColor};
+                --live_text--color: {$liveColor};
 
                 /* Destaques */
                 --destaque_header_bg--color: {$destaqueHeaderBg};
@@ -606,20 +634,25 @@ class SettingsController extends Controller
                 --destaque_btn_bg--color: {$destaqueBtnBg};
                 --destaque_btn_text--color: {$destaqueBtnText};
 
-                /* Cupom */
-                --header--color: {$cupomHeader};
+                /* Cupom / Bilhete */
+                --cupom_header--color: {$cupomHeader};
+                --cupom_body_bg--color: {$cupomBodyBg};
                 --cupom_valor_btn--color: {$cupomValor};
+                --cupom_valor_btn_text--color: {$cupomValorBtnText};
                 --cupom_valor_btn_hover--color: {$cupomValorHover};
                 --cupom_apostar_btn--color: {$cupomApostar};
                 --cupom_apostar_btn_hover--color: {$cupomApostarHover};
+                --cupom_trash--color: {$cupomTrash};
+                --ticket_consult_bg--color: {$ticketConsultBg};
 
                 /* Auth & Ações */
                 --btn_entrar--color: {$btnEntrar};
                 --btn_entrar_text--color: {$btnEntrarText};
+                --btn_entrar_hover--color: {$btnEntrarHover};
                 --btn_cadastrar--color: {$btnCadastrar};
                 --btn_cadastrar_text--color: {$btnCadastrarText};
+                --btn_cadastrar_hover--color: {$btnCadastrarHover};
                 --btn_login_border--color: {$btnLoginBorder};
-                --btn_primary_text--color: {$btnPrimaryText};
                 --btn_salvar--color: {$actionBtn};
                 --btn_salvar_hover--color: {$actionBtnHover};
 
@@ -629,19 +662,15 @@ class SettingsController extends Controller
                 --tab_active_bg--color: {$tabActiveBg};
                 --tab_active_text--color: {$tabActiveText};
 
-                /* Toque Premium IHUB */
-                --glass-effect: rgba(255, 255, 255, 0.05);
-                --ihub-gradient: linear-gradient(135deg, {$primary} 0%, " . $this->adjustBrightness($primary, -30) . " 100%);
+                /* Modais */
+                --modal_bg--color: {$modalBg};
 
-                /* Synced Button Colors */
-                --btn-valor-base--color: {$cupomValor};
-                --btn-valor-active--color: {$cupomValorHover};
+                /* IHUB Gradient */
+                --ihub-gradient: linear-gradient(135deg, {$primary} 0%, " . $this->adjustBrightness($primary, -30) . " 100%);
             }
 
-            /* Melhorias Visuais de Elite */
             .sidebar-menu > li.active > a { border-left-color: var(--primary-color) !important; background: var(--ihub-gradient) !important; }
             .btn-primary { background: var(--ihub-gradient) !important; border: none !important; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-            .odd-button.selected { background: var(--btn_selecionado-color) !important; border-color: var(--btn_selecionado-border-color) !important; transform: scale(1.05); transition: 0.2s; }
         ";
             return $css;
         })();

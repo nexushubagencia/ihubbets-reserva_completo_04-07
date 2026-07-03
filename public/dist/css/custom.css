@@ -3,8 +3,8 @@
 .main-sidebar .sidebar-menu .header,
 .main-sidebar .sidebar-menu>.header,
 .sidebar-menu .header {
-    background: var(--primary-color) !important;
-    color: #FFF !important;
+    background: var(--sidebar_header--color, var(--primary-color)) !important;
+    color: var(--sidebar_header_text--color, #FFF) !important;
     padding: 12px 15px !important;
     font-size: 11px !important;
     font-weight: 500 !important;
@@ -183,7 +183,7 @@
 
 .btn-apostas .btn {
     width: 24%;
-    background-color: var(--btn_cef--color, #e7e7e7) !important;
+    background-color: var(--odd_button_bg--color, #e7e7e7) !important;
     line-height: 1.32 !important;
 }
 
@@ -192,13 +192,13 @@
     color: var(--odd_button_text--color, #333);
     margin: 2px 1px;
     padding: 8px 0px;
-    background-color: var(--odd_button_bg--color, #f7f7f7);
+    background-color: var(--container_jogos--color, #f7f7f7);
     line-height: 21px;
 }
 
 .container-lista-jogos .btn-apostas .btn {
     width: 24%;
-    background-color: var(--btn_cef--color, #e7e7e7) !important;
+    background-color: var(--odd_button_bg--color, #e7e7e7) !important;
     line-height: 1.32 !important;
 }
 
@@ -211,7 +211,7 @@
     color: var(--odd_button_text--color, #333);
     margin: -1px 0px;
     padding: 1px 0px 1px 0px;
-    background-color: var(--odd_button_bg--color, #f7f7f7);
+    background-color: var(--container_jogos--color, #f7f7f7);
     line-height: 21px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
@@ -282,9 +282,9 @@
 }
 
 .btn-home {
-    background: var(--btn_cef--color);
-    border: none;
-    color: #f7f7f7;
+    background: var(--odd_button_bg--color, #ffffff);
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--odd_button_text--color, #333333);
     float: left;
     margin: 4px;
     width: 17%;
@@ -296,9 +296,9 @@
 }
 
 .btn-share {
-    background: var(--odds_plus_button--color, #e0992f);
+    background: var(--share_button_bg--color, #1aa6d0);
     border: none;
-    color: #fff;
+    color: var(--share_button_icon--color, #fff);
     float: left;
     margin: 4px;
     width: 35px;
@@ -310,10 +310,14 @@
     font-size: 10px;
 }
 
+.btn-share i {
+    color: var(--share_button_icon--color, #fff) !important;
+}
+
 .selecionado {
-    background: var(--btn_selecionado-color);
-    border: none;
-    color: #fff;
+    background: var(--odd_btn_hover_bg--color, var(--btn_selecionado-color));
+    border: 1px solid var(--btn_selecionado-border-color);
+    color: var(--odd_btn_hover_text--color, #fff);
     float: left;
     margin: 4px;
     width: 17%;
@@ -321,9 +325,7 @@
     line-height: 30px;
     text-align: center;
     margin-top: 8px;
-    border: 1px solid var(--btn_selecionado-border-color);
     cursor: pointer;
-    /* border-radius: 5px; */
 }
 
 .plus-odd {
@@ -854,11 +856,11 @@
     transition: all 0.3s ease;
 }
 
-/* Botﾃ｣o de Odds Nexus (Premium) */
+/* Botao de Odds Nexus (Premium) */
 .btn-home-nexus {
-    background: var(--btn_cef--color, #1e262b);
-    color: #fff;
-    border: none !important;
+    background: var(--odd_button_bg--color, #ffffff);
+    color: var(--odd_button_text--color, #333333);
+    border: 1px solid rgba(0,0,0,0.1) !important;
     border-radius: 2px;
     padding: 5px 8px;
     margin: 2px;
@@ -877,25 +879,26 @@
     transition: none !important;
 }
 
+/* SEM hover - so muda ao selecionar */
 .btn-home-nexus:hover {
-    background: var(--btn_cef--color, #1e262b);
+    background: var(--odd_button_bg--color, #ffffff);
+    color: var(--odd_button_text--color, #333333);
 }
 
 .btn-home-nexus.selecionado {
-    background: var(--btn_selecionado-color, #1aa6d0) !important;
-    color: #fff !important;
-    border: none !important;
+    background: var(--odd_btn_hover_bg--color, #35aa71) !important;
+    color: var(--odd_btn_hover_text--color, #fff) !important;
+    border: 1px solid var(--btn_selecionado-border-color, #35aa71) !important;
     box-shadow: none !important;
 }
 
 .btn-home-nexus strong {
-    color: #fff !important;
-    /* Labels C, E, F agora brancos */
+    color: var(--odd_button_text--color, #333333) !important;
     margin-right: 0px;
 }
 
 .btn-home-nexus.selecionado strong {
-    color: #fff !important;
+    color: var(--odd_btn_hover_text--color, #fff) !important;
 }
 
 .plus-odd-nexus {
@@ -910,21 +913,21 @@
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: none !important;
     height: 32px;
     margin: 3px;
 }
 
 .plus-odd-nexus:hover {
-    background: var(--odds_plus_button_hover--color, #158db1) !important;
+    background: var(--odds_plus_button--color, #1aa6d0) !important;
 }
 
 .btn-share-nexus {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--odds_plus_button--color, #e67e22) !important;
-    color: #fff !important;
+    background: var(--share_button_bg--color, #1aa6d0) !important;
+    color: var(--share_button_icon--color, #fff) !important;
     border-radius: 2px;
     padding: 5px 10px;
     height: 32px;
@@ -934,8 +937,13 @@
     transition: all 0.2s;
 }
 
+.btn-share-nexus i {
+    color: var(--share_button_icon--color, #fff) !important;
+}
+
 .btn-share-nexus:hover {
-    background: var(--odds_plus_button_hover--color, #d35400) !important;
+    background: var(--share_button_bg--color, #1aa6d0) !important;
+    opacity: 0.85;
 }
 
 /* Otimizaﾃｧﾃ｣o para a linha de jogos (removida para manter paridade com demo) */
@@ -1115,16 +1123,7 @@ body.modal-open #modal-pre-aposta ~ .modal-backdrop {
    (ex: roxo.css, laranja.css) ou via painel admin.
    ============================================================ */
 
-/* --- SIDEBAR HEADERS (MENU PRINCIPAL, ESPECIAIS, LIGAS) --- */
-.main-sidebar .sidebar-menu .header,
-.main-sidebar .sidebar-menu>.header,
-.sidebar-menu .header,
-.sidebar-menu>li.header {
-    background: var(--primary-color) !important;
-    color: #FFF !important;
-}
-
-/* --- BOT�ｽES btn-info (busca, odds, utilit�ｽrios) --- */
+/* --- BOTÕES btn-info (busca, odds, utilitários) --- */
 .btn-info,
 .btn-info:hover,
 .btn-info:focus,
@@ -1158,31 +1157,32 @@ body.modal-open #modal-pre-aposta ~ .modal-backdrop {
 
 
 
-/* --- BOT�ｽES DE ODDS (C 1.80, E 2.50, F 3.90) --- */
+/* --- BOTOES DE ODDS (C 1.80, E 2.50, F 3.90) --- */
 .btn-odd,
 .btn-valor,
 .btn-apostas .btn,
 .container-lista-jogos .btn {
-    background-color: var(--btn_cef--color) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #fff !important;
+    background-color: var(--odd_button_bg--color, #ffffff) !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    color: var(--odd_button_text--color, #333333) !important;
 }
 
+/* SEM hover generico nas cotações - so muda ao selecionar */
 .btn-odd:hover,
 .btn-valor:hover,
 .btn-apostas .btn:hover,
 .container-lista-jogos .btn:hover {
-    background-color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
+    background-color: inherit !important;
+    border-color: inherit !important;
 }
 
 .btn-odd.active,
 .btn-odd.selecionado,
 .btn-valor.active,
 .selecionado {
-    background: var(--btn_selecionado-color) !important;
+    background: var(--odd_btn_hover_bg--color, var(--btn_selecionado-color)) !important;
     border: 1px solid var(--btn_selecionado-border-color) !important;
-    color: #fff !important;
+    color: var(--odd_btn_hover_text--color, #fff) !important;
 }
 
 /* --- BARRA DE NAVEGA�ｽ�ｽO DO HEADER (FUTEBOL, LUTA, BASQUETE...) --- */
@@ -1397,7 +1397,7 @@ input[placeholder="Conferir bilhete"]::placeholder,
 }
 /* --- TOPO NAVBAR (Branco fixo AdminLTE corrigido) --- */
 .main-header, .main-header .navbar { background-color: var(--header_bg--color, var(--sidebar--color)) !important; }
-.main-header .logo { background-color: var(--logo--color, var(--sidebar--color)) !important; }
+.main-header .logo { background-color: var(--primary-color, var(--sidebar--color)) !important; color: #ffffff !important; }
 
 /* --- BUSCA (Fundo da Barra de Pesquisa / Bilhete) --- */
 .sidebar-form .form-control,
@@ -1427,202 +1427,6 @@ input[placeholder="Conferir bilhete"]::placeholder,
 }
 
 /* --- FIX BUG MOBILE (MENU MOVENDO) --- */
-/* Previne que o Bootstrap adicione padding ao abrir o modal no mobile, o que empurra a tela */
-@media (max-width: 767px) {
-    body.modal-open {
-    background-color: var(--menu_active_bg--color) !important;
-    border-color: var(--menu_active_bg--color) !important;
-    color: var(--menu_active_text--color) !important;
-}
-/* ========================================================= */
-/* AJUSTES SOLICITADOS (ENTRAR, CADASTRE-SE, E MODALIDADES)  */
-/* ========================================================= */
-
-/* --- BOTﾃグ ENTRAR --- */
-.btn-acessar-demo,
-a.btn-acessar-demo,
-a[data-target="#modal-login"] {
-    background-color: var(--btn_entrar--color) !important;
-    border-color: var(--btn_login_border--color) !important;
-    color: var(--btn_entrar_text--color) !important;
-    transition: all 0.3s ease !important;
-}
-
-.btn-acessar-demo:hover,
-a.btn-acessar-demo:hover,
-a[data-target="#modal-login"]:hover {
-    filter: brightness(1.2) !important;
-}
-
-/* --- BOTﾃグ CADASTRE-SE --- */
-.btn-cadastro,
-.btn-register,
-.btn-cadastrar-demo,
-a.btn-cadastrar-demo,
-a[data-target="#modal-register"],
-a.btn[href*="cadastr"],
-a.btn[href*="register"] {
-    background-color: var(--btn_cadastrar--color) !important;
-    border-color: var(--btn_login_border--color) !important;
-    color: var(--btn_cadastrar_text--color) !important;
-    transition: all 0.3s ease !important;
-}
-
-.btn-cadastro:hover,
-.btn-register:hover,
-.btn-cadastrar-demo:hover,
-a.btn-cadastrar-demo:hover,
-a[data-target="#modal-register"]:hover,
-a.btn[href*="cadastr"]:hover,
-a.btn[href*="register"]:hover {
-    filter: brightness(1.2) !important;
-}
-
-/* --- MODALIDADES (ESPORTES: LUTA, BASQUETE, ETC) --- */
-/* Modulaﾃｧﾃ｣o inativa */
-.menu-jogos li a,
-.nav-esportes li a,
-.sports-menu-item {
-    background-color: var(--sidebar--color) !important;
-    color: var(--sidebar_text--color) !important;
-    transition: all 0.3s ease !important;
-}
-
-/* Hover das modalidades inativas (Bem leve) */
-.menu-jogos li a:hover,
-.nav-esportes li a:hover,
-.sports-menu-item:hover {
-    background-color: var(--hover_menu--color) !important;
-    color: var(--menu_hover_text--color) !important;
-}
-
-/* Modalidade Selecionada (Ativa) - Cor bem leve e destacada */
-.menu-jogos li.active a,
-.menu-jogos li a.active,
-.nav-esportes li.active a,
-.sports-menu-item.active,
-.day-tab.active,
-.sports-menu .active a {
-    background-color: var(--menu_active_bg--color) !important;
-    color: var(--menu_active_text--color) !important;
-    font-weight: 700 !important;
-}
-
-/* Conferir Bilhete Branco */
-input[placeholder="Conferir bilhete"],
-input[placeholder="Conferir bilhete"]:focus {
-    background-color: #ffffff !important;
-    color: #333333 !important;
-    border: 1px solid #ccc !important;
-}
-
-/* --- REFORｽO NO CONFERIR BILHETE (BRANCO) --- */
-input[placeholder="Conferir bilhete"],
-.container-pesquisa input,
-#form-bilhete .form-control {
-    background-color: #ffffff !important;
-    color: #333333 !important;
-    border: 1px solid #ccc !important;
-}
-
-input[placeholder="Conferir bilhete"]::placeholder,
-.container-pesquisa input::placeholder,
-#form-bilhete .form-control::placeholder {
-    color: #999999 !important;
-}
-
-/* --- AJUSTES FINAIS SOLICITADOS --- */
-
-/* 2. Cabeｽalho do Bilhete em Preto (Foto 2) */
-.box.box-solid.box-default>.box-header,
-.header-bilhete,
-.ticket-header,
-[style*="background: #173133"] {
-    background-color: var(--cupom_header--color, #000000) !important;
-    background: var(--cupom_header--color, #000000) !important;
-    color: #ffffff !important;
-}
-
-/* 3. Remover bordas da aba de dias (Foto 3) */
-.day-tab.active,
-.day-tab-demo.active {
-    border: none !important;
-    border-left: none !important;
-    border-top: none !important;
-    box-shadow: none !important;
-}
-
-/* Ajuste Botﾃｵes de Valor: Base, Hover e Selecionado */
-.btn-valor-rapido,
-.valores-rapidos .btn,
-.btn-valor,
-.value-btn-group .btn-valor,
-.ticket-values .btn {
-    background-color: var(--cupom_valor_btn--color) !important;
-    background: var(--cupom_valor_btn--color) !important;
-    color: #ffffff !important;
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-    transition: background 0.3s ease !important;
-}
-
-/* Hover e Selecionado */
-.btn-valor-rapido:hover,
-.btn-valor-rapido.active,
-.valores-rapidos .btn:hover,
-.valores-rapidos .btn.active,
-.btn-valor:hover,
-.btn-valor.active,
-.value-btn-group .btn-valor:hover,
-.value-btn-group .btn-valor.active,
-.ticket-values .btn:hover,
-.ticket-values .btn.active {
-    background-color: var(--cupom_valor_btn_hover--color) !important;
-    background: var(--cupom_valor_btn_hover--color) !important;
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-    color: #fff !important;
-}
-
-/* Corrigir texto AO VIVO */
-.tab-ao-vivo, .tab-ao-vivo.active { color: var(--live_text--color, #cc3333) !important;
-    font-weight: bold !important;
-}
-/* --- TOPO NAVBAR (Branco fixo AdminLTE corrigido) --- */
-.main-header, .main-header .navbar { background-color: var(--header_bg--color, var(--sidebar--color)) !important; }
-.main-header .logo { background-color: var(--logo--color, var(--sidebar--color)) !important; }
-
-/* --- BUSCA (Fundo da Barra de Pesquisa / Bilhete) --- */
-.sidebar-form .form-control,
-.input-group-search .form-control {
-    background-color: var(--search_bar_bg--color, #fff) !important;
-    color: var(--search_bar_text--color, #333) !important;
-}
-.sidebar-form input { border-color: transparent !important; }
-
-/* --- MAIS MERCADOS (+ ODDS) FIX --- */
-.plus-odd {
-    background: var(--odds_plus_button--color, var(--primary-color)) !important;
-    border: none !important;
-    color: #fff !important;
-}
-
-/* --- ﾍCONE DE LUPA (Bot縊 de Pesquisa) --- */
-.sidebar-form .btn, .input-group-search .btn, .input-group-search .input-group-addon, .input-group-btn .btn-flat {
-    background-color: var(--search_icon_bg--color, var(--primary-color)) !important;
-    color: var(--search_icon_text--color, #fff) !important;
-    border-color: transparent !important;
-}
-
-/* --- ﾍCONES DE LIXEIRA (Cupom) --- */
-.fa-trash, .remove-aposta, .btn-remove {
-    color: var(--cupom_trash--color, #ff0000) !important;
-}
-
-/* --- FIX BUG MOBILE (MENU MOVENDO) --- */
-/* Previne que o Bootstrap adicione padding ao abrir o modal no mobile, o que empurra a tela */
 @media (max-width: 767px) {
     body.modal-open {
         padding-right: 0 !important;
@@ -1651,13 +1455,9 @@ input[placeholder="Conferir bilhete"]::placeholder,
     transform: translate(0, 0) !important;
 }
 
-/* Garante que o modal fique na frente de tudo quando aberto */
-.modal {
-    z-index: 1050 !important;
-}
-.modal-backdrop {
-    z-index: 1040 !important;
-}
+/* ═══ Z-INDEX MODAIS (ordem correta) ═══ */
+.modal-backdrop { z-index: 1040 !important; }
+.modal { z-index: 1050 !important; }
 
 /* ═══ FIX: CORES DO TEXTO DENTRO DOS MODAIS ═══ */
 /* O tema dark aplica color:#f8fafc (branco) no body, que herda para
@@ -1890,6 +1690,16 @@ body.modal-open .content-wrapper {
     color: #ffffff !important;
 }
 
+.main-header .sidebar-toggle {
+    background-color: var(--header_hamburger--color, #162b2d) !important;
+    color: #fff !important;
+    opacity: 1 !important;
+}
+.main-header .sidebar-toggle:hover {
+    background-color: var(--header_hamburger_hover--color, var(--header_hamburger--color, #0f2022)) !important;
+    opacity: 0.9 !important;
+}
+
 body.modal-open .logo .logo-lg,
 body.modal-open .logo .logo-mini,
 body.modal-open .user-panel img,
@@ -1917,6 +1727,17 @@ body.modal-open .brand-link span {
 }
 .modal-backdrop.fade.in {
     opacity: 0.5 !important;
+}
+
+/* Fix AdminLTE stacking context */
+.wrapper, .content-wrapper { z-index: auto !important; }
+
+/* Star color in modals */
+.modal-title .fa-star { color: #060606 !important; }
+
+/* Share icon fallback */
+.fa-picture-o, .fa-lg {
+    color: var(--share_button_icon--color, #002776) !important;
 }
 
 
@@ -1948,5 +1769,6 @@ body.modal-open .brand-link span {
  . m o d a l - t i t l e   . f a - s t a r   {   c o l o r :   # 0 6 0 6 0 6   ! i m p o r t a n t ;   }  
   
  
-/* Theme-aware text colors are handled in welcome.blade.php <style#theme-text-override> */
-/* Uses CSS variables (var(--menu_active_text--color)) so each theme controls its own text color */
+.fa-picture-o, .fa-lg {
+    color: #002776 !important;
+}
