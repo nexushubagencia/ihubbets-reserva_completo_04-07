@@ -5483,14 +5483,102 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
     }, 15000);
 
-    // Modal stacking issues are now natively handled by custom.css overrides
-    // (.modal z-index: 100000, .modal-backdrop z-index: 99999, .wrapper z-index: auto)
+    // Modal fix: save original body state before any modal opens
+    var self = this;
+    self._sidebarCollapsedBeforeModal = false;
+    self._modalOpenCount = 0;
+    self._logoFixInterval = null;
+
+    // Helper: force logo visible using inline style with !important
+    self._forceLogoVisible = function () {
+      var logo = document.querySelector('.main-header .logo');
+      var logoLg = document.querySelector('.main-header .logo .logo-lg');
+      var logoMini = document.querySelector('.main-header .logo .logo-mini');
+      if (logo) {
+        logo.style.setProperty('width', '230px', 'important');
+        logo.style.setProperty('min-width', '230px', 'important');
+        logo.style.setProperty('display', 'flex', 'important');
+        logo.style.setProperty('align-items', 'center', 'important');
+      }
+      if (logoLg) {
+        logoLg.style.setProperty('display', 'block', 'important');
+        logoLg.style.setProperty('visibility', 'visible', 'important');
+        logoLg.style.setProperty('opacity', '1', 'important');
+        logoLg.style.setProperty('overflow', 'visible', 'important');
+        logoLg.style.setProperty('white-space', 'nowrap', 'important');
+      }
+      if (logoMini) {
+        logoMini.style.setProperty('display', 'none', 'important');
+      }
+      // Remove sidebar-collapse aggressively
+      document.body.classList.remove('sidebar-collapse');
+      // Prevent padding shift
+      document.body.style.setProperty('padding-right', '0px', 'important');
+    };
+
+    // Helper: clear logo forced styles
+    self._clearLogoStyles = function () {
+      var logo = document.querySelector('.main-header .logo');
+      var logoLg = document.querySelector('.main-header .logo .logo-lg');
+      var logoMini = document.querySelector('.main-header .logo .logo-mini');
+      if (logo) {
+        logo.style.removeProperty('width');
+        logo.style.removeProperty('min-width');
+        logo.style.removeProperty('display');
+        logo.style.removeProperty('align-items');
+      }
+      if (logoLg) {
+        logoLg.style.removeProperty('display');
+        logoLg.style.removeProperty('visibility');
+        logoLg.style.removeProperty('opacity');
+        logoLg.style.removeProperty('overflow');
+        logoLg.style.removeProperty('white-space');
+      }
+      if (logoMini) {
+        logoMini.style.removeProperty('display');
+      }
+      document.body.style.removeProperty('padding-right');
+    };
+    $(document).on('show.bs.modal', '.modal', function () {
+      self._modalOpenCount++;
+      if (self._modalOpenCount === 1) {
+        self._sidebarCollapsedBeforeModal = document.body.classList.contains('sidebar-collapse');
+      }
+      self._forceLogoVisible();
+      // Safety net: re-apply every 200ms while modal is open (AdminLTE push-menu may re-add classes)
+      if (self._logoFixInterval) clearInterval(self._logoFixInterval);
+      self._logoFixInterval = setInterval(self._forceLogoVisible, 200);
+    });
     $(document).on('shown.bs.modal', '.modal', function () {
-      $(this).addClass('in show'); // Força a exibição suave sem bugar o Vue
+      self._forceLogoVisible();
+    });
+    $(document).on('hidden.bs.modal', '.modal', function () {
+      self._modalOpenCount = Math.max(0, self._modalOpenCount - 1);
+      if (self._modalOpenCount === 0) {
+        if (self._logoFixInterval) {
+          clearInterval(self._logoFixInterval);
+          self._logoFixInterval = null;
+        }
+        document.body.classList.remove('modal-open');
+        self._clearLogoStyles();
+        if (self._sidebarCollapsedBeforeModal) {
+          document.body.classList.add('sidebar-collapse');
+        }
+        $('.modal-backdrop').remove();
+      } else {
+        // Still have modals open, just remove excess backdrops
+        var visibleBackdrops = $('.modal-backdrop:visible');
+        if (visibleBackdrops.length > self._modalOpenCount) {
+          visibleBackdrops.last().remove();
+        }
+      }
     });
   },
   beforeDestroy: function beforeDestroy() {
     this.stopAutoplay();
+    if (this._bodyObserver) {
+      this._bodyObserver.disconnect();
+    }
     if (this._clockInterval) {
       clearInterval(this._clockInterval);
     }
@@ -15376,7 +15464,5986 @@ render._withStripped = true;
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
-var render=function render(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"wrapper"},[_c("notifications",{attrs:{group:"foo"}}),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-login"}},[_c("div",{staticClass:"modal-dialog modal-sm"},[_c("div",{staticClass:"modal-content",staticStyle:{"border-radius":"8px",border:"none","box-shadow":"0 5px 15px rgba(0,0,0,0.3)"}},[_vm._m(0),_vm._v(" "),_c("div",{staticClass:"modal-body",staticStyle:{padding:"0 30px 30px"}},[_c("div",{staticClass:"text-center",staticStyle:{"margin-bottom":"25px"}},[_c("img",{staticStyle:{"max-width":"150px","max-height":"120px","margin-bottom":"15px"},attrs:{src:_vm.server.logo_img,alt:"Logo"}}),_vm._v(" "),_c("h3",{staticStyle:{margin:"0","font-weight":"800",color:"#333","font-family":"'Antipasto', Helvetica","text-transform":"uppercase","font-size":"24px"}},[_vm._v("\n              "+_vm._s(_vm.server.logo.split(" - ")[0])+"\n            ")]),_vm._v(" "),_c("p",{staticStyle:{color:"#888","font-size":"14px","margin-top":"5px"}},[_vm._v("Iniciar sua sessão")])]),_vm._v(" "),_c("div",{staticClass:"login-box-body",staticStyle:{padding:"0",background:"transparent"}},[_vm.errorLogin?_c("div",{staticClass:"alert alert-danger alert-dismissible",staticStyle:{padding:"8px","font-size":"13px","border-radius":"4px"}},[_vm._v("\n              "+_vm._s(_vm.messageError)+"\n            ")]):_vm._e(),_vm._v(" "),_c("div",{staticClass:"form-group has-feedback",staticStyle:{"margin-bottom":"15px"}},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.username,expression:"username"}],staticClass:"form-control",staticStyle:{height:"45px","border-radius":"4px",border:"1px solid #ddd",background:"var(--container_jogos--color, #f9f9f9)","padding-right":"40px"},attrs:{type:"text",placeholder:"Login"},domProps:{value:_vm.username},on:{input:function input($event){if($event.target.composing)return;_vm.username=$event.target.value;}}}),_vm._v(" "),_c("span",{staticClass:"fa fa-envelope form-control-feedback",staticStyle:{"line-height":"45px",color:"#777"}})]),_vm._v(" "),_c("div",{staticClass:"form-group has-feedback",staticStyle:{"margin-bottom":"10px"}},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.password,expression:"password"}],staticClass:"form-control",staticStyle:{height:"45px","border-radius":"4px",border:"1px solid #ddd",background:"var(--container_jogos--color, #f9f9f9)","padding-right":"40px"},attrs:{type:"password",placeholder:"Senha"},domProps:{value:_vm.password},on:{keyup:function keyup($event){if(!$event.type.indexOf("key")&&_vm._k($event.keyCode,"enter",13,$event.key,"Enter"))return null;return _vm.login();},input:function input($event){if($event.target.composing)return;_vm.password=$event.target.value;}}}),_vm._v(" "),_c("span",{staticClass:"fa fa-lock form-control-feedback",staticStyle:{"line-height":"45px",color:"#777"}})]),_vm._v(" "),_vm._m(1),_vm._v(" "),_c("button",{staticClass:"btn btn-block",staticStyle:{"background-color":"var(--sidebar--color) !important",color:"#fff !important","font-weight":"bold",height:"50px","font-size":"18px","border-radius":"4px",border:"none","text-transform":"capitalize"},on:{click:function click($event){return _vm.login();}}},[_vm._v("\n              "+_vm._s(_vm.text_btn_login)+"\n            ")])])])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-register","aria-modal":"true",role:"dialog"}},[_c("div",{staticClass:"modal-dialog modal-md"},[_c("div",{staticClass:"modal-content"},[_vm._m(2),_vm._v(" "),_c("div",{staticClass:"modal-body"},[_c("div",[_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-6"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center"},[_vm._v("Nome Completo *")]),_vm._v(" "),_c("div",{staticClass:"input-group"},[_vm._m(3),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.nome,expression:"formRegister.nome"}],staticClass:"form-control",attrs:{tabindex:"1",type:"text",placeholder:"Nome Completo *"},domProps:{value:_vm.formRegister.nome},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"nome",$event.target.value);}}})])])]),_vm._v(" "),_c("div",{staticClass:"col-md-6"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Nome de usuário *")]),_vm._v(" "),_c("div",{staticClass:"input-group"},[_vm._m(4),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.username,expression:"formRegister.username"}],staticClass:"form-control",attrs:{tabindex:"2",type:"text",placeholder:"Nome de usuário"},domProps:{value:_vm.formRegister.username},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"username",$event.target.value);}}})])])])]),_vm._v(" "),_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-6"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Criar senha *")]),_vm._v(" "),_c("div",{staticClass:"input-group"},[_vm._m(5),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.password,expression:"formRegister.password"}],staticClass:"form-control",attrs:{tabindex:"3",autocomplete:"new-password",type:"password",placeholder:"Criar senha"},domProps:{value:_vm.formRegister.password},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"password",$event.target.value);}}})])])]),_vm._v(" "),_c("div",{staticClass:"col-md-6"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Confirmar senha *")]),_vm._v(" "),_c("div",{staticClass:"input-group"},[_vm._m(6),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.password_confirmation,expression:"formRegister.password_confirmation"}],staticClass:"form-control",attrs:{tabindex:"4",type:"password",placeholder:"Confirmar senha"},domProps:{value:_vm.formRegister.password_confirmation},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"password_confirmation",$event.target.value);}}})])])])]),_vm._v(" "),_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-6"},[_c("div",{staticClass:"form-group"},[_vm._m(7),_vm._v(" "),_c("div",{staticClass:"input-group"},[_vm._m(8),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.cpf,expression:"formRegister.cpf"}],staticClass:"form-control",attrs:{tabindex:"5",placeholder:"CPF"},domProps:{value:_vm.formRegister.cpf},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"cpf",$event.target.value);}}})])])]),_vm._v(" "),_c("div",{staticClass:"col-md-6"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Contato *")]),_vm._v(" "),_c("div",{staticClass:"d-flex",staticStyle:{display:"flex"}},[_vm._m(9),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.telefone,expression:"formRegister.telefone"}],staticClass:"form-control",staticStyle:{width:"70%"},attrs:{tabindex:"6",placeholder:"Celular"},domProps:{value:_vm.formRegister.telefone},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"telefone",$event.target.value);}}})])])])]),_vm._v(" "),_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-6"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Data de nascimento *")]),_vm._v(" "),_c("small",{staticClass:"visible-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Data de nascimento *")]),_vm._v(" "),_c("div",{staticClass:"input-group",staticStyle:{display:"flex"}},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.dia,expression:"formRegister.dia"}],staticClass:"form-control col-md-4",staticStyle:{width:"30%"},attrs:{placeholder:"dia"},domProps:{value:_vm.formRegister.dia},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"dia",$event.target.value);}}}),_vm._v(" "),_c("select",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.mes,expression:"formRegister.mes"}],staticClass:"form-control col-md-4",staticStyle:{width:"40%"},on:{change:function change($event){var $$selectedVal=Array.prototype.filter.call($event.target.options,function(o){return o.selected;}).map(function(o){var val="_value"in o?o._value:o.value;return val;});_vm.$set(_vm.formRegister,"mes",$event.target.multiple?$$selectedVal:$$selectedVal[0]);}}},[_c("option",{attrs:{value:""}},[_vm._v("Mês")]),_vm._v(" "),_c("option",{attrs:{value:"1"}},[_vm._v("Janeiro")]),_vm._v(" "),_c("option",{attrs:{value:"2"}},[_vm._v("Fevereiro")]),_vm._v(" "),_c("option",{attrs:{value:"3"}},[_vm._v("Março")]),_vm._v(" "),_c("option",{attrs:{value:"4"}},[_vm._v("Abril")]),_vm._v(" "),_c("option",{attrs:{value:"5"}},[_vm._v("Maio")]),_vm._v(" "),_c("option",{attrs:{value:"6"}},[_vm._v("Junho")]),_vm._v(" "),_c("option",{attrs:{value:"7"}},[_vm._v("Julho")]),_vm._v(" "),_c("option",{attrs:{value:"8"}},[_vm._v("Agosto")]),_vm._v(" "),_c("option",{attrs:{value:"9"}},[_vm._v("Setembro")]),_vm._v(" "),_c("option",{attrs:{value:"10"}},[_vm._v("Outubro")]),_vm._v(" "),_c("option",{attrs:{value:"11"}},[_vm._v("Novembro")]),_vm._v(" "),_c("option",{attrs:{value:"12"}},[_vm._v("Dezembro")])]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.ano,expression:"formRegister.ano"}],staticClass:"form-control col-md-4",staticStyle:{width:"30%"},attrs:{placeholder:"ano"},domProps:{value:_vm.formRegister.ano},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"ano",$event.target.value);}}})])])]),_vm._v(" "),_c("div",{staticClass:"col-md-6"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Email *")]),_vm._v(" "),_c("div",{staticClass:"input-group"},[_vm._m(10),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.email,expression:"formRegister.email"}],staticClass:"form-control",attrs:{tabindex:"8",type:"email",placeholder:"E-mail"},domProps:{value:_vm.formRegister.email},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"email",$event.target.value);}}})])])])]),_vm._v(" "),_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-4"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Tipo Chave Pix *")]),_vm._v(" "),_c("select",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.pix_key_type,expression:"formRegister.pix_key_type"}],staticClass:"form-control",on:{change:function change($event){var $$selectedVal=Array.prototype.filter.call($event.target.options,function(o){return o.selected;}).map(function(o){var val="_value"in o?o._value:o.value;return val;});_vm.$set(_vm.formRegister,"pix_key_type",$event.target.multiple?$$selectedVal:$$selectedVal[0]);}}},[_c("option",{attrs:{value:"CPF"}},[_vm._v("CPF")]),_vm._v(" "),_c("option",{attrs:{value:"EMAIL"}},[_vm._v("E-mail")]),_vm._v(" "),_c("option",{attrs:{value:"TELEFONE"}},[_vm._v("Telefone")]),_vm._v(" "),_c("option",{attrs:{value:"ALEATORIA"}},[_vm._v("Chave Aleatória")])])])]),_vm._v(" "),_c("div",{staticClass:"col-md-8"},[_c("div",{staticClass:"form-group"},[_c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("Chave Pix para Recebimento *")]),_vm._v(" "),_c("div",{staticClass:"input-group"},[_vm._m(11),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.pix_key,expression:"formRegister.pix_key"}],staticClass:"form-control",attrs:{type:"text",placeholder:"Sua chave Pix"},domProps:{value:_vm.formRegister.pix_key},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formRegister,"pix_key",$event.target.value);}}})])])])])]),_vm._v(" "),_c("div",{staticStyle:{"margin-top":"15px","margin-bottom":"2%","font-size":"14px"}},[_c("label",{staticStyle:{cursor:"pointer","font-weight":"normal",display:"flex","align-items":"center",gap:"8px"}},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formRegister.termos,expression:"formRegister.termos"}],staticStyle:{width:"20px",height:"20px",cursor:"pointer !important","pointer-events":"all !important"},attrs:{type:"checkbox"},domProps:{checked:Array.isArray(_vm.formRegister.termos)?_vm._i(_vm.formRegister.termos,null)>-1:_vm.formRegister.termos},on:{change:function change($event){var $$a=_vm.formRegister.termos,$$el=$event.target,$$c=$$el.checked?true:false;if(Array.isArray($$a)){var $$v=null,$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&_vm.$set(_vm.formRegister,"termos",$$a.concat([$$v]));}else{$$i>-1&&_vm.$set(_vm.formRegister,"termos",$$a.slice(0,$$i).concat($$a.slice($$i+1)));}}else{_vm.$set(_vm.formRegister,"termos",$$c);}}}}),_vm._v(" "),_c("span",[_vm._v("Certifico que tenho mais de 18 anos de idade e declaro que li e concordo com os "),_c("a",{staticClass:"cursor-pointer",on:{click:function click($event){$event.stopPropagation();return _vm.loadRegulamento();}}},[_vm._v("termos de uso do site")])])])])]),_vm._v(" "),_c("div",{staticClass:"modal-footer d-flex justify-content-center",staticStyle:{"text-align":"center"}},[_c("button",{staticClass:"btn btn-success col-md-6 col-md-offset-3 col-xs-12",staticStyle:{"font-size":"20px","font-weight":"bold","margin-top":"10px"},on:{click:function click($event){return _vm.submitRegister();}}},[_vm._v("\n            Registrar-se\n          ")])])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-deposit"}},[_c("div",{staticClass:"modal-dialog modal-sm"},[_c("div",{staticClass:"modal-content"},[_vm._m(12),_vm._v(" "),_c("div",{staticClass:"modal-body"},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Valor do Depósito (R$)")]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.depositAmount,expression:"depositAmount"}],staticClass:"form-control",attrs:{type:"number",placeholder:"Ex: 20.00"},domProps:{value:_vm.depositAmount},on:{input:function input($event){if($event.target.composing)return;_vm.depositAmount=$event.target.value;}}})]),_vm._v(" "),_c("div",{staticClass:"row"},_vm._l([10,20,50,100,200,500],function(val){return _c("div",{key:val,staticClass:"col-xs-4",staticStyle:{"margin-bottom":"5px"}},[_c("button",{staticClass:"btn btn-default btn-block btn-xs",on:{click:function click($event){_vm.depositAmount=val;}}},[_vm._v("R$ "+_vm._s(val))])]);}),0)]),_vm._v(" "),_c("div",{staticClass:"modal-footer"},[_c("button",{staticClass:"btn btn-success btn-block",attrs:{disabled:_vm.loadingPix},on:{click:function click($event){return _vm.submitPix();}}},[_c("i",{staticClass:"fa fa-qrcode"}),_vm._v(" GERAR QR CODE\n          ")])])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-pix-display"}},[_c("div",{staticClass:"modal-dialog modal-md"},[_c("div",{staticClass:"modal-content"},[_vm._m(13),_vm._v(" "),_c("div",{staticClass:"modal-body text-center"},[_c("p",[_vm._v("Escaneie o QR Code abaixo para pagar:")]),_vm._v(" "),_vm.pixData.qr_code_base64?_c("img",{staticStyle:{"max-width":"250px",margin:"10px auto",display:"block"},attrs:{src:"data:image/png;base64,"+_vm.pixData.qr_code_base64}}):_vm._e(),_vm._v(" "),_c("div",{staticClass:"form-group",staticStyle:{"margin-top":"20px"}},[_c("label",[_vm._v("PIX Copia e Cola:")]),_vm._v(" "),_c("div",{staticClass:"input-group"},[_c("input",{staticClass:"form-control",attrs:{type:"text",readonly:""},domProps:{value:_vm.pixData.qr_code}}),_vm._v(" "),_c("span",{staticClass:"input-group-btn"},[_c("button",{staticClass:"btn btn-primary",on:{click:function click($event){return _vm.copyPix();}}},[_vm._v("COPIAR")])])])]),_vm._v(" "),_vm._m(14)])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-withdrawal"}},[_c("div",{staticClass:"modal-dialog modal-sm"},[_c("div",{staticClass:"modal-content"},[_vm._m(15),_vm._v(" "),_c("div",{staticClass:"modal-body"},[_vm._m(16),_vm._v(" "),_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Valor do Saque (R$)")]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.withdrawalAmount,expression:"withdrawalAmount"}],staticClass:"form-control",attrs:{type:"number",placeholder:"Mínimo R$ 20.00"},domProps:{value:_vm.withdrawalAmount},on:{input:function input($event){if($event.target.composing)return;_vm.withdrawalAmount=$event.target.value;}}})]),_vm._v(" "),_vm.caixaUser?_c("p",{staticStyle:{"font-weight":"bold"}},[_vm._v("Saldo disponível: R$ "+_vm._s(_vm.caixaUser.balance))]):_vm._e(),_vm._v(" "),_c("hr"),_vm._v(" "),_vm._m(17),_vm._v(" "),_c("div",{staticClass:"table-responsive"},[_c("table",{staticClass:"table table-condensed",staticStyle:{"font-size":"11px",color:"#333 !important"}},[_vm._m(18),_vm._v(" "),_c("tbody",[_vm._l(_vm.withdrawalHistory,function(w){return _c("tr",{key:w.id},[_c("td",[_vm._v(_vm._s(_vm._f("formatDateShort")(w.created_at)))]),_vm._v(" "),_c("td",[_vm._v("R$ "+_vm._s(w.amount))]),_vm._v(" "),_c("td",[w.status=="pending"?_c("span",{staticClass:"label label-warning"},[_vm._v("Pendente")]):_vm._e(),_vm._v(" "),w.status=="approved"?_c("span",{staticClass:"label label-success"},[_vm._v("Pago")]):_vm._e(),_vm._v(" "),w.status=="rejected"?_c("span",{staticClass:"label label-danger"},[_vm._v("Recusado")]):_vm._e()])]);}),_vm._v(" "),_vm.withdrawalHistory.length==0?_c("tr",[_c("td",{staticClass:"text-center",attrs:{colspan:"3"}},[_vm._v("Nenhum saque solicitado.")])]):_vm._e()],2)])])]),_vm._v(" "),_c("div",{staticClass:"modal-footer"},[_c("button",{staticClass:"btn btn-primary btn-block",attrs:{disabled:_vm.loadingWithdrawal},on:{click:function click($event){return _vm.submitWithdrawal();}}},[_vm._v("\n            SOLICITAR SAQUE\n          ")])])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-bonus"}},[_c("div",{staticClass:"modal-dialog modal-sm"},[_c("div",{staticClass:"modal-content"},[_vm._m(19),_vm._v(" "),_c("div",{staticClass:"modal-body"},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Código Promocional")]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.promoCode,expression:"promoCode"}],staticClass:"form-control",attrs:{type:"text",placeholder:"Digite seu código"},domProps:{value:_vm.promoCode},on:{input:function input($event){if($event.target.composing)return;_vm.promoCode=$event.target.value;}}})]),_vm._v(" "),_vm.bonusData?_c("div",{staticClass:"alert alert-info",staticStyle:{color:"#31708f !important"}},[_vm._m(20),_vm._v(" "),_c("p",[_vm._v("Saldo: R$ "+_vm._s(_vm.bonusData.current_balance))]),_vm._v(" "),_c("p",[_vm._v("Rollover: "+_vm._s(_vm.bonusData.current_rollover)+" / "+_vm._s(_vm.bonusData.target_rollover))]),_vm._v(" "),_c("div",{staticClass:"progress progress-xs",staticStyle:{"margin-bottom":"0"}},[_c("div",{staticClass:"progress-bar progress-bar-success",style:"width: "+_vm.bonusData.current_rollover/_vm.bonusData.target_rollover*100+"%"})])]):_vm._e()]),_vm._v(" "),_c("div",{staticClass:"modal-footer"},[_c("button",{staticClass:"btn btn-success btn-block",attrs:{disabled:_vm.loadingBonus},on:{click:function click($event){return _vm.applyPromoCode();}}},[_vm._v("\n            ATIVAR CÓDIGO\n          ")])])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-account"}},[_c("div",{staticClass:"modal-dialog modal-md"},[_c("div",{staticClass:"modal-content"},[_vm._m(21),_vm._v(" "),_c("div",{staticClass:"modal-body",staticStyle:{color:"#333 !important"}},[_c("div",{staticClass:"nav-tabs-custom"},[_vm._m(22),_vm._v(" "),_c("div",{staticClass:"tab-content",staticStyle:{padding:"15px"}},[_c("div",{staticClass:"tab-pane active",attrs:{id:"tab_perfil"}},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Nome:")]),_vm._v(" "),_c("input",{staticClass:"form-control",attrs:{type:"text",readonly:""},domProps:{value:_vm.name}})]),_vm._v(" "),_vm.caixaUser?_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("CPF:")]),_vm._v(" "),_c("input",{staticClass:"form-control",attrs:{type:"text",readonly:""},domProps:{value:_vm.maskSensitiveData(_vm.caixaUser.cpf)}})]):_vm._e(),_vm._v(" "),_vm.caixaUser?_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Chave PIX:")]),_vm._v(" "),_c("input",{staticClass:"form-control",attrs:{type:"text",readonly:""},domProps:{value:_vm.maskSensitiveData(_vm.caixaUser.pix_key)}}),_vm._v(" "),_c("small",[_vm._v("Tipo: "+_vm._s(_vm.caixaUser.pix_key_type))])]):_vm._e()]),_vm._v(" "),_c("div",{staticClass:"tab-pane",attrs:{id:"tab_senha"}},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Nova Senha:")]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formPassword.password,expression:"formPassword.password"}],staticClass:"form-control",attrs:{type:"password",placeholder:"Mínimo 6 caracteres"},domProps:{value:_vm.formPassword.password},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formPassword,"password",$event.target.value);}}})]),_vm._v(" "),_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Confirmar Senha:")]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.formPassword.password_confirmation,expression:"formPassword.password_confirmation"}],staticClass:"form-control",attrs:{type:"password"},domProps:{value:_vm.formPassword.password_confirmation},on:{input:function input($event){if($event.target.composing)return;_vm.$set(_vm.formPassword,"password_confirmation",$event.target.value);}}})]),_vm._v(" "),_c("button",{staticClass:"btn btn-primary btn-block",attrs:{disabled:_vm.loadingPassword},on:{click:function click($event){return _vm.changePassword();}}},[_vm.loadingPassword?_c("i",{staticClass:"fa fa-refresh"}):_vm._e(),_vm._v(" ATUALIZAR SENHA\n                ")])])])])])])])]),_vm._v(" "),_c("div",{directives:[{name:"show",rawName:"v-show",value:_vm.logado,expression:"logado"}],staticClass:"modal fade",attrs:{id:"modal-caixa"}},[_c("div",{staticClass:"modal-dialog"},[_c("div",{staticClass:"modal-content"},[_c("div",{staticClass:"modal-header"},[_vm._m(23),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-money"}),_vm._v(" "),_c("b",[_vm._v(_vm._s(_vm.name))])])]),_vm._v(" "),_c("div",{staticClass:"modal-body box box-primary"},[_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-12"},[_c("div",{staticClass:"valor-fechamento-positivo"},[_vm._v("\n                Quantidade de Bilhetes: "+_vm._s(_vm.caixaUser.quantidade)+"\n              ")]),_vm._v(" "),_c("div",{staticClass:"valor-fechamento-positivo"},[_vm._v("\n                Apostas no Ponto: "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.entradas))+"\n              ")]),_vm._v(" "),_c("div",{staticClass:"valor-fechamento-total-aberto"},[_vm._v("\n                Apostas Aguardando :\n                "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.entradas_abertas))+"\n              ")]),_vm._v(" "),_c("div",{staticClass:"valor-fechamento-total-negativo"},[_vm._v("\n                Total Prêmios: "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.saidas))+"\n              ")]),_vm._v(" "),_c("div",{staticClass:"valor-fechamento-positivo"},[_vm._v("\n                Adiantamentos: "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.lancamentos))+"\n              ")]),_vm._v(" "),_c("div",{staticClass:"valor-fechamento-positivo"},[_vm._v("\n                Comissões: "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.comissoes))+"\n              ")]),_vm._v(" "),_vm.caixaUser.total>=0?_c("div",{staticClass:"valor-fechamento-total-positivo"},[_vm._v("\n                Total: "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.total))+"\n              ")]):_vm._e(),_vm._v(" "),_vm.caixaUser.total<0?_c("div",{staticClass:"valor-fechamento-total-negativo"},[_vm._v("\n                Total: "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.total))+"\n              ")]):_vm._e()])])])])])]),_vm._v(" "),_c("div",{directives:[{name:"show",rawName:"v-show",value:_vm.logado,expression:"logado"}],staticClass:"modal fade",attrs:{id:"modal-relatorio"}},[_c("div",{staticClass:"modal-dialog"},[_c("div",{staticClass:"modal-content"},[_vm._m(24),_vm._v(" "),_c("div",{staticClass:"modal-body box box-primary"},[_c("div",{staticClass:"form-inline relatorio"},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("De:")]),_vm._v(" "),_c("div",{staticClass:"input-group date"},[_vm._m(25),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.date1,expression:"date1"}],staticClass:"form-control pull-right",attrs:{type:"date",id:"datepicker-start"},domProps:{value:_vm.date1},on:{change:function change($event){return _vm.sendRelatorio();},input:function input($event){if($event.target.composing)return;_vm.date1=$event.target.value;}}})]),_vm._v(" "),_c("label",[_vm._v("Até:")]),_vm._v(" "),_c("div",{staticClass:"input-group date"},[_vm._m(26),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.date2,expression:"date2"}],staticClass:"form-control pull-right",attrs:{type:"date",id:"datepicker-end"},domProps:{value:_vm.date2},on:{change:function change($event){return _vm.sendRelatorio();},input:function input($event){if($event.target.composing)return;_vm.date2=$event.target.value;}}})])])]),_vm._v(" "),_c("div",{staticClass:"row"},[_c("clip-loader",{attrs:{loading:_vm.loadingCaixa,color:_vm.color,size:_vm.size}}),_vm._v(" "),Object.values(this.relatorio).length>0?_c("div",{staticClass:"col-md-12"},[_c("div",{staticClass:"valor-fechamento-positivo"},[_vm._v("\n                Quantidade: "+_vm._s(_vm.relatorio.quantidade)+"\n              ")]),_vm._v(" "),_c("div",{staticClass:"valor-fechamento-positivo"},[_vm._v("\n                Entradas: "+_vm._s(_vm._f("formatMoeda")(_vm.relatorio.entradas))+"\n              ")]),_vm._v(" "),_c("div",{staticClass:"valor-fechamento-total-negativo"},[_vm._v("\n                Saídas: "+_vm._s(_vm._f("formatMoeda")(_vm.relatorio.saidas))+"\n              ")]),_vm._v(" "),_c("div",{staticClass:"valor-fechamento-positivo"},[_vm._v("\n                Comissões: "+_vm._s(_vm._f("formatMoeda")(_vm.relatorio.comissaocambista))+"\n              ")]),_vm._v(" "),_vm.relatorio.saldo>=0?_c("div",{staticClass:"valor-fechamento-total-positivo"},[_vm._v("\n                Total: "+_vm._s(_vm._f("formatMoeda")(_vm.relatorio.saldo))+"\n              ")]):_vm._e(),_vm._v(" "),_vm.relatorio.saldo<0?_c("div",{staticClass:"valor-fechamento-total-negativo"},[_vm._v("\n                Total: "+_vm._s(_vm._f("formatMoeda")(_vm.relatorio.saldo))+"\n              ")]):_vm._e()]):_vm._e()],1)])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-pre-aposta",tabindex:"-1",role:"dialog","aria-hidden":"true"}},[_c("div",{staticClass:"modal-dialog"},[_c("div",{staticClass:"modal-content",staticStyle:{"border-radius":"4px",border:"none","box-shadow":"0 4px 15px rgba(0,0,0,0.2)"}},[_vm._m(27),_vm._v(" "),_c("div",{staticClass:"modal-body",staticStyle:{"text-align":"center",padding:"30px 20px"}},[_c("p",{staticStyle:{"font-size":"16px",color:"#555","text-align":"left","margin-bottom":"25px"}},[_vm._v("Procure o colaborador mais próximo, informando o seguinte código, para validação:")]),_vm._v(" "),_c("h2",{staticStyle:{"font-weight":"800","font-size":"34px","letter-spacing":"1px","margin-bottom":"25px",color:"#333"}},[_vm._v(_vm._s(_vm.cupom_pre_aposta))]),_vm._v(" "),_c("div",{staticStyle:{"margin-bottom":"30px",display:"flex","justify-content":"center",gap:"10px","flex-wrap":"wrap"}},[_c("button",{staticClass:"btn btn-info",staticStyle:{"background-color":"#17a2b8","border-color":"#17a2b8",color:"#fff",padding:"8px 15px","font-weight":"bold","border-radius":"3px"},on:{click:function click($event){return _vm.copyToClipboard(_vm.cupom_pre_aposta);}}},[_c("i",{staticClass:"fa fa-copy"}),_vm._v(" COPIAR CÓDIGO\n            ")]),_vm._v(" "),_c("a",{staticClass:"btn btn-info",staticStyle:{"background-color":"#17a2b8","border-color":"#17a2b8",color:"#fff",padding:"8px 15px","font-weight":"bold","border-radius":"3px"},attrs:{href:_vm.link,target:"_blank"}},[_c("i",{staticClass:"fa fa-whatsapp"}),_vm._v(" COMPARTILHAR\n            ")])]),_vm._v(" "),_vm._m(28)])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-bilhete",tabindex:"-1",role:"dialog","aria-hidden":"true"}},[_c("div",{staticClass:"modal-dialog"},_vm._l(_vm.bilhetes,function(palpite){return _c("div",{key:palpite.id,staticClass:"modal-content",staticStyle:{border:"none","border-radius":"0","background-color":"#FDF5D2",color:"#333","font-family":"'Montserrat', sans-serif"}},[_c("div",{staticClass:"modal-header",staticStyle:{"background-color":"#00ADEF",border:"none",padding:"15px","text-align":"center","border-radius":"0"}},[_vm._m(29,true),_vm._v(" "),_c("h4",{staticClass:"modal-title",staticStyle:{color:"#fff","font-weight":"900","text-transform":"uppercase",margin:"0","letter-spacing":"1.5px","font-size":"22px"}},[_vm._v("\n              "+_vm._s(palpite.status)+"\n            ")])]),_vm._v(" "),_c("div",{staticClass:"modal-body",staticStyle:{padding:"0"}},[_c("div",{staticStyle:{padding:"20px 0","text-align":"center"}},[_c("img",{staticStyle:{"max-width":"200px",height:"auto"},attrs:{src:_vm.server.logo_img||"/img/logo.png"}}),_vm._v(" "),_vm.server.logo?_c("h3",{staticStyle:{margin:"10px 0 0","font-weight":"900",color:"#000","text-transform":"uppercase","font-size":"18px","letter-spacing":"1px"}},[_vm._v("\n                  "+_vm._s(_vm.server.logo.split(" - ")[0])+"\n                ")]):_vm._e()]),_vm._v(" "),_c("div",{staticStyle:{"border-top":"1.5px dashed #BDB76B",width:"90%",margin:"0 auto 20px"}}),_vm._v(" "),_c("div",{staticStyle:{padding:"0 20px"}},[palpite.modalidade!="Loto"&&(!palpite.cupom||!palpite.cupom.startsWith("LOTO-"))?_c("h4",{staticStyle:{"text-align":"center","font-weight":"800","text-transform":"uppercase","margin-bottom":"20px",color:"#444","letter-spacing":"1px"}},[_vm._v("\n                  "+_vm._s(palpite.tipo)+"\n                ")]):_vm._e(),_vm._v(" "),palpite.modalidade!="Loto"&&(!palpite.cupom||!palpite.cupom.startsWith("LOTO-"))?_c("div",{staticStyle:{"font-size":"13px","line-height":"1.8","margin-bottom":"20px",color:"#555"}},[_c("div",{staticStyle:{display:"flex","justify-content":"space-between"}},[_c("span",[_vm._v("DATA")]),_vm._v(" "),_c("b",{staticStyle:{color:"#000"}},[_vm._v(_vm._s(_vm._f("formatDate")(palpite.created_at)))])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between"}},[_c("span",[_vm._v("VENDEDOR")]),_vm._v(" "),_c("b",{staticStyle:{color:"#000"}},[_vm._v(_vm._s(palpite.vendedor))])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between"}},[_c("span",[_vm._v("CLIENTE")]),_vm._v(" "),_c("b",{staticStyle:{color:"#000"}},[_vm._v(_vm._s(palpite.cliente))])])]):_vm._e(),_vm._v(" "),_c("div",{staticStyle:{"border-top":"1.5px dashed #BDB76B",width:"100%","margin-bottom":"15px"}}),_vm._v(" "),palpite.modalidade!="Loto"&&(!palpite.palpites_loto||palpite.palpites_loto.length==0)&&(!palpite.cupom||!palpite.cupom.startsWith("LOTO-"))?_c("div",{staticStyle:{display:"flex","justify-content":"space-between","font-size":"11px","font-weight":"700",color:"#888","text-transform":"uppercase","margin-bottom":"10px"}},[_c("span",[_vm._v("EVENTO / MERCADO")]),_vm._v(" "),_c("span",[_vm._v("COTAÇÃO")])]):_vm._e(),_vm._v(" "),_vm._l(palpite.palpites,function(palp){return palpite.modalidade!="Loto"&&(!palpite.palpites_loto||palpite.palpites_loto.length==0)&&(!palpite.cupom||!palpite.cupom.startsWith("LOTO-"))?_c("div",{key:palp.id,staticStyle:{"margin-bottom":"25px"}},[_c("div",{staticStyle:{"font-size":"11px",color:"#777","margin-bottom":"3px"}},[_vm._v("\n                      "+_vm._s(palp.sport)+" • "+_vm._s(_vm._f("formatDate")(palp.match_temp))+"\n                    ")]),_vm._v(" "),_c("div",{staticStyle:{color:"#D37D2A","font-weight":"800","font-size":"13px","text-transform":"uppercase","margin-bottom":"4px"}},[_vm._v("\n                      "+_vm._s(palp.league)+"\n                    ")]),_vm._v(" "),_c("div",{staticStyle:{"font-weight":"900","font-size":"16px",color:"#000","margin-bottom":"4px"}},[_vm._v("\n                      "+_vm._s(palp.home)+" X "+_vm._s(palp.away)+"\n                    ")]),_vm._v(" "),_c("div",{staticStyle:{"font-size":"12px",color:"#666","font-style":"italic","margin-bottom":"8px"}},[_vm._v("\n                      "+_vm._s(palp.group_opp)+"\n                    ")]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between","align-items":"flex-end","margin-bottom":"5px"}},[_c("b",{staticStyle:{"font-size":"16px",color:"#000"}},[_vm._v(_vm._s(palp.palpite))]),_vm._v(" "),_c("b",{staticStyle:{"font-size":"18px",color:"#000"}},[_vm._v(_vm._s(_vm._f("formatCotacao")(palp.cotacao)))])]),_vm._v(" "),_c("div",{staticStyle:{"background-color":"#00ADEF",color:"#fff","text-align":"center","font-weight":"900","font-size":"12px",padding:"4px 0","text-transform":"uppercase","border-radius":"4px"}},[_vm._v("\n                      "+_vm._s(palp.status)+"\n                    ")])]):_vm._e();}),_vm._v(" "),palpite.modalidade=="Loto"||palpite.palpites_loto&&palpite.palpites_loto.length>0||palpite.cupom&&palpite.cupom.startsWith("LOTO-")?_c("div",{staticStyle:{padding:"10px 0"}},[_c("div",{staticStyle:{background:"#00ADEF",color:"#fff",padding:"10px","border-radius":"8px","margin-bottom":"20px","text-align":"center"}},[_c("div",{staticClass:"thermal-loto-ticket",staticStyle:{background:"#f8ecc2",color:"#000","font-family":"'Courier New', Courier, monospace",padding:"25px 20px",border:"1px solid #e1d1a1","box-shadow":"0 4px 10px rgba(0,0,0,0.1)","margin-bottom":"20px",position:"relative",overflow:"hidden","font-size":"13px","line-height":"1.4"}},[_c("div",{staticStyle:{position:"absolute",top:"-5px",left:"0",right:"0",height:"10px",background:"radial-gradient(circle, transparent 70%, #fff 70%)","background-size":"15px 15px"}}),_vm._v(" "),_c("div",{staticStyle:{"text-align":"center","border-bottom":"1.5px dashed #000","padding-bottom":"15px","margin-bottom":"15px"}},[_c("h2",{staticStyle:{margin:"0","font-weight":"900","font-size":"24px","letter-spacing":"1px"}},[_vm._v(_vm._s(palpite.tipo.toUpperCase()))]),_vm._v(" "),_c("p",{staticStyle:{margin:"8px 0","font-size":"15px","font-weight":"900",background:"#000",color:"#f8ecc2",display:"inline-block",padding:"2px 10px"}},[_vm._v("CONCURSO: "+_vm._s(palpite.concurso||"OFICIAL"))]),_vm._v(" "),_c("p",{staticStyle:{margin:"5px 0","font-size":"12px"}},[_vm._v("EMISSÃO: "+_vm._s(_vm._f("formatDate")(palpite.created_at)))])]),_vm._v(" "),_c("div",{staticStyle:{"margin-bottom":"20px"}},[_c("p",{staticStyle:{"font-weight":"900","margin-bottom":"12px","text-decoration":"underline","text-align":"center"}},[_vm._v("DEZENAS ESCOLHIDAS")]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","flex-wrap":"wrap","justify-content":"center",gap:"8px"}},_vm._l(palpite.palpites_loto,function(palp){return _c("div",{key:palp.id,staticStyle:{border:"1.5px solid #000","min-width":"35px",height:"35px",display:"flex","align-items":"center","justify-content":"center","font-weight":"900","font-size":"18px","border-radius":"4px"}},[_vm._v("\n                            "+_vm._s(palp.dezena)+"\n                          ")]);}),0)]),_vm._v(" "),_c("div",{staticStyle:{"border-top":"1.5px dashed #000","border-bottom":"1.5px dashed #000",padding:"15px 0","margin-bottom":"15px"}},[_c("div",{staticStyle:{display:"flex","justify-content":"space-between","margin-bottom":"6px"}},[_c("span",[_vm._v("VALOR DA APOSTA:")]),_vm._v(" "),_c("strong",[_vm._v("R$ "+_vm._s(palpite.valor_apostado||0))])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between","margin-bottom":"6px"}},[_c("span",[_vm._v("COTAÇÃO ATRIBUÍDA:")]),_vm._v(" "),_c("strong",[_vm._v(_vm._s(palpite.cotacao||1)+"x")])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between","margin-top":"12px","padding-top":"10px","border-top":"1px solid rgba(0,0,0,0.2)"}},[_c("span",{staticStyle:{"font-weight":"900"}},[_vm._v("PREMIAÇÃO ESTIMADA:")]),_vm._v(" "),_c("strong",{staticStyle:{"font-size":"20px","font-weight":"900"}},[_vm._v("R$ "+_vm._s(palpite.retorno_possivel||0))])])]),_vm._v(" "),_c("div",{staticStyle:{"text-align":"center","font-size":"12px","line-height":"1.5"}},[_c("p",{staticStyle:{margin:"0","font-weight":"900","text-transform":"uppercase"}},[_vm._v(_vm._s(_vm.server.name||"IHUB BETS"))]),_vm._v(" "),_c("p",{staticStyle:{margin:"3px 0"}},[_vm._v("VALIDO PELO RESULTADO DA LOTERIA FEDERAL")]),_vm._v(" "),_c("p",{staticStyle:{margin:"10px 0 0","font-weight":"900","font-size":"16px",border:"2px solid #000",padding:"5px",display:"inline-block"}},[_vm._v("PIN: "+_vm._s(palpite.cupom))]),_vm._v(" "),_c("p",{staticStyle:{margin:"5px 0 0","font-size":"10px",opacity:"0.8"}},[_vm._v("Cliente: "+_vm._s(palpite.cliente||"Consumidor"))])]),_vm._v(" "),_c("div",{staticStyle:{position:"absolute",bottom:"-5px",left:"0",right:"0",height:"10px",background:"radial-gradient(circle, transparent 70%, #fff 70%)","background-size":"15px 15px",transform:"rotate(180deg)"}})])])]):_vm._e(),_vm._v(" "),palpite.modalidade!="Loto"?_c("div",{staticStyle:{margin:"30px 0","text-align":"center","border-top":"2px solid #000","border-bottom":"2px solid #000",padding:"15px 0"}},[_c("h1",{staticStyle:{"font-weight":"900","font-size":"42px",margin:"0",color:"#000","letter-spacing":"2px"}},[_vm._v("\n                      "+_vm._s(palpite.cupom)+"\n                    ")])]):_vm._e(),_vm._v(" "),palpite.modalidade!="Loto"?_c("div",{staticStyle:{"padding-bottom":"20px"}},[_c("div",{staticStyle:{display:"flex","justify-content":"space-between",padding:"6px 0","border-bottom":"1px solid rgba(0,0,0,0.05)"}},[_c("span",[_vm._v("Quantidade de Jogos")]),_vm._v(" "),_c("b",[_vm._v(_vm._s(palpite.total_palpites))])]),_vm._v(" "),palpite.status!="Aberto"?_c("div",{staticStyle:{display:"flex","justify-content":"space-between",padding:"6px 0","border-bottom":"1px solid rgba(0,0,0,0.05)"}},[_c("span",[_vm._v("Acertos")]),_vm._v(" "),_c("b",[_vm._v(_vm._s(palpite.acertos_palpites))])]):_vm._e(),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between",padding:"6px 0","border-bottom":"1px solid rgba(0,0,0,0.05)"}},[_c("span",[_vm._v("Cotação Total")]),_vm._v(" "),_c("b",[_vm._v(_vm._s(_vm._f("formatCotacao")(palpite.cotacao||palpite.total_cotacao)))])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between",padding:"6px 0","border-bottom":"1px solid rgba(0,0,0,0.05)"}},[_c("span",[_vm._v("Valor Apostado")]),_vm._v(" "),_c("b",[_vm._v(_vm._s(_vm._f("formatMoeda")(palpite.valor_apostado)))])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between",padding:"15px 0","align-items":"center"}},[_c("span",{staticStyle:{"font-weight":"800","font-size":"16px"}},[_vm._v("Retorno Possível")]),_vm._v(" "),_c("b",{staticStyle:{"font-size":"22px",color:"var(--container_jogos--color)","font-weight":"900"}},[_vm._v(_vm._s(_vm._f("formatMoeda")(palpite.retorno_possivel)))])])]):_vm._e(),_vm._v(" "),_c("div",{staticStyle:{"border-top":"1.5px solid #000",width:"100%","margin-bottom":"15px"}}),_vm._v(" "),_c("div",{staticStyle:{"padding-bottom":"30px"}},[_c("b",{staticStyle:{"font-size":"10px","text-transform":"uppercase",color:"#000"}},[_vm._v("REGRAS:")]),_vm._v(" "),_c("p",{staticStyle:{"font-size":"10px",color:"#666","margin-top":"5px","line-height":"1.4"}},[_vm._v("\n                       "+_vm._s(_vm.server.texto_rodape)+"\n                    ")])]),_vm._v(" "),_c("div",{staticClass:"no-print",staticStyle:{padding:"10px 0 20px",display:"flex","flex-direction":"column",gap:"10px"}},[_c("a",{staticClass:"btn btn-success btn-block",staticStyle:{"background-color":"#25D366",border:"none","font-weight":"800",padding:"12px","border-radius":"8px","text-transform":"uppercase"},attrs:{href:_vm.link}},[_c("i",{staticClass:"fa fa-whatsapp"}),_vm._v(" Compartilhar WhatsApp\n                    ")]),_vm._v(" "),_c("div",{staticStyle:{display:"flex",gap:"10px"}},[_c("button",{staticClass:"btn btn-dark",staticStyle:{flex:"1","font-weight":"700",padding:"10px","border-radius":"8px"},on:{click:function click($event){return _vm.printJogos(palpite.id);}}},[_c("i",{staticClass:"fa fa-print"}),_vm._v(" Imprimir\n                        ")]),_vm._v(" "),_c("button",{staticClass:"btn btn-info",staticStyle:{flex:"1","font-weight":"700",padding:"10px","border-radius":"8px"},on:{click:function click($event){return _vm.downloadTicketImage(palpite.cupom);}}},[_c("i",{staticClass:"fa fa-download"}),_vm._v(" Baixar Imagem\n                        ")])]),_vm._v(" "),_c("button",{staticClass:"btn btn-secondary btn-block",staticStyle:{"font-weight":"700",padding:"10px","border-radius":"8px","margin-top":"5px"},attrs:{"data-dismiss":"modal"}},[_vm._v("\n                        Fechar\n                    ")])])],2)])]);}),0)]),_vm._v(" "),_c("div",{directives:[{name:"show",rawName:"v-show",value:false,expression:"false"}],staticClass:"modal fade",attrs:{id:"modal-match-old-1"}},[_c("div",{staticClass:"modal-dialog"},[_c("div",{staticClass:"modal-content"},[_c("div",{staticClass:"modal-header"},[_vm._m(30),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-trophy"}),_vm._v("\n            "+_vm._s(_vm.liga)+" - "+_vm._s(_vm._f("formatDate")(_vm.match.date))+"\n          ")])]),_vm._v(" "),_c("div",{staticClass:"modal-body box box-primary"},[!_vm.live?_c("table",{staticStyle:{width:"100%"}},[_c("tr",[_c("td",{attrs:{align:"left",width:"45%"}},[_c("span",{staticClass:"timeMatch"},[_vm._v(" "+_vm._s(_vm.match.home)+" ")])]),_vm._v(" "),_vm._m(31),_vm._v(" "),_c("td",{attrs:{align:"right",width:"45%"}},[_c("span",{staticClass:"timeMatch"},[_vm._v(_vm._s(_vm.match.away)+" ")])])]),_vm._v(" "),_c("br")]):_vm._e(),_vm._v(" "),_c("br"),_vm._v(" "),_vm.live?_c("div",{staticClass:"real-time"},[_c("div",{staticClass:"placar"},[_c("span",{staticClass:"score-real-time"},[_vm.live?_c("strong",[_vm._v(_vm._s(_vm.match.score))]):_vm._e()]),_vm._v(" "),_vm.match.time==0?_c("div",{staticClass:"time-real-time"},[_vm._v("\n                Não Iniciado "+_vm._s(_vm.match.time)+"\n                "),_c("span",{staticClass:"pisca"},[_vm._v("'")])]):_vm._e(),_vm._v(" "),_vm.match.time<45&&_vm.match.time!=0?_c("div",{staticClass:"time-real-time"},[_vm._v("\n                1º Tempo "+_vm._s(_vm.match.time)+"\n                "),_c("span",{staticClass:"pisca"},[_vm._v("'")])]):_vm._e(),_vm._v(" "),_vm.match.time==45?_c("div",{staticClass:"time-real-time"},[_vm._v("\n                Intervalo\n                "),_c("span",{staticClass:"pisca"},[_vm._v("'")])]):_vm._e(),_vm._v(" "),_vm.match.time>45?_c("div",{staticClass:"time-real-time"},[_vm._v("\n                2º Tempo "+_vm._s(_vm.match.time)+"\n                "),_c("span",{staticClass:"pisca"},[_vm._v("'")])]):_vm._e(),_vm._v(" "),_c("table",{staticClass:"tableInfo"},[_c("thead",[_c("tr",{staticClass:"table-header"},[_c("th",{staticClass:"left padding-10"},[_c("span",[_vm._v(_vm._s(_vm.liga))])]),_vm._v(" "),_c("th",{staticClass:"cell-soccer"},[_vm._v("1T")]),_vm._v(" "),_c("th",{staticClass:"cell-soccer"},[_vm._v("2T")]),_vm._v(" "),_vm._m(32),_vm._v(" "),_vm._m(33),_vm._v(" "),_vm._m(34)])]),_vm._v(" "),_c("tbody",[_c("tr",{staticClass:"table-row"},[_c("td",{staticClass:"left padding-10"},[_vm._v(_vm._s(_vm.match.home))]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v(_vm._s(_vm.match.halfTimeScoreHome))]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v(_vm._s(_vm.match.fullTimeScoreHome))]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v("\n                      "+_vm._s(_vm.match.numberOfCornersHome)+"\n                    ")]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v("\n                      "+_vm._s(_vm.match.numberOfYellowCardsHome)+"\n                    ")]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v("\n                      "+_vm._s(_vm.match.numberOfRedCardsHome)+"\n                    ")])]),_vm._v(" "),_c("tr",{staticClass:"table-row"},[_c("td",{staticClass:"left padding-10"},[_vm._v(_vm._s(_vm.match.away))]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v(_vm._s(_vm.match.halfTimeScoreAway))]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v(_vm._s(_vm.match.fullTimeScoreAway))]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v("\n                      "+_vm._s(_vm.match.numberOfCornersAway)+"\n                    ")]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v("\n                      "+_vm._s(_vm.match.numberOfYellowCardsAway)+"\n                    ")]),_vm._v(" "),_c("td",{staticClass:"cell-soccer"},[_vm._v("\n                      "+_vm._s(_vm.match.numberOfRedCardsAway)+"\n                    ")])])])])])]):_vm._e(),_vm._v(" "),_c("clip-loader",{attrs:{loading:_vm.loading_odds,color:_vm.color,size:_vm.size}}),_vm._v(" "),_vm._l(_vm.mercados,function(mercado){return _c("div",{key:mercado.id,staticClass:"row"},[_c("div",{staticClass:"titulo-grupo"},[_vm._v(_vm._s(mercado.name))]),_vm._v(" "),_c("div",{staticClass:"row"},_vm._l(mercado.odds,function(odd){return _c("div",{key:odd.id,staticClass:"col-md-12"},[odd.cotacao==0?_c("div",{staticClass:"odd-match-plus"},[_c("span",{staticClass:"odd-match-plus-left"},[_c("strong",[_vm._v(_vm._s(odd.odd))])]),_vm._v(" "),_c("span",{staticClass:"odd-match-plus-right","class":{selecionado:_vm.selectionsIds.includes(odd.uuid)},attrs:{taxaJogo:_vm.match.event_id,taxa:odd.id},on:{click:function click($event){return _vm.addPalpite(odd.uuid,odd.id,_vm.match.sport,_vm.match.event_id,odd.group_opp,odd.odd,odd.cotacao,_vm.liga,_vm.match.date,_vm.match.home,_vm.match.away,odd.type,odd.cotacaoOriginal);}}},[_c("i",{staticClass:"fa fa-lock"})])]):_vm._e(),_vm._v(" "),odd.cotacao>0?_c("div",{staticClass:"odd-match-plus"},[_c("span",{staticClass:"odd-match-plus-left"},[_c("strong",[_vm._v(_vm._s(odd.odd))])]),_vm._v(" "),_c("span",{staticClass:"odd-match-plus-right","class":{selecionado:_vm.selectionsIds.includes(odd.uuid)},attrs:{taxaJogo:_vm.match.event_id,taxa:odd.id},on:{click:function click($event){return _vm.addPalpite(odd.uuid,odd.id,_vm.match.sport,_vm.match.event_id,odd.group_opp,odd.odd,odd.cotacao,_vm.liga,_vm.match.date,_vm.match.home,_vm.match.away,odd.type,odd.cotacaoOriginal);}}},[_vm._v(_vm._s(_vm._f("formatCotacao")(odd.cotacao)))])]):_vm._e()]);}),0)]);})],2)])])]),_vm._v(" "),_c("header",{staticClass:"main-header"},[_c("a",{staticClass:"logo",attrs:{href:"/"}},[_c("span",{staticClass:"logo-mini"},[_vm._v("\n       "+_vm._s(_vm.server.logoMini)+"\n      ")]),_vm._v(" "),_c("span",{staticClass:"logo-lg"},[_vm._v("\n       "+_vm._s(_vm.server.logo)+"\n      ")])]),_vm._v(" "),_c("nav",{staticClass:"navbar navbar-static-top"},[_vm._m(35),_vm._v(" "),_c("div",{staticClass:"navbar-custom-menu"},[_c("ul",{staticClass:"nav navbar-nav"},[_vm.logar?_c("li",{staticStyle:{"margin-top":"4px",padding:"6px 2px 6px 6px"}},[_vm._m(36)]):_vm._e(),_vm._v(" "),_vm.logar?_c("li",{staticStyle:{"margin-top":"4px",padding:"6px 8px 6px 10px"}},[_vm._m(37)]):_vm._e(),_vm._v(" "),_vm.logout?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.sair();}}},[_c("i",{staticClass:"fa fa-close"},[_vm._v("Sair")])])]):_vm._e()])])]),_vm._v(" "),_c("nav",{staticClass:"navbar navbar-static-top",attrs:{id:"nav-mobile"}},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.apostado,expression:"apostado"}],staticClass:"form-control",attrs:{id:"input-mobile-top",placeholder:"valor",type:"number"},domProps:{value:_vm.apostado},on:{keyup:function keyup($event){return _vm.calculaCotacao();},input:function input($event){if($event.target.composing)return;_vm.apostado=$event.target.value;}}}),_vm._v(" "),_vm.selection.length>0?_c("span",{staticClass:"ganho-mobile"},[_vm._v(_vm._s(_vm._f("formatMoeda")(_vm.retorno)))]):_vm._e(),_vm._v(" "),_vm.selection.length==0?_c("span",{staticClass:"ganho-mobile"},[_vm._v(_vm._s(_vm._f("formatMoeda")(0)))]):_vm._e(),_vm._v(" "),_vm.selection.length>0?_c("button",{staticClass:"btn btn-danger",attrs:{id:"btn-zerar-mobile"},on:{click:function click($event){return _vm.removePalpites(_vm.selection);}}},[_c("i",{staticClass:"fa fa-trash",staticStyle:{color:"#fff !important"}})]):_vm._e(),_vm._v(" "),_c("button",{staticClass:"btn btn-info btnSendBet",attrs:{id:"btn-finalizar-mobile"},on:{click:_vm.mostraPalpites}},[_vm._v("( "+_vm._s(_vm.selection.length)+" ) Finalizar")])])]),_vm._v(" "),_c("aside",{staticClass:"main-sidebar"},[_c("section",{staticClass:"sidebar"},[_c("div",{staticClass:"user-panel"},[_vm.server.logo_img?_c("img",{attrs:{src:_vm.server.logo_img,alt:_vm.server.logo}}):_vm._e(),_vm._v(" "),_c("div",{staticClass:"dados-logado"},[_vm.logado?_c("p",[_vm._v(_vm._s(_vm.name))]):_vm._e(),_vm._v(" "),_vm.logado?_c("p",{staticStyle:{"font-size":"13px",color:"#fff"}},[_vm._v("\n            Saldo: "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.saldo_simples))+"\n          ")]):_vm._e(),_vm._v(" "),_vm.logado?_c("p",{staticStyle:{"font-size":"13px",color:"#ffc107"}},[_vm._v("\n            Bônus: "+_vm._s(_vm._f("formatMoeda")(_vm.caixaUser.saldo_casadinha))+"\n          ")]):_vm._e()])]),_vm._v(" "),_c("div",{staticClass:"sidebar-form"},[_c("div",{staticClass:"input-group"},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.cupom,expression:"cupom"}],staticClass:"form-control",staticStyle:{"background-color":"var(--search_bar_bg--color, #fff)",color:"var(--search_bar_text--color, #333)",border:"1px solid var(--linhas--color, #eee)","border-right":"none"},attrs:{type:"text",placeholder:"Conferir bilhete"},domProps:{value:_vm.cupom},on:{input:function input($event){if($event.target.composing)return;_vm.cupom=$event.target.value;}}}),_vm._v(" "),_c("span",{staticClass:"input-group-btn"},[_c("button",{staticClass:"btn btn-flat",staticStyle:{"background-color":"var(--ticket_consult_bg--color, var(--primary-color))",color:"#fff",border:"1px solid var(--ticket_consult_bg--color, var(--primary-color))"},on:{click:function click($event){return _vm.searchBilhete();}}},[_c("i",{staticClass:"fa fa-search"})])])])]),_vm._v(" "),_c("ul",{staticClass:"sidebar-menu tree",attrs:{"data-widget":"tree"}},[_vm._m(38),_vm._v(" "),_c("li",{staticClass:"treeview"},[_c("a",{staticClass:"sidebar-toggle",attrs:{href:"#"},on:{click:_vm.loadRegulamento}},[_c("i",{staticClass:"fa fa-map"}),_vm._v(" "),_c("span",[_vm._v("Regulamento")])])]),_vm._v(" "),_c("li",[_c("a",{attrs:{href:"".concat(_vm.server.linkApp)}},[_c("i",{staticClass:"fa fa-android"}),_vm._v(" "),_c("span",[_vm._v("Baixar Aplicativo")])])]),_vm._v(" "),_vm.token!=null&&_vm.nivel=="cambista"?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadValidarPin();}}},[_c("i",{staticClass:"fa fa-code"}),_vm._v(" "),_c("span",[_vm._v("Validar PIN")])])]):_vm._e(),_vm._v(" "),_vm.token!=null&&_vm.nivel=="cambista"?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadMeusClientes();}}},[_c("i",{staticClass:"fa fa-users"}),_vm._v(" "),_c("span",[_vm._v("Meus Clientes")])])]):_vm._e(),_vm._v(" "),_vm.token!=null&&_vm.nivel=="cambista"?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadCaixa();}}},[_c("i",{staticClass:"fa fa-money"}),_vm._v(" "),_c("span",[_vm._v("Meu Caixa")])])]):_vm._e(),_vm._v(" "),_vm.token!=null&&_vm.nivel=="cambista"?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadRelatorio();}}},[_c("i",{staticClass:"fa fa-pie-chart"}),_vm._v(" "),_c("span",[_vm._v("Relatório")])])]):_vm._e(),_vm._v(" "),_vm.token!=null&&_vm.nivel=="cambista"?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadBilhetes();}}},[_c("i",{staticClass:"fa fa-tags"}),_vm._v(" "),_c("span",[_vm._v("Bilhetes")])])]):_vm._e(),_vm._v(" "),_vm.token!=null&&(_vm.nivel=="gerente"||_vm.nivel=="manager")?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadMeusCambistas();}}},[_c("i",{staticClass:"fa fa-users"}),_vm._v(" "),_c("span",[_vm._v("Meus Cambistas")])])]):_vm._e(),_vm._v(" "),_vm.token!=null&&(_vm.nivel=="gerente"||_vm.nivel=="manager")?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadRelatorioGeral();}}},[_c("i",{staticClass:"fa fa-line-chart"}),_vm._v(" "),_c("span",[_vm._v("Relatório Geral")])])]):_vm._e(),_vm._v(" "),_vm.logado&&(_vm.nivel=="cliente"||_vm.nivel=="user")?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadBilhetes();}}},[_c("i",{staticClass:"fa fa-tags"}),_vm._v(" "),_c("span",[_vm._v("Meus Bilhetes")])])]):_vm._e(),_vm._v(" "),_vm.logado&&(_vm.nivel=="cliente"||_vm.nivel=="user")?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.load_deposit();}}},[_c("i",{staticClass:"fa fa-money"}),_vm._v(" "),_c("span",[_vm._v("Depositar")])])]):_vm._e(),_vm._v(" "),_vm.logado&&(_vm.nivel=="cliente"||_vm.nivel=="user")?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.load_withdrawal();}}},[_c("i",{staticClass:"fa fa-university"}),_vm._v(" "),_c("span",[_vm._v("Sacar")])])]):_vm._e(),_vm._v(" "),_vm.logado?_c("li",[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadMinhaConta();}}},[_c("i",{staticClass:"fa fa-user"}),_vm._v(" "),_c("span",[_vm._v("Minha Conta")])])]):_vm._e(),_vm._v(" "),_vm.op_quininha=="Sim"||_vm.op_quininha=="Ativado"||_vm.op_seninha=="Sim"||_vm.op_seninha=="Ativado"||_vm.configuracoes.op_quininha=="Sim"||_vm.configuracoes.op_quininha=="Ativado"||_vm.configuracoes.op_seninha=="Sim"||_vm.configuracoes.op_seninha=="Ativado"?[_vm._m(39),_vm._v(" "),_vm.op_quininha=="Sim"||_vm.op_quininha=="Ativado"||_vm.configuracoes.op_quininha=="Sim"||_vm.configuracoes.op_quininha=="Ativado"?_c("li",{"class":{active:_vm.modalitySelected=="Quininha"}},[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadQuininha();}}},[_c("i",{staticClass:"fa fa-ticket",staticStyle:{color:"var(--container_jogos--color)"}}),_vm._v(" "),_c("span",[_vm._v("Quininha")])])]):_vm._e(),_vm._v(" "),_vm.op_seninha=="Sim"||_vm.op_seninha=="Ativado"||_vm.configuracoes.op_seninha=="Sim"||_vm.configuracoes.op_seninha=="Ativado"?_c("li",{"class":{active:_vm.modalitySelected=="Seninha"}},[_c("a",{attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadSeninha();}}},[_c("i",{staticClass:"fa fa-ticket",staticStyle:{color:"#ff9800"}}),_vm._v(" "),_c("span",[_vm._v("Seninha")])])]):_vm._e()]:_vm._e(),_vm._v(" "),_vm.manualLeagues&&_vm.manualLeagues.length>0?[_vm._m(40),_vm._v(" "),_vm._l(_vm.manualLeagues,function(league){return _c("li",{key:league.id},[_c("a",{staticStyle:{display:"flex","align-items":"center",padding:"8px 15px"},attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.seachLeague(league.league||league.name);}}},[_c("img",{staticStyle:{width:"18px",height:"13px","margin-right":"10px","border-radius":"2px","object-fit":"cover"},attrs:{src:league.flag||league.image},on:{error:function error($event){$event.target.src="/img/countries/trophy.svg";}}}),_vm._v(" "),_c("span",{staticStyle:{"font-size":"13px","font-weight":"400",color:"#ccc"}},[_vm._v(_vm._s(league.league||league.name))])])]);})]:_vm._e(),_vm._v(" "),_vm._m(41),_vm._v(" "),_vm._l(_vm.filteredLeaguesMain,function(league_main){return _c("li",{key:league_main.id},[_c("a",{staticStyle:{display:"flex","align-items":"center",padding:"8px 15px"},attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.seachLeague(league_main.league||league_main.name);}}},[_c("img",{staticStyle:{width:"18px",height:"13px","margin-right":"10px","border-radius":"2px","object-fit":"cover"},attrs:{src:league_main.flag||league_main.image},on:{error:function error($event){$event.target.src="/img/countries/trophy.svg";}}}),_vm._v(" "),_c("span",{staticStyle:{"font-size":"13px","font-weight":"400",color:"#ccc"}},[_vm._v(_vm._s(league_main.league||league_main.name))])])]);}),_vm._v(" "),_vm._m(42),_vm._v(" "),_vm._l(_vm.groupedLeaguesOthers,function(group){return _c("li",{key:group.cc||"other_group"},[_c("a",{staticStyle:{display:"flex","align-items":"center","justify-content":"space-between",padding:"8px 15px",cursor:"pointer"},attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.toggleCountry(group.cc||"other");}}},[_c("div",{staticStyle:{display:"flex","align-items":"center"}},[_c("img",{staticStyle:{width:"18px",height:"13px","margin-right":"10px","border-radius":"2px","object-fit":"cover"},attrs:{src:group.flag},on:{error:function error($event){$event.target.src="/img/countries/trophy.svg";}}}),_vm._v(" "),_c("span",{staticStyle:{"font-size":"13px","font-weight":"400",color:"#ccc"}},[_vm._v(_vm._s(group.country||group.name)+" ("+_vm._s(group.leagues.length)+")")])]),_vm._v(" "),_c("i",{staticClass:"fa","class":_vm.openedCountries.includes(group.cc||"other")?"fa-angle-down":"fa-angle-left",staticStyle:{"font-size":"14px",color:"#777"}})]),_vm._v(" "),_vm.openedCountries.includes(group.cc||"other")?_c("ul",{staticStyle:{"list-style":"none",padding:"4px 0",margin:"0",background:"rgba(0,0,0,0.12)"}},_vm._l(group.leagues,function(l,idx){return _c("li",{key:idx},[_c("a",{staticStyle:{padding:"6px 15px 6px 40px","font-size":"12px","font-weight":"300",color:"#aaa",display:"block","white-space":"normal",transition:"color 0.2s"},attrs:{href:"javascript:void(0)",onmouseover:"this.style.color='#fff'",onmouseout:"this.style.color='#aaa'"},on:{click:function click($event){return _vm.seachLeague(l.league);}}},[_vm._v("\n                "+_vm._s(l.league)+"\n              ")])]);}),0):_vm._e()]);})],2),_vm._v(" "),_vm.sidebarBanners&&_vm.sidebarBanners.length>0?_c("div",{staticClass:"banner-sidebar mt-2"},_vm._l(_vm.sidebarBanners,function(banner,index){return _c("div",{key:"sb-"+index,staticStyle:{"margin-bottom":"10px"}},[_c("a",{attrs:{href:banner.link||"#"}},[_c("img",{staticStyle:{width:"100%","border-radius":"4px","box-shadow":"0 4px 6px rgba(0,0,0,0.1)"},attrs:{src:banner.image||banner.img}})])]);}),0):_vm._e()])]),_vm._v(" "),_c("div",{staticClass:"content-wrapper"},[_c("section",{staticClass:"content"},[_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-9"},[_vm.bilheteView&&_vm.logado?_c("div",{staticClass:"bilhetes-content"},[_c("div",{staticClass:"form-inline relatorio"},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Data:")]),_vm._v(" "),_c("div",{staticClass:"input-group date"},[_vm._m(43),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.date1,expression:"date1"}],staticClass:"form-control pull-right",attrs:{type:"date",id:"datepicker"},domProps:{value:_vm.date1},on:{change:function change($event){return _vm.pesquisaBilhetes(_vm.date1);},input:function input($event){if($event.target.composing)return;_vm.date1=$event.target.value;}}})])])]),_vm._v(" "),_c("div",{staticClass:"table-responsive"},[_c("table",{staticClass:"table table-bordered"},[_vm._m(44),_vm._v(" "),_c("tbody",_vm._l(_vm.bilhetesLogado,function(bilhete){return _c("tr",{key:bilhete.id},[_c("td",{"class":bilhete.tipo_aposta},[_c("b",[_vm._v(_vm._s(bilhete.cupom))])]),_vm._v(" "),_c("td",[_vm._v(_vm._s(_vm._f("formatDate")(bilhete.created_at)))]),_vm._v(" "),_c("td",{"class":bilhete.status},[_vm._v("\n                      "+_vm._s(bilhete.status)+"\n                    ")]),_vm._v(" "),_c("td",[_vm._v(_vm._s(_vm._f("formatMoeda")(bilhete.valor_apostado)))]),_vm._v(" "),_c("td",[_vm._v(_vm._s(_vm._f("formatMoeda")(bilhete.retorno_possivel)))]),_vm._v(" "),_c("td",[_vm._v(_vm._s(bilhete.cliente))]),_vm._v(" "),_c("td",[_vm._v(_vm._s(_vm._f("formatMoeda")(bilhete.comicao)))]),_vm._v(" "),_c("td",[_vm._v(_vm._s(_vm._f("formatCotacao")(bilhete.cotacao)))]),_vm._v(" "),_c("td",[_vm._v(_vm._s(bilhete.tipo))]),_vm._v(" "),_c("td",[_vm._v("\n                      "+_vm._s(bilhete.andamento_palpites)+"/"+_vm._s(bilhete.total_palpites)+"\n                    ")]),_vm._v(" "),_c("td",[_c("button",{staticClass:"btn btn-primary",on:{click:function click($event){return _vm.viewBilhete(bilhete.id,bilhete.status,bilhete.cupom,bilhete.created_at,bilhete.vendedor,bilhete.cliente,bilhete.total_palpites,bilhete.cotacao,bilhete.valor_apostado,bilhete.retorno_possivel);}}},[_c("i",{staticClass:"fa fa-eye"})])]),_vm._v(" "),_c("td",[bilhete.status=="Cancelado"?_c("button",{staticClass:"btn btn-default",attrs:{disabled:""}},[_c("i",{staticClass:"fa fa-exclamation-circle"})]):_vm._e(),_vm._v(" "),bilhete.status!="Cancelado"?_c("button",{staticClass:"btn btn-danger",on:{click:function click($event){return _vm.alterarBilhete(bilhete.id,bilhete);}}},[_c("i",{staticClass:"fa fa-remove"})]):_vm._e()])]);}),0)]),_vm._v(" "),_c("clip-loader",{attrs:{loading:_vm.loading,color:_vm.color,size:_vm.size}})],1)]):_vm._e(),_vm._v(" "),_vm.jogosView?_c("div",[_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-lg-12"},[_vm.mainBanners.length>0?_c("div",{staticClass:"carousel slide mb-3",attrs:{id:"carouselbanners","data-ride":"carousel"}},[_c("div",{staticClass:"carousel-inner"},_vm._l(_vm.mainBanners,function(banner,index){return _c("div",{key:"banner-"+index,"class":["item",{active:index===0}]},[_c("a",{attrs:{href:banner.link||"#"}},[_c("img",{staticClass:"w-100",attrs:{src:banner.image}})])]);}),0),_vm._v(" "),_vm._m(45),_vm._v(" "),_vm._m(46)]):_vm._e()])]),_vm._v(" "),_vm.filteredFeaturedGames.length>0&&!_vm.live?_c("div",{staticClass:"events-carousel-container",staticStyle:{background:"transparent !important","background-color":"transparent !important","box-shadow":"none !important","-webkit-box-shadow":"none !important"}},[_c("div",{staticClass:"carousel-header theme-bg"},[_vm._m(47),_vm._v(" "),_c("div",{staticClass:"carousel-controls"},[_c("button",{staticClass:"control-btn prev",on:{click:function click($event){_vm.scrollCarousel(-1);_vm.stopAutoplay();}}},[_c("i",{staticClass:"fa fa-chevron-left"})]),_vm._v(" "),_c("button",{staticClass:"control-btn next",on:{click:function click($event){_vm.scrollCarousel(1);_vm.stopAutoplay();}}},[_c("i",{staticClass:"fa fa-chevron-right"})])])]),_vm._v(" "),_c("div",{ref:"carouselScroller",staticClass:"carousel-scroller-wrapper no-scrollbar",staticStyle:{background:"transparent !important","background-color":"transparent !important","box-shadow":"none !important","-webkit-box-shadow":"none !important"},on:{mouseenter:_vm.stopAutoplay,mouseleave:_vm.startAutoplay}},_vm._l(_vm.filteredFeaturedGames,function(match){return _c("div",{key:"featured-"+match.id,staticClass:"carousel-card"},[_c("div",{staticClass:"card-bg",style:{backgroundImage:"url("+(match.img_featured||"/images/featured_bg.jpg")+")"}}),_vm._v(" "),_c("div",{staticClass:"card-overlay"}),_vm._v(" "),_c("div",{staticClass:"card-top-info"},[_c("div",{staticClass:"info-league"},[match.flag?_c("img",{staticClass:"info-league-flag",attrs:{src:match.flag}}):_c("i",{staticClass:"fa fa-trophy info-league-flag",staticStyle:{color:"#ffd700",display:"flex","align-items":"center","justify-content":"center","font-size":"10px"}}),_vm._v(" "),_c("span",[_vm._v(_vm._s(match.league))])]),_vm._v(" "),_c("div",{staticClass:"info-right"},[_c("div",{staticClass:"info-time-row"},[_c("span",{staticClass:"info-time"},[_c("i",{staticClass:"fa fa-clock-o"}),_vm._v(" "+_vm._s(match.time))]),_vm._v(" "),_vm.getTimeRemaining(match.date)!=="Iniciado"?_c("span",{staticClass:"info-countdown"},[_c("i",{staticClass:"fa fa-hourglass-half"}),_vm._v(" "+_vm._s(_vm.getTimeRemaining(match.date))+"\n                        ")]):_vm._e()]),_vm._v(" "),_c("span",{staticClass:"info-category"},[_vm._v(_vm._s(match.sport||"Futebol")+" - "+_vm._s(_vm._f("formatDateHome")(match.date)))])])]),_vm._v(" "),_c("div",{staticClass:"card-competitors"},[_c("div",{staticClass:"competitor-logos"},[_c("div",{staticClass:"logo-wrapper"},[_c("img",{attrs:{src:match.logo_home||"/img/placeholder_team.png"}})]),_vm._v(" "),_c("div",{staticClass:"logo-wrapper logo-down"},[_c("img",{attrs:{src:match.logo_away||"/img/placeholder_team.png"}})])]),_vm._v(" "),_c("div",{staticClass:"competitor-names"},[_c("div",{staticClass:"competitor-name"},[_vm._v(_vm._s(match.home))]),_vm._v(" "),_c("div",{staticClass:"competitor-name"},[_vm._v(_vm._s(match.away))])]),_vm._v(" "),_c("button",{staticClass:"offer-badge",on:{click:function click($event){$event.stopPropagation();return _vm.loadOdd(match.league,match,null);}}},[_vm._v("\n                       "+_vm._s(match.badge_text||match.count_odd_label||"Apostar Agora")+"\n                    ")])]),_vm._v(" "),_c("div",{staticClass:"card-markets"},_vm._l(match.odds,function(odd){return _c("div",{key:odd.uuid,staticClass:"market-btn","class":{active:_vm.isPalpiteActive(odd.uuid),"disabled-market":!odd.cotacao||odd.cotacao<=0},on:{click:function click($event){odd.cotacao&&odd.cotacao>0?_vm.addPalpite(odd.uuid,odd.id,match.sport,match.id,odd.group_opp,odd.odd,odd.cotacao,match.league,match.date,match.home,match.away,odd.type,odd.cotacaoOriginal,match.logo_home,match.logo_away):null;}}},[_c("span",{staticClass:"market-indicator"},[_vm._v(_vm._s(odd.odd))]),_vm._v(" "),odd.cotacao&&odd.cotacao>0?_c("span",{staticClass:"market-value"},[_vm._v(_vm._s(_vm._f("formatCotacao")(odd.cotacao)))]):_c("span",{staticClass:"market-value"},[_vm._v("---")])]);}),0)]);}),0)]):_vm._e(),_vm._v(" "),_c("ul",{staticClass:"menu-jogos no-scrollbar",staticStyle:{background:"var(--sidebar--color) !important","overflow-x":"auto","-webkit-overflow-scrolling":"touch","white-space":"nowrap",display:"flex","list-style":"none",padding:"0",margin:"0 !important","margin-bottom":"0 !important","padding-right":"30px","border-bottom":"none !important"}},[_vm.op_futebol=="Sim"||_vm.op_futebol=="Ativado"||_vm.configuracoes.op_futebol=="Sim"||_vm.configuracoes.op_futebol=="Ativado"?_c("li",{staticClass:"modality-item-demo",staticStyle:{flex:"0 0 auto","flex-shrink":"0"}},[_c("a",{"class":{ativo:_vm.futebol&&!_vm.modalitySelected&&!_vm.live},staticStyle:{color:"var(--sidebar_text--color, #fff)","text-decoration":"none",display:"flex","align-items":"center","justify-content":"center","font-weight":"600","text-transform":"uppercase"},attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadFutebol();}}},[_c("img",{staticClass:"modality-icon-img",attrs:{src:"/img/icons/football.png"}}),_vm._v(" Futebol\n                ")])]):_vm._e(),_vm._v(" "),_vm.op_ufcbox=="Sim"||_vm.op_ufcbox=="Ativado"||_vm.configuracoes.op_ufcbox=="Sim"||_vm.configuracoes.op_ufcbox=="Ativado"?_c("li",{staticClass:"modality-item-demo",staticStyle:{flex:"0 0 auto","flex-shrink":"0"}},[_c("a",{"class":{ativo:_vm.modalitySelected=="Luta"},staticStyle:{color:"var(--sidebar_text--color, #fff)","text-decoration":"none",display:"flex","align-items":"center","justify-content":"center","font-weight":"600","text-transform":"uppercase"},attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadModality("Luta");}}},[_c("img",{staticClass:"modality-icon-img",attrs:{src:"/img/icons/boxing.png"}}),_vm._v(" Luta\n                ")])]):_vm._e(),_vm._v(" "),_vm.op_basquete=="Sim"||_vm.op_basquete=="Ativado"||_vm.configuracoes.op_basquete=="Sim"||_vm.configuracoes.op_basquete=="Ativado"?_c("li",{staticClass:"modality-item-demo",staticStyle:{flex:"0 0 auto","flex-shrink":"0"}},[_c("a",{"class":{ativo:_vm.modalitySelected=="Basquete"},staticStyle:{color:"var(--sidebar_text--color, #fff)","text-decoration":"none",display:"flex","align-items":"center","justify-content":"center","font-weight":"600","text-transform":"uppercase"},attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadModality("Basquete");}}},[_c("img",{staticClass:"modality-icon-img",attrs:{src:"/img/icons/basketball.png"}}),_vm._v(" Basquete\n                ")])]):_vm._e(),_vm._v(" "),_vm.op_tenis=="Sim"||_vm.op_tenis=="Ativado"||_vm.configuracoes.op_tenis=="Sim"||_vm.configuracoes.op_tenis=="Ativado"?_c("li",{staticClass:"modality-item-demo",staticStyle:{flex:"0 0 auto","flex-shrink":"0"}},[_c("a",{"class":{ativo:_vm.modalitySelected=="Tenis"},staticStyle:{color:"var(--sidebar_text--color, #fff)","text-decoration":"none",display:"flex","align-items":"center","justify-content":"center","font-weight":"600","text-transform":"uppercase"},attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadModality("Tenis");}}},[_c("img",{staticClass:"modality-icon-img",attrs:{src:"/img/icons/tennis.png"}}),_vm._v(" Tênis\n                ")])]):_vm._e(),_vm._v(" "),_vm.op_volei=="Sim"||_vm.op_volei=="Ativado"||_vm.configuracoes.op_volei=="Sim"||_vm.configuracoes.op_volei=="Ativado"?_c("li",{staticClass:"modality-item-demo",staticStyle:{"border-right":"none",flex:"0 0 auto","flex-shrink":"0"}},[_c("a",{"class":{ativo:_vm.modalitySelected=="Volei"},staticStyle:{color:"var(--sidebar_text--color, #fff)","text-decoration":"none",display:"flex","align-items":"center","justify-content":"center","font-weight":"600","text-transform":"uppercase"},attrs:{href:"javascript:void(0)"},on:{click:function click($event){return _vm.loadModality("Volei");}}},[_c("img",{staticClass:"modality-icon-img",attrs:{src:"/img/icons/volleyball.png"}}),_vm._v(" Vôlei\n                ")])]):_vm._e()]),_vm._v(" "),_c("div",{staticClass:"header-jogos-nexus"},[_c("div",{staticClass:"no-scrollbar tabs-container",staticStyle:{display:"flex","align-items":"stretch",height:"55px","overflow-x":"auto","-webkit-overflow-scrolling":"touch"}},[_c("div",{staticStyle:{display:"flex","align-items":"stretch",gap:"0"}},[_c("div",{staticClass:"day-tab-demo","class":{active:_vm.hoje&&!_vm.live&&!_vm.modalitySelected},staticStyle:{cursor:"pointer",display:"flex","flex-direction":"column","justify-content":"center",padding:"0 20px","border-right":"1px solid #eee"},on:{click:function click($event){return _vm.loadFutebol();}}},[_c("div",{staticStyle:{"font-weight":"500","font-size":"13px",color:"#111"}},[_vm._v("Hoje")]),_vm._v(" "),_c("div",{staticStyle:{"font-size":"11px",color:"#888"}},[_vm._v(_vm._s(_vm.moment().format("DD/MM")))])]),_vm._v(" "),_vm._l(_vm.days.slice(1,3),function(day,index){return _c("div",{key:day.id,staticClass:"day-tab-demo","class":{active:_vm.activeTabIdx===index&&!_vm.hoje&&!_vm.live&&!_vm.modalitySelected},staticStyle:{cursor:"pointer",display:"flex","flex-direction":"column","justify-content":"center",padding:"0 20px","border-right":"1px solid #eee"},on:{click:function click($event){return _vm.searchDay(day.id,index);}}},[_c("div",{staticStyle:{"font-weight":"400","font-size":"13px",color:"#333","text-transform":"lowercase"}},[_vm._v(_vm._s(_vm.moment(day.day,"DD/MM").format("dddd").split("-")[0]))]),_vm._v(" "),_c("div",{staticStyle:{"font-size":"11px",color:"#888"}},[_vm._v(_vm._s(day.day))])]);}),_vm._v(" "),_c("div",{staticClass:"day-tab-demo tab-ao-vivo","class":{active:_vm.live},staticStyle:{cursor:"pointer",display:"flex","align-items":"center",padding:"0 20px",color:"var(--live-color, #cc3333)","font-weight":"400","font-size":"12px",gap:"6px","border-right":"1px solid #eee","white-space":"nowrap"},on:{click:function click($event){return _vm.loadVivo();}}},[_vm._v("\n                    AO VIVO "),_c("span",{staticClass:"live-circle"})])],2)]),_vm._v(" "),_c("div",{staticClass:"search-container-nexus"},[_c("div",{staticClass:"input-group",staticStyle:{width:"100%"}},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.search,expression:"search"}],staticClass:"form-control",staticStyle:{height:"38px","border-radius":"4px 0 0 4px",border:"1px solid var(--linhas--color, #ddd)","border-right":"none","box-shadow":"none","font-size":"13px","background-color":"var(--search_bar_bg--color) !important",color:"var(--search_bar_text--color) !important"},attrs:{type:"text",placeholder:"Pesquisar por Liga, Time, Horário"},domProps:{value:_vm.search},on:{keyup:function keyup($event){if(!$event.type.indexOf("key")&&_vm._k($event.keyCode,"enter",13,$event.key,"Enter"))return null;return _vm.searchMatches();},input:function input($event){if($event.target.composing)return;_vm.search=$event.target.value;}}}),_vm._v(" "),_c("span",{staticClass:"input-group-btn"},[_c("button",{staticClass:"btn btn-info btn-flat",staticStyle:{height:"38px","border-radius":"0 4px 4px 0",border:"none",background:"var(--search_icon_bg--color, var(--primary-color)) !important",color:"#fff !important",padding:"0 15px",transition:"filter 0.3s"},attrs:{type:"button",onmouseover:"this.style.filter='brightness(1.1)'",onmouseout:"this.style.filter='brightness(1)'"},on:{click:function click($event){return _vm.searchMatches();}}},[_c("i",{staticClass:"fa fa-search"})])])])])]),_vm._v(" "),_c("clip-loader",{attrs:{loading:_vm.loading,color:_vm.color,size:_vm.size}}),_vm._v(" "),_vm.modalitySelected=="Quininha"||_vm.modalitySelected=="Seninha"?_c("div",{staticClass:"loto-container",staticStyle:{background:"var(--container_jogos--color, #fff)",padding:"20px","border-radius":"8px","margin-top":"10px","box-shadow":"0 2px 10px rgba(0,0,0,0.1)"}},[_c("div",{staticClass:"loto-header",staticStyle:{"border-bottom":"2px solid var(--sidebar--color)","padding-bottom":"15px","margin-bottom":"20px",display:"flex","justify-content":"space-between","align-items":"center","flex-wrap":"wrap",gap:"15px"}},[_c("div",[_c("h3",{staticStyle:{margin:"0",color:"var(--sidebar--color)","font-weight":"800","text-transform":"uppercase"}},[_vm._v(_vm._s(_vm.modalitySelected))]),_vm._v(" "),_c("p",{staticStyle:{margin:"5px 0 0",color:"#666","font-size":"13px"}},[_vm._v("Selecione suas dezenas e boa sorte!")])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex",gap:"10px","align-items":"center"}},[_c("div",{staticClass:"form-group",staticStyle:{"margin-bottom":"0"}},[_c("label",{staticStyle:{"font-size":"11px",display:"block",color:"#888"}},[_vm._v("CONCURSO")]),_vm._v(" "),_c("select",{directives:[{name:"model",rawName:"v-model",value:_vm.lotoDateSelected,expression:"lotoDateSelected"}],staticClass:"form-control input-sm",staticStyle:{"min-width":"150px"},on:{change:function change($event){var $$selectedVal=Array.prototype.filter.call($event.target.options,function(o){return o.selected;}).map(function(o){var val="_value"in o?o._value:o.value;return val;});_vm.lotoDateSelected=$event.target.multiple?$$selectedVal:$$selectedVal[0];}}},_vm._l(_vm.datesLoto,function(date){return _c("option",{key:date.date,domProps:{value:date.date}},[_vm._v(_vm._s(date.date)+" - "+_vm._s(date.day))]);}),0)])])]),_vm._v(" "),_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-8"},[_c("div",{staticClass:"loto-grid",staticStyle:{display:"grid","grid-template-columns":"repeat(10, 1fr)",gap:"5px"}},_vm._l(_vm.numbersLoto,function(num){return _c("div",{key:num,staticClass:"loto-number","class":{"selected-loto":_vm.selectedNumbersLoto.includes(num)},staticStyle:{"aspect-ratio":"1",display:"flex","align-items":"center","justify-content":"center",border:"1px solid #ddd","border-radius":"4px",cursor:"pointer","font-weight":"bold","font-size":"14px",transition:"0.2s"},style:_vm.selectedNumbersLoto.includes(num)?"background: var(--sidebar--color); color: #fff; border-color: var(--sidebar--color);":"background: var(--container_jogos--color, #f9f9f9); color: #333;",on:{click:function click($event){return _vm.selectNumberLoto(num);}}},[_vm._v("\n                      "+_vm._s(num)+"\n                    ")]);}),0)]),_vm._v(" "),_c("div",{staticClass:"col-md-4"},[_c("div",{staticClass:"loto-panel",staticStyle:{background:"var(--modal_bg--color, #f4f6f9)",padding:"15px","border-radius":"6px",border:"1px solid #dee2e6"}},[_c("h4",{staticStyle:{"margin-top":"0","font-weight":"bold","font-size":"15px","border-bottom":"1px solid #ddd","padding-bottom":"10px"}},[_vm._v("CONFIGURAÇÃO")]),_vm._v(" "),_c("div",{staticClass:"form-group"},[_c("label",{staticStyle:{"font-size":"12px"}},[_vm._v("MODALIDADE / COTAÇÃO")]),_vm._v(" "),_c("select",{directives:[{name:"model",rawName:"v-model",value:_vm.lotoTaxaSelected,expression:"lotoTaxaSelected"}],staticClass:"form-control",on:{change:function change($event){var $$selectedVal=Array.prototype.filter.call($event.target.options,function(o){return o.selected;}).map(function(o){var val="_value"in o?o._value:o.value;return val;});_vm.lotoTaxaSelected=$event.target.multiple?$$selectedVal:$$selectedVal[0];}}},_vm._l(_vm.taxasLoto,function(taxa){return _c("option",{key:taxa.id,domProps:{value:taxa}},[_vm._v("Acertar "+_vm._s(taxa.dezena)+" dezenas - "+_vm._s(taxa.taxa)+"x")]);}),0)]),_vm._v(" "),_c("div",{staticClass:"form-group"},[_c("label",{staticStyle:{"font-size":"12px"}},[_vm._v("VALOR DA APOSTA (R$)")]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.lotoValue,expression:"lotoValue"}],staticClass:"form-control",attrs:{type:"number",min:_vm.valor_mini_aposta||2},domProps:{value:_vm.lotoValue},on:{input:function input($event){if($event.target.composing)return;_vm.lotoValue=$event.target.value;}}})]),_vm._v(" "),_c("div",{staticClass:"info-selecao",staticStyle:{"margin-top":"15px",padding:"10px",background:"var(--container_jogos--color, #fff)","border-radius":"4px","border-left":"4px solid var(--sidebar--color)"}},[_c("div",{staticStyle:{display:"flex","justify-content":"space-between","font-size":"13px"}},[_c("span",[_vm._v("Dezenas:")]),_vm._v(" "),_c("b",{style:_vm.lotoTaxaSelected&&_vm.selectedNumbersLoto.length==_vm.lotoTaxaSelected.dezena?"color: green":"color: red"},[_vm._v("\n                          "+_vm._s(_vm.selectedNumbersLoto.length)+" / "+_vm._s(_vm.lotoTaxaSelected?_vm.lotoTaxaSelected.dezena:"?")+"\n                        ")])]),_vm._v(" "),_vm.logado?_c("div",{staticStyle:{display:"flex","justify-content":"space-between","font-size":"13px","margin-top":"5px"}},[_c("span",[_vm._v("Retorno:")]),_vm._v(" "),_c("b",{staticStyle:{color:"var(--sidebar--color)"}},[_vm._v("R$ "+_vm._s((_vm.lotoValue*(_vm.lotoTaxaSelected?_vm.lotoTaxaSelected.taxa:0)).toFixed(2)))])]):_vm._e()]),_vm._v(" "),_c("div",{staticStyle:{"margin-top":"20px",display:"grid","grid-template-columns":"1fr 1fr",gap:"10px"}},[_c("button",{staticClass:"btn btn-default btn-block",staticStyle:{"font-weight":"bold","text-transform":"uppercase","font-size":"11px"},on:{click:function click($event){return _vm.surpresinhaLoto();}}},[_c("i",{staticClass:"fa fa-magic"}),_vm._v(" Surpresinha\n                      ")]),_vm._v(" "),_c("button",{staticClass:"btn btn-danger btn-block",staticStyle:{"font-weight":"bold","text-transform":"uppercase","font-size":"11px"},on:{click:function click($event){_vm.selectedNumbersLoto=[];}}},[_c("i",{staticClass:"fa fa-trash"}),_vm._v(" Limpar\n                      ")])]),_vm._v(" "),_c("button",{staticClass:"btn btn-success btn-block",staticStyle:{"margin-top":"15px",height:"45px","font-weight":"800","font-size":"14px","text-transform":"uppercase","background-color":"var(--container_jogos--color) !important",border:"none",display:"flex","align-items":"center","justify-content":"center",gap:"10px"},attrs:{disabled:_vm.loading},on:{click:function click($event){return _vm.addLotoToCart();}}},[_vm.loading?_c("span",[_c("i",{staticClass:"fa fa-refresh fa-spin"}),_vm._v(" ENVIANDO...")]):_c("span",[_vm._v(_vm._s(_vm.logado?"FINALIZAR APOSTA":"APOSTAR"))])])])])])]):_vm._e(),_vm._v(" "),_vm._l(_vm.filterLiegues,function(event){return!["Quininha","Seninha"].includes(_vm.modalitySelected)?_c("div",{key:event.id,staticClass:"content-jogos"},[_c("h4",{staticClass:"header-campeonato-matchs",staticStyle:{"margin-bottom":"-1px",display:"flex","align-items":"center"}},[_c("img",{staticStyle:{width:"20px",height:"14px","margin-right":"8px","border-radius":"2px","object-fit":"cover"},attrs:{src:event.flag},on:{error:function error($event){$event.target.src="/img/countries/trophy.svg";}}}),_vm._v("\n                "+_vm._s(event.league)+"\n                "),_vm.live?_c("span",{staticStyle:{"margin-left":"8px","font-size":"10px",color:"#fff",background:"var(--live-color, #cc3333)",padding:"2px 6px","border-radius":"3px",animation:"pulse 1.5s infinite"}},[_vm._v("AO VIVO")]):_vm._e()]),_vm._v(" "),_c("div",{staticClass:"jogo"},_vm._l(event.match,function(match){return _c("div",{key:match.id,staticClass:"row container-lista-jogos","class":{"live-match-row":_vm.live},style:_vm.live?"border-left: 3px solid var(--live-color, #cc3333);":""},[_c("div",{staticClass:"col-lg-6 col-md-6 col-xs-9 jogos"},[_c("table",{staticStyle:{width:"100%"}},[_c("tr",[_c("td",{attrs:{align:"left",width:"15%"}},[_c("img",{staticClass:"team-logo-img",attrs:{loading:"lazy",src:match.logo_home||"/img/placeholders/shield.png",alt:match.home},on:{error:function error($event){$event.target.src="/img/placeholders/shield.png";}}})]),_vm._v(" "),_c("td",{staticClass:"team-name",attrs:{align:"center",width:"30%"}},[_vm._v("\n                          "+_vm._s(match.home)+"\n                        ")]),_vm._v(" "),_c("td",{attrs:{align:"center",width:"10%"}},[_vm.live&&match.score?_c("strong",{staticStyle:{color:"var(--live-color, #cc3333)","font-size":"16px"}},[_vm._v(_vm._s(match.score))]):_c("strong",{staticStyle:{color:"#777"}},[_vm._v("X")])]),_vm._v(" "),_c("td",{staticClass:"team-name",attrs:{align:"center",width:"30%"}},[_vm._v("\n                          "+_vm._s(match.away)+"\n                        ")]),_vm._v(" "),_c("td",{attrs:{align:"right",width:"15%"}},[_c("img",{staticClass:"team-logo-img",attrs:{loading:"lazy",src:match.logo_away||"/img/placeholders/shield.png",alt:match.away},on:{error:function error($event){$event.target.src="/img/placeholders/shield.png";}}})])])])]),_vm._v(" "),_c("div",{staticClass:"col-lg-1 col-md-1 col-xs-3 data-hora"},[!_vm.live?_c("span",[_vm._v(_vm._s(_vm._f("formatDate")(match.date)))]):_c("span",{staticClass:"text-danger",staticStyle:{"font-weight":"bold"}},[_c("i",{staticClass:"fa fa-circle pisca",staticStyle:{"font-size":"8px"}}),_vm._v("\n                      "+_vm._s(match.elapsed||match.time)+"'\n                    ")])]),_vm._v(" "),_c("div",{staticClass:"col-lg-5 col-md-5 col-xs-12 btn-apostas"},[_c("div",{staticClass:"cotacoes-principais"},[_vm._l(match.odds?match.odds.slice(0,3):[],function(odd,index){return[odd.cotacao==0?_c("div",{key:"lock-"+odd.id,staticClass:"btn-home"},[_c("i",{staticClass:"fa fa-lock"})]):_vm._e(),_vm._v(" "),odd.cotacao>0?_c("div",{key:"odd-"+odd.id,staticClass:"btn-home","class":{selecionado:_vm.selectionsIds.includes(odd.id)},on:{click:function click($event){return _vm.addPalpite(odd.uuid,odd.id,match.sport,match.id,odd.group_opp,odd.odd,odd.cotacao,event.league,match.date,match.home,match.away,odd.type,odd.cotacaoOriginal,match.logo_home,match.logo_away);}}},[_c("strong",[_vm._v(_vm._s(odd.odd.charAt(0)))]),_vm._v("\n                          "+_vm._s(_vm._f("formatCotacao")(odd.cotacao))+"\n                        ")]):_vm._e()];})],2),_vm._v(" "),_c("div",{staticClass:"plus-odd",attrs:{title:"Mais mercados"},on:{click:function click($event){return _vm.loadOdd(event.league,match,event);}}},[_c("i",{staticClass:"fa fa-plus"}),_vm._v("\n                      "+_vm._s(match.count_odd)+"\n                    ")]),_vm._v(" "),_c("div",{staticClass:"btn-share",attrs:{title:"Compartilhar banner"},on:{click:function click($event){return _vm.openShareMatch(match,event);}}},[_c("i",{staticClass:"fa fa-picture-o fa-lg"})])])]);}),0)]):_vm._e();})],2):_vm._e()]),_vm._v(" "),_c("div",{staticClass:"col-md-3",attrs:{id:"cupom-site"}},[_c("div",{staticClass:"cupom-fixed"},[_c("div",{staticClass:"box box-widget overflow-hidden",staticStyle:{"margin-bottom":"65px","border-radius":"4px","box-shadow":"0 4px 6px rgba(0,0,0,0.1)"}},[_c("div",{staticClass:"ticket-title-new box-header",staticStyle:{background:"var(--cupom_header--color, var(--sidebar--color, #173133)) !important",padding:"10px 15px"}},[_c("h3",{staticClass:"box-title",staticStyle:{"font-size":"13px !important","font-weight":"400",color:"#fff !important","text-transform":"uppercase","letter-spacing":"0.5px"}},[_c("i",{staticClass:"fa fa-ticket"}),_vm._v("\n                  BILHETE ("+_vm._s(_vm.selection.length)+")\n                ")]),_vm._v(" "),_c("div",{staticClass:"box-tools pull-right"},[_c("a",{staticStyle:{cursor:"pointer",color:"#ffffff !important",opacity:"1 !important"},on:{click:function click($event){return _vm.removePalpites();}}},[_c("i",{staticClass:"fa fa-trash-o",staticStyle:{"font-size":"16px"}})])])]),_vm._v(" "),_c("div",{staticClass:"box-body",staticStyle:{padding:"12px"}},[_vm.selection.length>0?_c("div",{staticClass:"box-cupon-list",staticStyle:{"max-height":"400px","overflow-y":"auto","margin-bottom":"15px",padding:"0 5px"}},[_vm._l(_vm.selection,function(select,index){return[index>0?_c("div",{key:"div-"+index,staticClass:"ticket-divider"}):_vm._e(),_vm._v(" "),_c("div",{key:select.uuid,staticClass:"box-cupon",staticStyle:{"margin-bottom":"0",padding:"0",border:"none",background:"transparent"}},[_c("div",{staticStyle:{"background-color":"var(--card_header_bg--color, var(--container_jogos--color))",color:"var(--card_header_text--color, #fff)",padding:"5px 10px","font-size":"12px","font-weight":"600",display:"flex","justify-content":"space-between","align-items":"center"}},[_c("span",[_c("i",{staticClass:"fa fa-trophy"}),_vm._v(" "+_vm._s(select.league))]),_vm._v(" "),_c("a",{staticStyle:{cursor:"pointer"},on:{click:function click($event){return _vm.removePalpite(select.idOdd);}}},[_c("i",{staticClass:"fa fa-trash",staticStyle:{color:"#ffffff !important",opacity:"1 !important"}})])]),_vm._v(" "),_c("div",{staticStyle:{padding:"8px 10px"}},[_c("div",{staticStyle:{"font-size":"13px",color:"#444","font-weight":"600",display:"flex","align-items":"center",gap:"6px"}},[select.logo_home?_c("img",{staticStyle:{width:"18px",height:"18px","object-fit":"contain"},attrs:{src:select.logo_home}}):_vm._e(),_vm._v("\n                        "+_vm._s(select.home)+" \n                        "),_c("span",{staticStyle:{color:"#999","font-weight":"400"}},[_vm._v("X")]),_vm._v("\n                        "+_vm._s(select.away)+"\n                        "),select.logo_away?_c("img",{staticStyle:{width:"18px",height:"18px","object-fit":"contain"},attrs:{src:select.logo_away}}):_vm._e()]),_vm._v(" "),_c("div",{staticStyle:{"font-size":"11px",color:"#e74c3c"}},[_vm._v(_vm._s(_vm._f("formatDate")(select.date))+" hs")]),_vm._v(" "),_c("div",{staticStyle:{"font-size":"12px","font-weight":"700",color:"#333","margin-top":"5px"}},[_vm._v(_vm._s(select.group_opp))]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between","align-items":"center","margin-top":"2px"}},[_c("span",{staticStyle:{"font-size":"13px","font-weight":"700",color:"var(--primary-color, #3ca569) !important"}},[_vm._v("\n                          "+_vm._s(select.odd)+" "),select.type=="ao-vivo"?_c("span",{staticStyle:{"font-size":"10px"}},[_vm._v("("+_vm._s(select.type)+")")]):_vm._e()]),_vm._v(" "),_c("span",{staticStyle:{"font-size":"13px",color:"#333"}},[_vm._v(_vm._s(_vm._f("formatCotacao")(select.cotacao)))])])])])];})],2):_vm._e(),_vm._v(" "),_c("div",{staticClass:"form-apostas-premium"},[_c("div",{staticClass:"form-group",staticStyle:{"margin-bottom":"10px"}},[_c("div",{staticClass:"input-group",staticStyle:{border:"1px solid #ddd","border-radius":"0"}},[_vm._m(48),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.cliente,expression:"cliente"}],staticClass:"form-control",staticStyle:{border:"none","box-shadow":"none","font-size":"13px","font-weight":"300"},attrs:{type:"text",placeholder:"Apostador"},domProps:{value:_vm.cliente},on:{input:function input($event){if($event.target.composing)return;_vm.cliente=$event.target.value;}}})])]),_vm._v(" "),_c("div",{staticClass:"form-group",staticStyle:{"margin-bottom":"10px"}},[_c("div",{staticClass:"input-group",staticStyle:{border:"1px solid #ddd","border-radius":"0"}},[_c("span",{staticClass:"input-group-addon",staticStyle:{background:"var(--container_jogos--color, #fff)",border:"none",color:"var(--search_bar_text--color, #666)","font-size":"12px"}},[_vm._v("R$")]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.apostado,expression:"apostado"}],staticClass:"form-control",staticStyle:{border:"none","box-shadow":"none","font-weight":"400","font-size":"14px",color:"#555"},attrs:{type:"number",placeholder:"0,00"},domProps:{value:_vm.apostado},on:{input:[function($event){if($event.target.composing)return;_vm.apostado=$event.target.value;},function($event){return _vm.calculaCotacao();}]}})])]),_vm._v(" "),_c("div",{staticClass:"value-btn-group",staticStyle:{display:"flex",gap:"1px","margin-bottom":"15px"}},[_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==5},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(5);}}},[_vm._v("5,00")]),_vm._v(" "),_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==10},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(10);}}},[_vm._v("10,00")]),_vm._v(" "),_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==20},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(20);}}},[_vm._v("20,00")]),_vm._v(" "),_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==30},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(30);}}},[_vm._v("30,00")]),_vm._v(" "),_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==50},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(50);}}},[_vm._v("50,00")])]),_vm._v(" "),_c("div",{staticClass:"info-ticket",staticStyle:{"margin-top":"10px",padding:"0 5px"}},[_vm._m(49),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between","align-items":"center","margin-bottom":"15px"}},[_c("div",{staticStyle:{"font-weight":"700","font-size":"15px",color:"#333"}},[_vm._v(_vm._s(_vm._f("formatCotacao")(_vm.total_cotacao)))]),_vm._v(" "),_c("div",{staticStyle:{"font-weight":"700","font-size":"16px",color:"#3ca569 !important"}},[_vm._v(_vm._s(_vm._f("formatMoeda")(_vm.retorno)))])]),_vm._v(" "),_c("button",{staticClass:"btn-block btn btn-lg btn-success btnSendBet",staticStyle:{"background-color":"var(--cupom_apostar_btn--color, var(--container_jogos--color)) !important",color:"#fff !important",border:"none","border-radius":"4px",padding:"10px","font-weight":"800","font-size":"16px",transition:"all 0.2s",opacity:"1 !important"},attrs:{disabled:_vm.loadingBtn},on:{click:function click($event){return _vm.enviarAposta();}}},[_vm.loadingBtn?_c("span",[_c("i",{staticClass:"fa fa-refresh fa-spin"}),_vm._v(" ENVIANDO...")]):_c("span",[_c("i",{staticClass:"fa fa-ticket"}),_vm._v(" APOSTAR")])])])])])])]),_vm._v(" "),_vm.belowTicketBanners.length>0?_c("div",{staticClass:"banner-below-ticket mt-1"},_vm._l(_vm.belowTicketBanners,function(banner,index){return _c("div",{key:"btb-"+index,staticClass:"mb-2"},[_c("a",{attrs:{href:banner.link||"#"}},[_c("img",{staticStyle:{width:"100%","border-radius":"4px","box-shadow":"0 4px 6px rgba(0,0,0,0.1)"},attrs:{src:banner.image||banner.img}})])]);}),0):_vm._e()])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-login-disabled"}},[_c("div",{staticClass:"modal-dialog"},[_c("div",{staticClass:"modal-content"},[_vm._m(50),_vm._v(" "),_c("div",{staticClass:"modal-body box box-primary"},[_c("div",{staticClass:"login-box-body"},[_vm.errorLogin?_c("div",{staticClass:"alert alert-danger alert-dismissible"},[_vm._m(51),_vm._v("\n              "+_vm._s(_vm.messageError)+"\n            ")]):_vm._e(),_vm._v(" "),_c("div",{staticClass:"form-group has-feedback"},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.username,expression:"username"}],staticClass:"form-control",attrs:{type:"text",placeholder:"Login"},domProps:{value:_vm.username},on:{input:function input($event){if($event.target.composing)return;_vm.username=$event.target.value;}}}),_vm._v(" "),_c("span",{staticClass:"glyphicon glyphicon-envelope form-control-feedback"})]),_vm._v(" "),_c("div",{staticClass:"form-group has-feedback"},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.password,expression:"password"}],staticClass:"form-control",attrs:{type:"password",placeholder:"Senha"},domProps:{value:_vm.password},on:{keyup:function keyup($event){if(!$event.type.indexOf("key")&&_vm._k($event.keyCode,"enter",13,$event.key,"Enter"))return null;return _vm.login();},input:function input($event){if($event.target.composing)return;_vm.password=$event.target.value;}}}),_vm._v(" "),_c("span",{staticClass:"glyphicon glyphicon-lock form-control-feedback"})]),_vm._v(" "),_c("div",{staticClass:"row"},[_vm._m(52),_vm._v(" "),_c("div",{staticClass:"col-xs-4"},[_c("button",{staticClass:"btn btn-primary btn-block btn-flat",attrs:{type:"submit"},on:{click:function click($event){return _vm.login();}}},[_vm._v("\n                  Acessar\n                ")])])])])])])])]),_vm._v(" "),_vm._m(53),_vm._v(" "),_c("div",{directives:[{name:"show",rawName:"v-show",value:_vm.logado,expression:"logado"}],staticClass:"modal fade",attrs:{id:"modal-caixa"}},[_c("div",{staticClass:"modal-dialog"},[_c("div",{staticClass:"modal-content"},[_vm._m(54),_vm._v(" "),_c("div",{staticClass:"modal-body"},[_c("div",{staticClass:"nav-tabs-custom"},[_c("ul",{staticClass:"nav nav-tabs"},[_vm._m(55),_vm._v(" "),_vm.account.nivel=="cambista"?_c("li",{},[_c("a",{attrs:{href:"#tab_2","data-toggle":"tab","aria-expanded":"false"},on:{click:function click($event){return _vm.loadCaixa();}}},[_vm._v("MEU CAIXA")])]):_vm._e()]),_vm._v(" "),_c("div",{staticClass:"tab-content"},[_c("div",{staticClass:"tab-pane active",attrs:{id:"tab_1"}},[_c("div",{staticClass:"box-body box-profile"},[_c("img",{staticClass:"profile-user-img img-responsive img-circle",attrs:{src:"/dist/img/user4-128x128.jpg",alt:"User profile picture"}}),_vm._v(" "),_c("h3",{staticClass:"profile-username text-center"},[_vm._v("\n                    "+_vm._s(_vm.account.name)+"\n                  ")]),_vm._v(" "),_c("p",{staticClass:"text-muted text-center"},[_vm._v(_vm._s(_vm.account.nivel))]),_vm._v(" "),_c("ul",{staticClass:"list-group list-group-unbordered"},[_c("li",{staticClass:"list-group-item"},[_c("b",[_vm._v("Login")]),_vm._v(" "),_c("a",{staticClass:"pull-right"},[_vm._v(_vm._s(_vm.account.username))])]),_vm._v(" "),_c("li",{staticClass:"list-group-item"},[_c("b",[_vm._v("Telefone")]),_vm._v(" "),_c("a",{staticClass:"pull-right"},[_vm._v(_vm._s(_vm.account.phone))])])])])]),_vm._v(" "),_vm.account.nivel=="cambista"?_c("div",{staticClass:"tab-pane",attrs:{id:"tab_2"}},[!_vm.loadingCaixa?_c("div",{staticClass:"box-body"},[_c("ul",{staticClass:"list-group list-group-unbordered"},[_c("li",{staticClass:"list-group-item"},[_c("b",[_vm._v("Total Entradas")]),_vm._v(" "),_c("a",{staticClass:"pull-right"},[_vm._v("R$ "+_vm._s(_vm.caixa.entradas))])]),_vm._v(" "),_c("li",{staticClass:"list-group-item"},[_c("b",[_vm._v("Total Saidas")]),_vm._v(" "),_c("a",{staticClass:"pull-right"},[_vm._v("R$ "+_vm._s(_vm.caixa.saidas))])]),_vm._v(" "),_c("li",{staticClass:"list-group-item"},[_c("b",[_vm._v("Comissão")]),_vm._v(" "),_c("a",{staticClass:"pull-right"},[_vm._v("R$ "+_vm._s(_vm.caixa.comissao))])]),_vm._v(" "),_c("li",{staticClass:"list-group-item"},[_c("b",[_vm._v("Total Liquido")]),_vm._v(" "),_c("a",{staticClass:"pull-right"},[_vm._v("R$ "+_vm._s(_vm.caixa.liquido))])])])]):_c("div",{staticClass:"box-body text-center"},[_c("clip-loader",{attrs:{loading:_vm.loadingCaixa,color:"#3c8dbc",size:"45px"}})],1)]):_vm._e()])])])])])]),_vm._v(" "),_c("div",{directives:[{name:"show",rawName:"v-show",value:_vm.logado,expression:"logado"}],staticClass:"modal fade",attrs:{id:"modal-relatorio"}},[_c("div",{staticClass:"modal-dialog modal-lg"},[_c("div",{staticClass:"modal-content"},[_vm._m(56),_vm._v(" "),_c("div",{staticClass:"modal-body"},[_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-3"},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Início:")]),_vm._v(" "),_c("div",{staticClass:"input-group date"},[_vm._m(57),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.data_inicio,expression:"data_inicio"}],staticClass:"form-control pull-right",attrs:{type:"date"},domProps:{value:_vm.data_inicio},on:{input:function input($event){if($event.target.composing)return;_vm.data_inicio=$event.target.value;}}})])])]),_vm._v(" "),_c("div",{staticClass:"col-md-3"},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Fim:")]),_vm._v(" "),_c("div",{staticClass:"input-group date"},[_vm._m(58),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.data_fim,expression:"data_fim"}],staticClass:"form-control pull-right",attrs:{type:"date"},domProps:{value:_vm.data_fim},on:{input:function input($event){if($event.target.composing)return;_vm.data_fim=$event.target.value;}}})])])]),_vm._v(" "),_c("div",{staticClass:"col-md-3"},[_c("div",{staticClass:"form-group"},[_c("label",[_vm._v("Status:")]),_vm._v(" "),_c("select",{directives:[{name:"model",rawName:"v-model",value:_vm.status,expression:"status"}],staticClass:"form-control",on:{change:function change($event){var $$selectedVal=Array.prototype.filter.call($event.target.options,function(o){return o.selected;}).map(function(o){var val="_value"in o?o._value:o.value;return val;});_vm.status=$event.target.multiple?$$selectedVal:$$selectedVal[0];}}},[_c("option",{attrs:{value:""}},[_vm._v("Todos")]),_vm._v(" "),_c("option",{attrs:{value:"Aberto"}},[_vm._v("Aberto")]),_vm._v(" "),_c("option",{attrs:{value:"Venceu"}},[_vm._v("Venceu")]),_vm._v(" "),_c("option",{attrs:{value:"Perdeu"}},[_vm._v("Perdeu")]),_vm._v(" "),_c("option",{attrs:{value:"Cancelado"}},[_vm._v("Cancelado")])])])]),_vm._v(" "),_c("div",{staticClass:"col-md-3"},[_c("div",{staticClass:"form-group"},[_c("label",{staticStyle:{color:"#fff"}},[_vm._v(".")]),_vm._v(" "),_c("button",{staticClass:"btn btn-primary btn-block",on:{click:function click($event){return _vm.loadRelatorio();}}},[_vm._v("\n                  PESQUISAR\n                ")])])])]),_vm._v(" "),_c("br"),_vm._v(" "),!_vm.loading?_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-md-12"},[_c("div",{staticClass:"table-responsive"},[_c("table",{staticClass:"table no-margin"},[_vm._m(59),_vm._v(" "),_c("tbody",_vm._l(_vm.relatorio,function(bilhete){return _c("tr",{key:bilhete.id},[_c("td",[_c("a",{attrs:{href:"javascript:void(0)"}},[_vm._v(_vm._s(bilhete.cupom))])]),_vm._v(" "),_c("td",[_vm._v(_vm._s(_vm._f("formatDate")(bilhete.created_at)))]),_vm._v(" "),_c("td",[_vm._v("R$ "+_vm._s(bilhete.valor_apostado))]),_vm._v(" "),_c("td",[_vm._v("R$ "+_vm._s(bilhete.valor_retorno))]),_vm._v(" "),_c("td",[_c("span",{staticClass:"label","class":{"label-success":bilhete.status=="Venceu","label-danger":bilhete.status=="Perdeu","label-warning":bilhete.status=="Aberto","label-default":bilhete.status=="Cancelado"}},[_vm._v(_vm._s(bilhete.status))])]),_vm._v(" "),_c("td",[_c("button",{staticClass:"btn btn-primary btn-xs",on:{click:function click($event){return _vm.verBilhete(bilhete.id);}}},[_c("i",{staticClass:"fa fa-eye"})])])]);}),0)])])])]):_c("div",{staticClass:"row text-center"},[_c("clip-loader",{attrs:{loading:_vm.loading,color:"#3c8dbc",size:"45px"}})],1)])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-validar-pin"}},[_c("div",{staticClass:"modal-dialog modal-sm"},[_c("div",{staticClass:"modal-content",staticStyle:{"border-radius":"12px",border:"none","box-shadow":"0 10px 30px rgba(0,0,0,0.4)"}},[_vm._m(60),_vm._v(" "),_c("div",{staticClass:"modal-body box box-primary",staticStyle:{padding:"25px"}},[_c("p",{staticStyle:{"font-size":"13px",color:"#666","margin-bottom":"15px"}},[_vm._v("Informe o código do bilhete (PIN) para validar e transformar em aposta real.")]),_vm._v(" "),_c("div",{staticClass:"form-group has-feedback",staticStyle:{"margin-bottom":"20px"}},[_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.pin,expression:"pin"}],staticClass:"form-control",staticStyle:{height:"50px","font-size":"20px","font-weight":"800","text-align":"center","text-transform":"uppercase","border-radius":"8px",border:"2px solid #eee",background:"var(--container_jogos--color, #f9f9f9)"},attrs:{type:"text",placeholder:"Ex: ABC123"},domProps:{value:_vm.pin},on:{input:function input($event){if($event.target.composing)return;_vm.pin=$event.target.value;}}}),_vm._v(" "),_c("span",{staticClass:"fa fa-key form-control-feedback",staticStyle:{"line-height":"50px",color:"var(--sidebar--color)"}})]),_vm._v(" "),_c("button",{staticClass:"btn btn-primary btn-block",staticStyle:{height:"50px","font-weight":"800","font-size":"16px","border-radius":"8px","background-color":"var(--sidebar--color) !important",border:"none","text-transform":"uppercase","letter-spacing":"1px"},on:{click:function click($event){return _vm.validaPin();}}},[_c("i",{staticClass:"fa fa-check-circle"}),_vm._v(" VALIDAR AGORA\n          ")])])])])]),_vm._v(" "),_c("div",{directives:[{name:"show",rawName:"v-show",value:false,expression:"false"}],staticClass:"modal fade",attrs:{id:"modal-match-old-2"}},[_c("div",{staticClass:"modal-dialog modal-lg"},[_c("div",{staticClass:"modal-content"},[_vm._m(61),_vm._v(" "),_c("div",{staticClass:"modal-body"},[!_vm.loading_odds?_c("div",{staticClass:"row"},_vm._l(_vm.mercados,function(group){return _c("div",{key:group.name,staticClass:"col-md-12"},[_c("div",{staticClass:"box box-solid box-default"},[_c("div",{staticClass:"box-header with-border"},[_c("h3",{staticClass:"box-title"},[_vm._v(_vm._s(group.name))])]),_vm._v(" "),_c("div",{staticClass:"box-body"},[_c("div",{staticClass:"row"},_vm._l(group.odds,function(odd){return _c("div",{key:odd.id,staticClass:"col-md-4"},[_c("button",{staticClass:"btn btn-default btn-block btn-flat","class":{"btn-primary":_vm.selectionsIds.includes(odd.id)},staticStyle:{"margin-bottom":"5px"},on:{click:function click($event){return _vm.addPalpite(odd.uuid,odd.id,_vm.match.sport,_vm.match.id,group.name,odd.odd,odd.cotacao,_vm.match.league,_vm.match.date,_vm.match.home,_vm.match.away,odd.type,odd.cotacaoOriginal,_vm.match.logo_home,_vm.match.logo_away);}}},[_vm._v("\n                        "+_vm._s(odd.odd)+" - "+_vm._s(_vm._f("formatCotacao")(odd.cotacao))+"\n                      ")])]);}),0)])])]);}),0):_c("div",{staticClass:"row text-center"},[_c("clip-loader",{attrs:{loading:_vm.loading_odds,color:"#3c8dbc",size:"45px"}})],1)])])])]),_vm._v(" "),_c("footer",{staticClass:"main-footer",staticStyle:{background:"var(--footer_bg--color, #f4f6f9)",padding:"30px 20px 15px",color:"var(--footer_text--color, #555)","border-top":"1px solid #dee2e6"}},[_c("div",{staticClass:"container-fluid"},[_c("div",{staticClass:"row",staticStyle:{"margin-bottom":"25px"}},[_c("div",{staticClass:"col-sm-3"},[_c("h4",{staticStyle:{"font-size":"15px","font-weight":"700",color:"#333","margin-bottom":"10px"}},[_vm._v("Sobre Nós")]),_vm._v(" "),_c("p",{staticStyle:{"font-size":"13px",color:"#777","line-height":"1.6"}},[_vm._v(_vm._s(_vm.server.footer_sobre||"Conte um pouco sobre sua plataforma."))])]),_vm._v(" "),_vm._m(62),_vm._v(" "),_vm._m(63),_vm._v(" "),_c("div",{staticClass:"col-sm-3"},[_c("h4",{staticStyle:{"font-size":"15px","font-weight":"700",color:"#333","margin-bottom":"10px"}},[_vm._v("Redes Sociais")]),_vm._v(" "),_c("div",[_vm.site_info.social_instagram?_c("a",{staticStyle:{display:"inline-block","margin-right":"10px","margin-bottom":"8px",color:"#e1306c","font-size":"26px"},attrs:{href:_vm.site_info.social_instagram,target:"_blank"}},[_c("i",{staticClass:"fa fa-instagram"})]):_vm._e(),_vm._v(" "),_vm.site_info.social_facebook?_c("a",{staticStyle:{display:"inline-block","margin-right":"10px","margin-bottom":"8px",color:"#1877f2","font-size":"26px"},attrs:{href:_vm.site_info.social_facebook,target:"_blank"}},[_c("i",{staticClass:"fa fa-facebook-square"})]):_vm._e(),_vm._v(" "),_vm.site_info.social_twitter?_c("a",{staticStyle:{display:"inline-block","margin-right":"10px","margin-bottom":"8px",color:"#1da1f2","font-size":"26px"},attrs:{href:_vm.site_info.social_twitter,target:"_blank"}},[_c("i",{staticClass:"fa fa-twitter-square"})]):_vm._e(),_vm._v(" "),_vm.site_info.social_youtube?_c("a",{staticStyle:{display:"inline-block","margin-right":"10px","margin-bottom":"8px",color:"#ff0000","font-size":"26px"},attrs:{href:_vm.site_info.social_youtube,target:"_blank"}},[_c("i",{staticClass:"fa fa-youtube-play"})]):_vm._e(),_vm._v(" "),_vm.site_info.whatsapp_number?_c("a",{staticStyle:{display:"inline-block","margin-right":"10px","margin-bottom":"8px",color:"#25d366","font-size":"26px"},attrs:{href:"https://wa.me/"+_vm.site_info.whatsapp_number,target:"_blank"}},[_c("i",{staticClass:"fa fa-whatsapp"})]):_vm._e(),_vm._v(" "),!_vm.site_info.social_instagram&&!_vm.site_info.social_facebook&&!_vm.site_info.social_twitter&&!_vm.site_info.social_youtube&&!_vm.site_info.whatsapp_number?_c("p",{staticStyle:{"font-size":"13px",color:"#888"}},[_vm._v("\n              Configure as redes sociais no painel Admin.\n            ")]):_vm._e()])])]),_vm._v(" "),_vm._m(64),_vm._v(" "),_c("hr",{staticStyle:{"border-top":"1px solid #ddd",margin:"15px 0"}}),_vm._v(" "),_c("div",{staticClass:"row"},[_c("div",{staticClass:"col-sm-6",staticStyle:{"font-size":"13px"}},[_c("strong",[_vm._v("Copyright © "+_vm._s(_vm.server.year)+" "),_c("a",{staticStyle:{color:"var(--container_jogos--color)"},attrs:{href:"/"}},[_vm._v(_vm._s(_vm.server.logo))]),_vm._v(".")]),_vm._v(" Todos os direitos reservados.\n        ")]),_vm._v(" "),_vm._m(65)])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-cupon",tabindex:"-1",role:"dialog"}},[_c("div",{staticClass:"modal-dialog",staticStyle:{margin:"10px auto","max-width":"500px"}},[_c("div",{staticClass:"modal-content",staticStyle:{background:"var(--modal_bg--color, var(--background--color, #fff))"}},[_c("div",{staticClass:"modal-header",staticStyle:{background:"var(--container_jogos--color, #f4f4f4)",padding:"10px 15px","border-bottom":"1px solid #ddd"}},[_vm._m(66),_vm._v(" "),_c("h4",{staticClass:"modal-title",staticStyle:{color:"#333","font-weight":"700"}},[_c("i",{staticClass:"fa fa-ticket"}),_vm._v(" Bilhete ("+_vm._s(_vm.selection.length)+")\n          ")])]),_vm._v(" "),_c("div",{staticClass:"modal-body",staticStyle:{padding:"10px",background:"var(--modal_bg--color, var(--background--color, #fff))"}},[_c("div",{staticClass:"input-group",staticStyle:{"margin-bottom":"8px"}},[_vm._m(67),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.cliente,expression:"cliente"}],staticClass:"form-control",attrs:{type:"text",placeholder:"Apostador"},domProps:{value:_vm.cliente},on:{input:function input($event){if($event.target.composing)return;_vm.cliente=$event.target.value;}}})]),_vm._v(" "),_c("div",{staticClass:"input-group",staticStyle:{"margin-bottom":"8px"}},[_c("span",{staticClass:"input-group-addon"},[_vm._v("R$")]),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.apostado,expression:"apostado"}],staticClass:"form-control",attrs:{type:"number",placeholder:"Valor Apostado",min:"0",step:"0.50"},domProps:{value:_vm.apostado},on:{keyup:function keyup($event){return _vm.calculaCotacao();},input:function input($event){if($event.target.composing)return;_vm.apostado=$event.target.value;}}})]),_vm._v(" "),_c("div",{staticClass:"value-btn-group",staticStyle:{display:"flex",gap:"1px","margin-bottom":"15px"}},[_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==5},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(5);}}},[_vm._v("5,00")]),_vm._v(" "),_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==10},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(10);}}},[_vm._v("10,00")]),_vm._v(" "),_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==20},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(20);}}},[_vm._v("20,00")]),_vm._v(" "),_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==30},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(30);}}},[_vm._v("30,00")]),_vm._v(" "),_c("button",{staticClass:"btn-valor","class":{active:_vm.apostado==50},staticStyle:{flex:"1",border:"none","border-radius":"0",padding:"8px 0","font-size":"10px","font-weight":"400",color:"#fff"},on:{click:function click($event){return _vm.setValApostado(50);}}},[_vm._v("50,00")])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between","margin-bottom":"10px",padding:"4px 0","border-top":"1px solid #eee","border-bottom":"1px solid #eee"}},[_c("span",{staticStyle:{"font-size":"13px"}},[_vm._v("\n              Cotação "),_c("br"),_vm._v(" "),_c("strong",{staticStyle:{"font-size":"18px"}},[_vm._v(_vm._s(_vm._f("formatCotacao")(_vm.total_cotacao)))])]),_vm._v(" "),_c("span",{staticStyle:{"font-size":"13px","text-align":"right"}},[_vm._v("\n              Possível Retorno "),_c("br"),_vm._v(" "),_c("strong",{staticStyle:{"font-size":"18px",color:"#3ca569 !important"}},[_vm._v(_vm._s(_vm._f("formatMoeda")(_vm.retorno)))])])]),_vm._v(" "),_c("button",{staticClass:"btn btn-block btn-lg",staticStyle:{"background-color":"var(--cupom_apostar_btn--color, #3ca569) !important",color:"#ffffff !important","font-weight":"800","font-size":"16px","border-radius":"6px","margin-bottom":"12px"},attrs:{disabled:_vm.loadingBtn},on:{click:function click($event){return _vm.enviarAposta();}}},[_c("i",{staticClass:"fa fa-ticket"}),_vm._v(" Apostar\n          ")]),_vm._v(" "),_vm._m(68),_vm._v(" "),_c("hr",{staticStyle:{"border-style":"dashed",margin:"8px 0"}}),_vm._v(" "),_vm._l(_vm.selection,function(select,index){return[index>0?_c("div",{key:"m-div-"+index,staticClass:"ticket-divider"}):_vm._e(),_vm._v(" "),_c("div",{key:select.id,staticStyle:{padding:"8px 0","margin-bottom":"0"}},[_c("div",{staticStyle:{background:"var(--card_header_bg--color, var(--container_jogos--color))",color:"var(--card_header_text--color, #fff)",padding:"5px 8px","border-radius":"3px","margin-bottom":"5px",display:"flex","justify-content":"space-between","align-items":"center"}},[_c("span",{staticStyle:{"font-size":"13px","font-weight":"700",color:"#ffffff !important"}},[_c("i",{staticClass:"fa fa-trophy"}),_vm._v(" "+_vm._s(select.league)+"\n              ")]),_vm._v(" "),_c("span",{staticStyle:{cursor:"pointer"},on:{click:function click($event){return _vm.removePalpite(select.idOdd);}}},[_c("i",{staticClass:"fa fa-trash",staticStyle:{color:"#ffffff !important",opacity:"1 !important"}})])]),_vm._v(" "),_c("div",{staticStyle:{padding:"0 5px"}},[_c("div",{staticStyle:{"font-weight":"700","font-size":"14px",display:"flex","align-items":"center",gap:"8px"}},[select.logo_home?_c("img",{staticStyle:{width:"22px",height:"22px","object-fit":"contain"},attrs:{src:select.logo_home}}):_vm._e(),_vm._v("\n                "+_vm._s(select.home)+" \n                "),_c("span",{staticStyle:{color:"#999","font-weight":"400","font-size":"12px"}},[_vm._v("X")]),_vm._v(" \n                "+_vm._s(select.away)+"\n                "),select.logo_away?_c("img",{staticStyle:{width:"22px",height:"22px","object-fit":"contain"},attrs:{src:select.logo_away}}):_vm._e()]),_vm._v(" "),_c("div",{staticStyle:{color:"#e74c3c","font-size":"12px"}},[_vm._v(_vm._s(_vm._f("formatDate")(select.date))+" hs")]),_vm._v(" "),_c("div",{staticStyle:{"font-size":"13px"}},[_vm._v(_vm._s(select.sport))]),_vm._v(" "),_c("div",{staticStyle:{"font-size":"13px",color:"#333"}},[_c("b",[_vm._v(_vm._s(select.group_opp))])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","justify-content":"space-between","align-items":"center","margin-top":"4px"}},[_c("span",{staticStyle:{color:"#3ca569 !important","font-weight":"700","font-size":"13px"}},[select.type=="ao-vivo"?_c("span",{staticStyle:{color:"#3ca569 !important"}},[_vm._v(_vm._s(select.odd)+" ("+_vm._s(select.type)+")")]):_c("span",{staticStyle:{color:"#3ca569 !important"}},[_vm._v(_vm._s(select.odd))])]),_vm._v(" "),_c("span",{staticStyle:{"font-weight":"700","font-size":"15px"}},[_vm._v(_vm._s(_vm._f("formatCotacao")(select.cotacao)))])])])])];})],2)])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-share",tabindex:"-1",role:"dialog"}},[_c("div",{staticClass:"modal-dialog modal-md",attrs:{role:"document"}},[_c("div",{staticClass:"modal-content",staticStyle:{background:"var(--cupom_header--color, var(--sidebar--color, #173133))",color:"#fff",border:"1px solid var(--container_jogos--color)"}},[_vm._m(69),_vm._v(" "),_c("div",{staticClass:"modal-body text-center",staticStyle:{padding:"15px","max-height":"75vh","overflow-y":"auto"}},[_vm.loading_share?_c("div",{staticStyle:{padding:"60px 0"}},[_c("i",{staticClass:"fa fa-refresh fa-spin fa-3x",staticStyle:{color:"var(--container_jogos--color)"}}),_vm._v(" "),_c("p",{staticStyle:{"margin-top":"15px","font-weight":"500",color:"#aaa"}},[_vm._v("Gerando banner personalizado...")])]):_c("div",[_vm.image_share?_c("img",{staticStyle:{width:"100%","max-width":"360px","border-radius":"8px","box-shadow":"0 8px 25px rgba(0,0,0,0.6)"},attrs:{src:_vm.image_share}}):_c("div",{staticClass:"alert alert-warning",staticStyle:{background:"rgba(255,193,7,0.1)","border-color":"#ffc107",color:"#ffc107"}},[_vm._v("\n              Não foi possível gerar o banner para este jogo.\n            ")]),_vm._v(" "),_vm.image_share?_c("div",{staticClass:"share-actions",staticStyle:{"margin-top":"18px",display:"flex",gap:"10px","justify-content":"center","flex-wrap":"wrap"}},[_c("button",{staticClass:"btn",staticStyle:{background:"var(--container_jogos--color)",color:"#fff","font-weight":"700",padding:"10px 20px","border-radius":"6px"},on:{click:function click($event){return _vm.downloadBanner();}}},[_c("i",{staticClass:"fa fa-download"}),_vm._v(" Baixar Imagem\n              ")]),_vm._v(" "),_c("button",{staticClass:"btn",staticStyle:{background:"#25D366",color:"#fff","font-weight":"700",padding:"10px 20px","border-radius":"6px"},on:{click:function click($event){return _vm.shareImageWhatsapp();}}},[_c("i",{staticClass:"fa fa-whatsapp"}),_vm._v(" WhatsApp\n              ")])]):_vm._e()])])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-regulamento",tabindex:"-1",role:"dialog"}},[_c("div",{staticClass:"modal-dialog"},[_c("div",{staticClass:"modal-content"},[_vm._m(70),_vm._v(" "),_c("div",{staticClass:"modal-body box box-primary",staticStyle:{"max-height":"70vh","overflow-y":"auto"}},[!_vm.regulamento?_c("div",{staticStyle:{"text-align":"center",padding:"40px",color:"#64748b"}},[_c("i",{staticClass:"fa fa-refresh fa-spin fa-2x",staticStyle:{color:"#3c8dbc","margin-bottom":"15px"}}),_vm._v(" "),_c("p",{staticStyle:{"font-size":"14px"}},[_vm._v("Carregando...")])]):_c("div",{staticClass:"regulamento-content-demo",domProps:{innerHTML:_vm._s(_vm.regulamento)}})]),_vm._v(" "),_c("div",{staticClass:"modal-footer",staticStyle:{"text-align":"center","border-top":"1px solid #f4f4f4"}},[_c("button",{staticClass:"btn btn-success btn-lg",staticStyle:{"font-weight":"700",padding:"10px 60px","border-radius":"4px","text-transform":"uppercase"},attrs:{type:"button","data-dismiss":"modal"},on:{click:function click($event){_vm.formRegister.termos=true;}}},[_c("i",{staticClass:"fa fa-check"}),_vm._v(" LI E ACEITO\n          ")])])])])]),_vm._v(" "),_c("div",{staticClass:"modal fade",attrs:{id:"modal-match",tabindex:"-1",role:"dialog"}},[_c("div",{staticClass:"modal-dialog modal-lg",attrs:{role:"document"}},[_c("div",{staticClass:"modal-content",staticStyle:{border:"none","border-radius":"4px",overflow:"hidden",background:"#eaebec"}},[_c("div",{staticStyle:{"background-color":"#2b323a",padding:"12px 20px",display:"flex","align-items":"center","justify-content":"space-between","border-radius":"4px 4px 0 0"}},[_c("h4",{staticStyle:{"font-weight":"500",color:"#ffffff",margin:"0","font-size":"16px",display:"flex","align-items":"center"}},[_c("i",{staticClass:"fa fa-trophy",staticStyle:{"margin-right":"10px",color:"#ffffff","font-size":"16px"}}),_vm._v(" "+_vm._s(_vm.match.league||_vm.liga)+"\n          ")]),_vm._v(" "),_vm._m(71)]),_vm._v(" "),_c("div",{staticStyle:{"background-image":"url('/img/login_bg.png')","background-size":"cover","background-position":"center",position:"relative",overflow:"hidden"}},[_c("div",{staticStyle:{position:"absolute",top:"0",left:"0",right:"0",bottom:"0",background:"linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 100%)"}}),_vm._v(" "),_c("div",{staticStyle:{position:"relative","z-index":"1",padding:"35px 20px 25px 20px","text-align":"center",color:"#fff"}},[_c("div",{staticStyle:{display:"flex","justify-content":"center","align-items":"center",gap:"40px","margin-bottom":"25px"}},[_c("div",{staticStyle:{flex:"1","text-align":"right",display:"flex","align-items":"center","justify-content":"flex-end",gap:"20px"}},[_c("h4",{staticStyle:{margin:"0","font-size":"24px","font-weight":"300","letter-spacing":"-0.5px"}},[_vm._v(_vm._s(_vm.match.home))]),_vm._v(" "),_vm.match.logo_home?_c("img",{staticStyle:{width:"75px",height:"75px","object-fit":"contain",filter:"drop-shadow(0 4px 8px rgba(0,0,0,0.5))"},attrs:{src:_vm.match.logo_home}}):_vm._e()]),_vm._v(" "),_vm._m(72),_vm._v(" "),_c("div",{staticStyle:{flex:"1","text-align":"left",display:"flex","align-items":"center","justify-content":"flex-start",gap:"20px"}},[_vm.match.logo_away?_c("img",{staticStyle:{width:"75px",height:"75px","object-fit":"contain",filter:"drop-shadow(0 4px 8px rgba(0,0,0,0.5))"},attrs:{src:_vm.match.logo_away}}):_vm._e(),_vm._v(" "),_c("h4",{staticStyle:{margin:"0","font-size":"24px","font-weight":"300","letter-spacing":"-0.5px"}},[_vm._v(_vm._s(_vm.match.away))])])]),_vm._v(" "),_c("div",{staticStyle:{display:"inline-flex","align-items":"center",gap:"10px",background:"rgba(255,255,255,0.05)",padding:"8px 20px","border-radius":"30px","font-size":"13px","font-weight":"300",border:"1px solid rgba(255,255,255,0.1)","backdrop-filter":"blur(4px)"}},[!_vm.live?_c("span",{staticStyle:{display:"flex","align-items":"center",gap:"8px"}},[_c("i",{staticClass:"fa fa-calendar-check-o",staticStyle:{color:"rgba(255,255,255,0.6)"}}),_vm._v(" "+_vm._s(_vm._f("formatDate")(_vm.match.date))+"\n              ")]):_vm._e(),_vm._v(" "),_vm.live?_c("span",{staticClass:"label label-danger pisca",staticStyle:{"background-color":"#ff3333 !important","border-radius":"20px",padding:"3px 12px","font-weight":"600","text-transform":"uppercase","font-size":"10px","letter-spacing":"0.5px"}},[_c("i",{staticClass:"fa fa-circle",staticStyle:{"font-size":"8px","margin-right":"5px"}}),_vm._v(" Ao Vivo "+_vm._s(_vm.match.time?"- "+_vm.match.time+"'":"")+"\n              ")]):_vm._e()])])]),_vm._v(" "),_c("div",{staticClass:"modal-body",staticStyle:{"background-color":"#eaebec",padding:"15px","max-height":"65vh","overflow-y":"auto",position:"relative"}},[_vm.showMarketInfo?_c("div",{staticStyle:{position:"absolute",top:"0",left:"0",right:"0",bottom:"0",background:"rgba(0,0,0,0.5)","z-index":"1000",display:"flex","align-items":"center","justify-content":"center",padding:"20px"}},[_c("div",{staticStyle:{background:"#fff","border-radius":"8px",width:"100%","max-width":"400px",overflow:"hidden","box-shadow":"0 10px 25px rgba(0,0,0,0.3)"}},[_c("div",{staticStyle:{background:"#1e4b82",color:"#fff",padding:"15px",display:"flex","justify-content":"space-between","align-items":"center"}},[_vm._m(73),_vm._v(" "),_c("button",{staticStyle:{background:"none",border:"none",color:"#fff","font-size":"20px",cursor:"pointer"},on:{click:function click($event){_vm.showMarketInfo=false;}}},[_vm._v("×")])]),_vm._v(" "),_c("div",{staticStyle:{padding:"20px"}},[_c("p",{staticStyle:{"font-weight":"bold",color:"#333","margin-bottom":"10px"}},[_vm._v(_vm._s(_vm.selectedMarketName))]),_vm._v(" "),_c("p",{staticStyle:{color:"#666","font-size":"14px","line-height":"1.5"}},[_vm._v("\n                  "+_vm._s(_vm.getMarketDescription(_vm.selectedMarketName))+"\n                ")]),_vm._v(" "),_c("div",{staticStyle:{"text-align":"right","margin-top":"20px"}},[_c("button",{staticStyle:{background:"#f39c12",color:"#fff",border:"none",padding:"8px 25px","border-radius":"4px","font-weight":"bold",cursor:"pointer"},on:{click:function click($event){_vm.showMarketInfo=false;}}},[_vm._v("Entendi")])])])])]):_vm._e(),_vm._v(" "),_c("div",{staticStyle:{"margin-bottom":"15px",position:"relative"}},[_c("i",{staticClass:"fa fa-search",staticStyle:{position:"absolute",left:"15px",top:"12px",color:"#888"}}),_vm._v(" "),_c("input",{directives:[{name:"model",rawName:"v-model",value:_vm.searchMercado,expression:"searchMercado"}],staticStyle:{width:"100%",padding:"10px 15px 10px 40px",border:"1px solid #ddd","border-radius":"25px",outline:"none",background:"#fff","font-size":"14px"},attrs:{type:"text",placeholder:"Buscar mercado..."},domProps:{value:_vm.searchMercado},on:{input:function input($event){if($event.target.composing)return;_vm.searchMercado=$event.target.value;}}})]),_vm._v(" "),_vm.loading_odds?_c("div",{staticStyle:{padding:"40px","text-align":"center"}},[_c("i",{staticClass:"fa fa-refresh fa-spin fa-3x",staticStyle:{color:"var(--container_jogos--color, #3c8dbc)"}}),_vm._v(" "),_c("p",{staticStyle:{"margin-top":"15px",color:"#666"}},[_vm._v("Carregando cotações...")])]):_c("div",_vm._l(_vm.mercados,function(mercado,mIndex){return _c("div",{directives:[{name:"show",rawName:"v-show",value:!_vm.searchMercado||_vm.translateLabel(mercado.name).toLowerCase().includes(_vm.searchMercado.toLowerCase())||mercado.odds.some(function(o){return _vm.translateLabel(o.odd).toLowerCase().includes(_vm.searchMercado.toLowerCase());}),expression:"!searchMercado || translateLabel(mercado.name).toLowerCase().includes(searchMercado.toLowerCase()) || mercado.odds.some(o => translateLabel(o.odd).toLowerCase().includes(searchMercado.toLowerCase()))"}],key:mIndex,staticStyle:{"margin-bottom":"15px"}},[_c("div",{staticStyle:{"background-color":"var(--botao_aposta--color, #3ca569)",color:"#fff",padding:"10px 15px","border-radius":"4px",display:"flex","justify-content":"space-between","align-items":"center","margin-bottom":"8px",cursor:"pointer",transition:"opacity 0.2s"},on:{click:function click($event){return _vm.toggleMarket(mercado.name);}}},[_c("div",{staticStyle:{display:"flex","align-items":"center",gap:"10px"}},[_c("i",{"class":["fa",_vm.isMarketCollapsed(mercado.name)?"fa-chevron-right":"fa-chevron-down"],staticStyle:{"font-size":"12px",opacity:"0.7",width:"14px"}}),_vm._v(" "),_c("span",{staticStyle:{"font-weight":"bold","font-size":"14px","text-shadow":"1px 1px 1px rgba(0,0,0,0.1)"}},[_vm._v(_vm._s(_vm.translateLabel(mercado.name)))])]),_vm._v(" "),_c("div",{staticStyle:{display:"flex","align-items":"center",gap:"10px"}},[_c("span",{staticStyle:{background:"rgba(255,255,255,0.2)","border-radius":"50%",width:"22px",height:"22px",display:"flex","align-items":"center","justify-content":"center","font-size":"11px","font-weight":"bold"}},[_vm._v("\n                    "+_vm._s(mercado.odds.length)+"\n                  ")]),_vm._v(" "),_c("i",{staticClass:"fa fa-info-circle",staticStyle:{"font-size":"18px",cursor:"pointer",opacity:"0.8",hover:"opacity 1"},on:{click:function click($event){$event.stopPropagation();_vm.selectedMarketName=_vm.translateLabel(mercado.name);_vm.showMarketInfo=true;}}})])]),_vm._v(" "),!_vm.isMarketCollapsed(mercado.name)?_c("div",{staticClass:"row",staticStyle:{"margin-left":"-4px","margin-right":"-4px"}},_vm._l(mercado.odds,function(odd,oIndex){return _c("div",{directives:[{name:"show",rawName:"v-show",value:!_vm.searchMercado||_vm.translateLabel(mercado.name).toLowerCase().includes(_vm.searchMercado.toLowerCase())||_vm.translateLabel(odd.odd).toLowerCase().includes(_vm.searchMercado.toLowerCase()),expression:"!searchMercado || translateLabel(mercado.name).toLowerCase().includes(searchMercado.toLowerCase()) || translateLabel(odd.odd).toLowerCase().includes(searchMercado.toLowerCase())"}],key:oIndex,staticClass:"col-md-4 col-sm-6 col-xs-12",staticStyle:{"padding-left":"4px","padding-right":"4px","margin-bottom":"8px"}},[_c("div",{staticClass:"market-option",style:_vm.isPalpiteActive(odd.id)?"background: #ffffff; border: 1px solid var(--btn_selecionado-color, #23a73d); border-radius: 3px; display: flex; justify-content: space-between; align-items: stretch; cursor: pointer; overflow: hidden; height: 38px; transition: all 0.2s;":"background: #ffffff; border: 1px solid #dcdcdc; border-radius: 3px; display: flex; justify-content: space-between; align-items: stretch; cursor: pointer; overflow: hidden; height: 38px; transition: all 0.2s;",attrs:{"data-dismiss":"modal"},on:{click:function click($event){odd.cotacao>0?_vm.addPalpite(odd.uuid,odd.id,_vm.match.sport,_vm.match.id||_vm.match.event_id,odd.group_opp,odd.odd,odd.cotacao,_vm.match.league||_vm.liga,_vm.match.date,_vm.match.home,_vm.match.away,odd.type,odd.cotacaoOriginal,_vm.match.logo_home,_vm.match.logo_away):null;}}},[_c("div",{staticStyle:{padding:"0 10px",display:"flex","align-items":"center","font-size":"13px",color:"#444","flex-grow":"1","white-space":"nowrap",overflow:"hidden","text-overflow":"ellipsis"}},[_vm._v("\n                      "+_vm._s(_vm.translateLabel(odd.odd))+"\n                    ")]),_vm._v(" "),_c("div",{style:_vm.isPalpiteActive(odd.id)?"background: var(--btn_selecionado-color, #23a73d); color: #fff; padding: 0 12px; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; min-width: 55px; border-left: 1px solid var(--btn_selecionado-color, #23a73d);":"background: #2a323b; color: #fff; padding: 0 12px; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; min-width: 55px; border-left: 1px solid #dcdcdc;"},[odd.cotacao>0?_c("span",[_vm._v(_vm._s(_vm._f("formatCotacao")(odd.cotacao)))]):_c("i",{staticClass:"fa fa-lock"})])])]);}),0):_vm._e()]);}),0)])])])])],1);};var staticRenderFns=[function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header",staticStyle:{"border-bottom":"none",padding:"15px 15px 0"}},[_c("button",{staticClass:"close",staticStyle:{opacity:"0.5",outline:"none"},attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticStyle:{"margin-bottom":"20px"}},[_c("a",{staticStyle:{color:"#333","font-size":"14px","font-weight":"500"},attrs:{href:"password/reset"}},[_vm._v("Esqueceu a senha?")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header",staticStyle:{color:"#333 !important"}},[_c("button",{staticClass:"close",staticStyle:{color:"#333 !important",opacity:"1"},attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title",staticStyle:{color:"#333 !important"}},[_c("i",{staticClass:"fa fa-user-plus",staticStyle:{"margin-right":"5px",color:"#333 !important"}}),_vm._v(" "),_c("strong",{staticStyle:{color:"#333 !important"}},[_vm._v("CADASTRO DE USUÁRIO")])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-user"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-tag"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-key"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-key"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("label",{staticClass:"hidden-xs text-center",staticStyle:{"margin-left":"3%"}},[_vm._v("CPF * "),_c("small",[_vm._v("(Seu CPF será sua chave Pix)")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-id-card"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("select",{staticClass:"form-control",staticStyle:{width:"30%"}},[_c("option",{attrs:{value:"55"}},[_vm._v("+55")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-envelope"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-key"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal"}},[_c("span",[_vm._v("×")])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-money"}),_vm._v(" DEPOSITAR VIA PIX")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal"}},[_c("span",[_vm._v("×")])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_vm._v("PAGAMENTO PIX")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"alert alert-info"},[_c("i",{staticClass:"fa fa-info-circle"}),_vm._v(" O saldo será adicionado automaticamente após a confirmação.\n          ")]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal"}},[_c("span",[_vm._v("×")])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-university"}),_vm._v(" SOLICITAR SAQUE")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"alert alert-warning",staticStyle:{"font-size":"12px"}},[_c("i",{staticClass:"fa fa-info-circle"}),_vm._v(" O valor será enviado para sua chave Pix cadastrada.\n          ")]);},function(){var _vm=this,_c=_vm._self._c;return _c("h5",{staticStyle:{"font-weight":"bold"}},[_c("i",{staticClass:"fa fa-history"}),_vm._v(" Meus Saques Recentes")]);},function(){var _vm=this,_c=_vm._self._c;return _c("thead",[_c("tr",{staticStyle:{background:"var(--container_jogos--color, #f4f4f4)"}},[_c("th",[_vm._v("Data")]),_vm._v(" "),_c("th",[_vm._v("Valor")]),_vm._v(" "),_c("th",[_vm._v("Status")])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal"}},[_c("span",[_vm._v("×")])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-gift"}),_vm._v(" ATIVAR BÔNUS")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("h5",{staticStyle:{"margin-top":"0"}},[_c("b",[_vm._v("Bônus Ativo:")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal"}},[_c("span",[_vm._v("×")])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-user"}),_vm._v(" MINHA CONTA")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("ul",{staticClass:"nav nav-tabs"},[_c("li",{staticClass:"active"},[_c("a",{attrs:{href:"#tab_perfil","data-toggle":"tab"}},[_vm._v("Perfil")])]),_vm._v(" "),_c("li",[_c("a",{attrs:{href:"#tab_senha","data-toggle":"tab"}},[_vm._v("Alterar Senha")])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-money"}),_vm._v(" "),_c("b",[_vm._v("Relatório")])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-calendar"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-calendar"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header",staticStyle:{"background-color":"#fff","border-bottom":"3px solid #3c8dbc",padding:"15px 20px"}},[_c("button",{staticClass:"close",staticStyle:{"font-size":"24px",opacity:"0.5"},attrs:{type:"button","data-dismiss":"modal","aria-hidden":"true"}},[_vm._v("×")]),_vm._v(" "),_c("h4",{staticClass:"modal-title",staticStyle:{"font-weight":"500",color:"#555","font-size":"18px"}},[_c("i",{staticClass:"fa fa-ticket"}),_vm._v(" PIN GERADO")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticStyle:{"background-color":"#dd4b39",color:"#fff",padding:"15px","border-radius":"3px","font-size":"14px","text-align":"left","line-height":"1.4"}},[_c("i",{staticClass:"fa fa-exclamation-triangle"}),_vm._v(" O PIN não poderá ser validado após "),_c("strong",[_vm._v("300 minutos")]),_vm._v(" ou em caso de indisponibilidade de partidas no momento da validação\n          ")]);},function(){var _vm=this,_c=_vm._self._c;return _c("button",{staticClass:"close",staticStyle:{color:"#fff",opacity:"1","font-size":"20px",position:"absolute",right:"15px",top:"15px"},attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_vm._v("×")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]);},function(){var _vm=this,_c=_vm._self._c;return _c("td",{attrs:{align:"center",width:"10%"}},[_c("span",{staticClass:"score-real-time"},[_c("strong",[_vm._v(" X ")])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("th",{staticClass:"cell-soccer"},[_c("label",{staticClass:"icon corner"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("th",{staticClass:"cell-soccer"},[_c("label",{staticClass:"icon yellow-card"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("th",{staticClass:"cell-soccer"},[_c("label",{staticClass:"icon red-card"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("a",{staticClass:"sidebar-toggle",attrs:{href:"javascript:void(0)","data-toggle":"push-menu",role:"button"}},[_c("span",{staticClass:"sr-only"},[_vm._v("Toggle navigation")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("a",{staticClass:"btn btn-acessar-demo",attrs:{href:"javascript:void(0)","data-toggle":"modal","data-target":"#modal-login"}},[_c("i",{staticClass:"fa fa-sign-in",staticStyle:{"margin-right":"1px"}}),_vm._v(" Entrar\n            ")]);},function(){var _vm=this,_c=_vm._self._c;return _c("a",{staticClass:"btn btn-cadastrar-demo",attrs:{href:"javascript:void(0)","data-toggle":"modal","data-target":"#modal-register"}},[_c("i",{staticClass:"fa fa-user-plus",staticStyle:{"margin-right":"2px"}}),_vm._v(" Cadastre-se\n            ")]);},function(){var _vm=this,_c=_vm._self._c;return _c("li",{staticClass:"header"},[_c("i",{staticClass:"fa fa-list"}),_vm._v(" MENU PRINCIPAL")]);},function(){var _vm=this,_c=_vm._self._c;return _c("li",{staticClass:"header"},[_c("i",{staticClass:"fa fa-money"}),_vm._v(" LOTO")]);},function(){var _vm=this,_c=_vm._self._c;return _c("li",{staticClass:"header"},[_c("i",{staticClass:"fa fa-star"}),_vm._v(" ESPECIAIS")]);},function(){var _vm=this,_c=_vm._self._c;return _c("li",{staticClass:"header"},[_c("i",{staticClass:"fa fa-trophy"}),_vm._v(" LIGAS PRINCIPAIS")]);},function(){var _vm=this,_c=_vm._self._c;return _c("li",{staticClass:"header"},[_c("i",{staticClass:"fa fa-globe"}),_vm._v(" OUTRAS LIGAS")]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-calendar"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("thead",{staticClass:"tabela-class-home"},[_c("tr",[_c("th",[_vm._v("CUPOM")]),_vm._v(" "),_c("th",[_vm._v("DATA")]),_vm._v(" "),_c("th",[_vm._v("STATUS")]),_vm._v(" "),_c("th",[_vm._v("APOSTADO")]),_vm._v(" "),_c("th",[_vm._v("RETORNO")]),_vm._v(" "),_c("th",[_vm._v("CLIENTE")]),_vm._v(" "),_c("th",[_vm._v("COMISSÃO")]),_vm._v(" "),_c("th",[_vm._v("COTAÇÃO")]),_vm._v(" "),_c("th",[_vm._v("TIPO")]),_vm._v(" "),_c("th",[_vm._v("AP. ABERTAS")]),_vm._v(" "),_c("th",[_vm._v("MOSTRAR")]),_vm._v(" "),_c("th",[_vm._v("CANCELAR")])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("a",{staticClass:"left carousel-control",attrs:{href:"#carouselbanners","data-slide":"prev"}},[_c("span",{staticClass:"glyphicon glyphicon-chevron-left"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("a",{staticClass:"right carousel-control",attrs:{href:"#carouselbanners","data-slide":"next"}},[_c("span",{staticClass:"glyphicon glyphicon-chevron-right"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("h2",{staticClass:"carousel-title"},[_c("span",{staticClass:"carousel-title-icon"},[_c("i",{staticClass:"fa fa-star"})]),_vm._v(" "),_c("span",{staticClass:"carousel-title-text"},[_vm._v("Jogos em destaque")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon",staticStyle:{background:"var(--container_jogos--color, #fff)",border:"none",color:"var(--search_bar_text--color, #666)"}},[_c("i",{staticClass:"fa fa-user"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticStyle:{display:"flex","justify-content":"space-between","margin-bottom":"5px"}},[_c("div",{staticStyle:{"font-size":"12px",color:"#777"}},[_vm._v("Cotação")]),_vm._v(" "),_c("div",{staticStyle:{"font-size":"12px",color:"#777","font-weight":"600"}},[_vm._v("Possível Retorno")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-lock"}),_vm._v(" Login")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("h4",[_c("i",{staticClass:"icon fa fa-ban"}),_vm._v(" Alerta!")]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"col-xs-8"},[_c("div",{staticClass:"checkbox icheck"},[_c("label",[_c("div",{staticClass:"icheckbox_square-blue",staticStyle:{position:"relative"},attrs:{"aria-checked":"false","aria-disabled":"false"}},[_c("input",{staticStyle:{position:"absolute",top:"-20%",left:"-20%",display:"block",width:"140%",height:"140%",margin:"0px",padding:"0px",background:"rgb(255, 255, 255)",border:"0px",opacity:"0"},attrs:{type:"checkbox"}}),_vm._v(" "),_c("ins",{staticClass:"iCheck-helper",staticStyle:{position:"absolute",top:"-20%",left:"-20%",display:"block",width:"140%",height:"140%",margin:"0px",padding:"0px",background:"rgb(255, 255, 255)",border:"0px",opacity:"0"}})])])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal fade",attrs:{id:"modal-register-disabled","aria-modal":"true",role:"dialog"}},[_c("div",{staticClass:"modal-dialog"},[_c("div",{staticClass:"modal-content"},[_c("div",{staticClass:"modal-header",staticStyle:{color:"#333 !important"}},[_c("button",{staticClass:"close",staticStyle:{color:"#333 !important",opacity:"1"},attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title",staticStyle:{color:"#333 !important"}},[_c("i",{staticClass:"fa fa-user-plus",staticStyle:{color:"#333 !important"}}),_vm._v(" Cadastro")])]),_vm._v(" "),_c("div",{staticClass:"modal-body box box-primary"})])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-university"}),_vm._v(" MINHA CONTA\n          ")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("li",{staticClass:"active"},[_c("a",{attrs:{href:"#tab_1","data-toggle":"tab","aria-expanded":"true"}},[_vm._v("MEUS DADOS")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-sticky-note"}),_vm._v(" MEUS BILHETES\n          ")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-calendar"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-calendar"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("thead",[_c("tr",[_c("th",[_vm._v("Cód")]),_vm._v(" "),_c("th",[_vm._v("Data")]),_vm._v(" "),_c("th",[_vm._v("Apostado")]),_vm._v(" "),_c("th",[_vm._v("Retorno")]),_vm._v(" "),_c("th",[_vm._v("Status")]),_vm._v(" "),_c("th",[_vm._v("Ver")])])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header",staticStyle:{background:"var(--sidebar--color)",color:"#fff","border-radius":"12px 12px 0 0",padding:"20px"}},[_c("button",{staticClass:"close",staticStyle:{color:"#fff",opacity:"0.8"},attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title",staticStyle:{"font-weight":"800","letter-spacing":"1px"}},[_c("i",{staticClass:"fa fa-lock"}),_vm._v(" VALIDAR PIN")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-soccer-ball-o"}),_vm._v(" MAIS OPÇÕES\n          ")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"col-sm-3"},[_c("h4",{staticStyle:{"font-size":"15px","font-weight":"700",color:"#333","margin-bottom":"10px"}},[_vm._v("Aviso de Idade")]),_vm._v(" "),_c("p",{staticStyle:{"font-size":"13px",color:"#777","line-height":"1.6"}},[_c("strong",[_vm._v("ATENÇÃO:")]),_vm._v(" Este site é destinado apenas a maiores de 18 anos.\n            Ao continuar navegando, você confirma que possui idade legal para participar de jogos de azar.\n          ")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"col-sm-3"},[_c("h4",{staticStyle:{"font-size":"15px","font-weight":"700",color:"#333","margin-bottom":"10px"}},[_vm._v("Suporte e Tratamento para Dependências")]),_vm._v(" "),_c("p",{staticStyle:{"font-size":"13px",color:"#777","line-height":"1.6"}},[_vm._v("\n            Se você ou alguém que conhece está enfrentando dificuldades com o vício em jogos de azar, existem recursos disponíveis.\n            Acesse "),_c("a",{staticStyle:{color:"#3c8dbc"},attrs:{href:"https://www.gamcare.org.uk/",target:"_blank"}},[_vm._v("GamCare")]),_vm._v(" ou\n            "),_c("a",{staticStyle:{color:"#3c8dbc"},attrs:{href:"https://www.gambleaware.co.uk/",target:"_blank"}},[_vm._v("GambleAware")]),_vm._v(" para obter suporte e tratamento.\n          ")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"row text-center",staticStyle:{"margin-bottom":"15px",opacity:"0.75"}},[_c("div",{staticClass:"col-md-12"},[_c("a",{attrs:{href:"https://www.gamcare.org.uk/",target:"_blank"}},[_c("img",{staticStyle:{height:"32px",margin:"4px 12px",filter:"grayscale(30%)"},attrs:{src:"/img/gamcare-footer.png",alt:"GamCare"}})]),_vm._v(" "),_c("a",{attrs:{href:"https://www.gambleaware.org/",target:"_blank"}},[_c("img",{staticStyle:{height:"28px",margin:"4px 12px",filter:"grayscale(30%)"},attrs:{src:"/img/gambleaware-logo.png",alt:"BeGambleAware"}})]),_vm._v(" "),_c("img",{staticStyle:{height:"32px",margin:"4px 12px"},attrs:{src:"/img/more18.png",alt:"18+"}}),_vm._v(" "),_c("a",{attrs:{href:"https://www.gamblersanonymous.org.uk/",target:"_blank"}},[_c("img",{staticStyle:{height:"32px",margin:"4px 12px",filter:"grayscale(30%)"},attrs:{src:"/img/gamblers-anonymous-logo.png",alt:"Gamblers Anonymous"}})]),_vm._v(" "),_c("img",{staticStyle:{height:"32px",margin:"4px 12px",filter:"grayscale(30%)"},attrs:{src:"/img/pix-106.png",alt:"PIX"}})])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"col-sm-6 text-right",staticStyle:{"font-size":"12px",color:"#888"}},[_c("div",{staticClass:"pull-right hidden-xs"},[_c("b",[_vm._v("Versão")]),_vm._v(" 2.1.0\n          ")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("button",{staticClass:"close",staticStyle:{color:"#333",opacity:"1"},attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_vm._v("×")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("span",{staticClass:"input-group-addon"},[_c("i",{staticClass:"fa fa-user"})]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"loadSendBet",staticStyle:{"text-align":"center",display:"none"}},[_c("i",{staticClass:"fa fa-refresh fa-spin"}),_vm._v(" Validando Aposta...\n          ")]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header",staticStyle:{"border-bottom":"1px solid #333",padding:"12px 15px"}},[_c("button",{staticClass:"close",staticStyle:{color:"#fff",opacity:"1"},attrs:{type:"button","data-dismiss":"modal"}},[_vm._v("×")]),_vm._v(" "),_c("h4",{staticClass:"modal-title",staticStyle:{"font-size":"15px"}},[_c("i",{staticClass:"fa fa-picture-o"}),_vm._v(" Salve ou copie essa imagem, e compartilhe!")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticClass:"modal-header"},[_c("button",{staticClass:"close",attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-close"})])]),_vm._v(" "),_c("h4",{staticClass:"modal-title"},[_c("i",{staticClass:"fa fa-star",staticStyle:{color:"#060606 !important"}}),_vm._v(" Regulamento")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("button",{staticClass:"close",staticStyle:{color:"#ffffff",opacity:"1","text-shadow":"none","font-size":"20px","font-weight":"bold",margin:"0",outline:"none","line-height":"1",padding:"0","float":"none"},attrs:{type:"button","data-dismiss":"modal","aria-label":"Close"}},[_c("span",{attrs:{"aria-hidden":"true"}},[_c("i",{staticClass:"fa fa-times"})])]);},function(){var _vm=this,_c=_vm._self._c;return _c("div",{staticStyle:{display:"flex","align-items":"center","justify-content":"center"}},[_c("span",{staticStyle:{"font-size":"28px","font-weight":"100",color:"rgba(255,255,255,0.4)","font-family":"sans-serif"}},[_vm._v("X")])]);},function(){var _vm=this,_c=_vm._self._c;return _c("h4",{staticStyle:{margin:"0","font-size":"16px","font-weight":"bold"}},[_c("i",{staticClass:"fa fa-info-circle"}),_vm._v(" Como funciona?")]);}];render._withStripped=true;
+var render = function render() {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "wrapper"
+  }, [_c("notifications", {
+    attrs: {
+      group: "foo"
+    }
+  }), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-login"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-sm"
+  }, [_c("div", {
+    staticClass: "modal-content",
+    staticStyle: {
+      "border-radius": "8px",
+      border: "none",
+      "box-shadow": "0 5px 15px rgba(0,0,0,0.3)"
+    }
+  }, [_vm._m(0), _vm._v(" "), _c("div", {
+    staticClass: "modal-body",
+    staticStyle: {
+      padding: "0 30px 30px"
+    }
+  }, [_c("div", {
+    staticClass: "text-center",
+    staticStyle: {
+      "margin-bottom": "25px"
+    }
+  }, [_c("img", {
+    staticStyle: {
+      "max-width": "150px",
+      "max-height": "120px",
+      "margin-bottom": "15px"
+    },
+    attrs: {
+      src: _vm.server.logo_img,
+      alt: "Logo"
+    }
+  }), _vm._v(" "), _c("h3", {
+    staticStyle: {
+      margin: "0",
+      "font-weight": "800",
+      color: "#333",
+      "font-family": "'Antipasto', Helvetica",
+      "text-transform": "uppercase",
+      "font-size": "24px"
+    }
+  }, [_vm._v("\n              " + _vm._s(_vm.server.logo.split(" - ")[0]) + "\n            ")]), _vm._v(" "), _c("p", {
+    staticStyle: {
+      color: "#888",
+      "font-size": "14px",
+      "margin-top": "5px"
+    }
+  }, [_vm._v("Iniciar sua sessão")])]), _vm._v(" "), _c("div", {
+    staticClass: "login-box-body",
+    staticStyle: {
+      padding: "0",
+      background: "transparent"
+    }
+  }, [_vm.errorLogin ? _c("div", {
+    staticClass: "alert alert-danger alert-dismissible",
+    staticStyle: {
+      padding: "8px",
+      "font-size": "13px",
+      "border-radius": "4px"
+    }
+  }, [_vm._v("\n              " + _vm._s(_vm.messageError) + "\n            ")]) : _vm._e(), _vm._v(" "), _c("div", {
+    staticClass: "form-group has-feedback",
+    staticStyle: {
+      "margin-bottom": "15px"
+    }
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.username,
+      expression: "username"
+    }],
+    staticClass: "form-control",
+    staticStyle: {
+      height: "45px",
+      "border-radius": "4px",
+      border: "1px solid #ddd",
+      background: "var(--container_jogos--color, #f9f9f9)",
+      "padding-right": "40px"
+    },
+    attrs: {
+      type: "text",
+      placeholder: "Login"
+    },
+    domProps: {
+      value: _vm.username
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.username = $event.target.value;
+      }
+    }
+  }), _vm._v(" "), _c("span", {
+    staticClass: "fa fa-envelope form-control-feedback",
+    staticStyle: {
+      "line-height": "45px",
+      color: "#777"
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "form-group has-feedback",
+    staticStyle: {
+      "margin-bottom": "10px"
+    }
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.password,
+      expression: "password"
+    }],
+    staticClass: "form-control",
+    staticStyle: {
+      height: "45px",
+      "border-radius": "4px",
+      border: "1px solid #ddd",
+      background: "var(--container_jogos--color, #f9f9f9)",
+      "padding-right": "40px"
+    },
+    attrs: {
+      type: "password",
+      placeholder: "Senha"
+    },
+    domProps: {
+      value: _vm.password
+    },
+    on: {
+      keyup: function keyup($event) {
+        if (!$event.type.indexOf("key") && _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")) return null;
+        return _vm.login();
+      },
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.password = $event.target.value;
+      }
+    }
+  }), _vm._v(" "), _c("span", {
+    staticClass: "fa fa-lock form-control-feedback",
+    staticStyle: {
+      "line-height": "45px",
+      color: "#777"
+    }
+  })]), _vm._v(" "), _vm._m(1), _vm._v(" "), _c("button", {
+    staticClass: "btn btn-block",
+    staticStyle: {
+      "background-color": "var(--sidebar--color) !important",
+      color: "#fff !important",
+      "font-weight": "bold",
+      height: "50px",
+      "font-size": "18px",
+      "border-radius": "4px",
+      border: "none",
+      "text-transform": "capitalize"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.login();
+      }
+    }
+  }, [_vm._v("\n              " + _vm._s(_vm.text_btn_login) + "\n            ")])])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-register",
+      "aria-modal": "true",
+      role: "dialog"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-md"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(2), _vm._v(" "), _c("div", {
+    staticClass: "modal-body"
+  }, [_c("div", [_c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-6"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center"
+  }, [_vm._v("Nome Completo *")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group"
+  }, [_vm._m(3), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.nome,
+      expression: "formRegister.nome"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      tabindex: "1",
+      type: "text",
+      placeholder: "Nome Completo *"
+    },
+    domProps: {
+      value: _vm.formRegister.nome
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "nome", $event.target.value);
+      }
+    }
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-6"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Nome de usuário *")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group"
+  }, [_vm._m(4), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.username,
+      expression: "formRegister.username"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      tabindex: "2",
+      type: "text",
+      placeholder: "Nome de usuário"
+    },
+    domProps: {
+      value: _vm.formRegister.username
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "username", $event.target.value);
+      }
+    }
+  })])])])]), _vm._v(" "), _c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-6"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Criar senha *")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group"
+  }, [_vm._m(5), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.password,
+      expression: "formRegister.password"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      tabindex: "3",
+      autocomplete: "new-password",
+      type: "password",
+      placeholder: "Criar senha"
+    },
+    domProps: {
+      value: _vm.formRegister.password
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "password", $event.target.value);
+      }
+    }
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-6"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Confirmar senha *")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group"
+  }, [_vm._m(6), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.password_confirmation,
+      expression: "formRegister.password_confirmation"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      tabindex: "4",
+      type: "password",
+      placeholder: "Confirmar senha"
+    },
+    domProps: {
+      value: _vm.formRegister.password_confirmation
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "password_confirmation", $event.target.value);
+      }
+    }
+  })])])])]), _vm._v(" "), _c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-6"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_vm._m(7), _vm._v(" "), _c("div", {
+    staticClass: "input-group"
+  }, [_vm._m(8), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.cpf,
+      expression: "formRegister.cpf"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      tabindex: "5",
+      placeholder: "CPF"
+    },
+    domProps: {
+      value: _vm.formRegister.cpf
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "cpf", $event.target.value);
+      }
+    }
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-6"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Contato *")]), _vm._v(" "), _c("div", {
+    staticClass: "d-flex",
+    staticStyle: {
+      display: "flex"
+    }
+  }, [_vm._m(9), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.telefone,
+      expression: "formRegister.telefone"
+    }],
+    staticClass: "form-control",
+    staticStyle: {
+      width: "70%"
+    },
+    attrs: {
+      tabindex: "6",
+      placeholder: "Celular"
+    },
+    domProps: {
+      value: _vm.formRegister.telefone
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "telefone", $event.target.value);
+      }
+    }
+  })])])])]), _vm._v(" "), _c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-6"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Data de nascimento *")]), _vm._v(" "), _c("small", {
+    staticClass: "visible-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Data de nascimento *")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group",
+    staticStyle: {
+      display: "flex"
+    }
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.dia,
+      expression: "formRegister.dia"
+    }],
+    staticClass: "form-control col-md-4",
+    staticStyle: {
+      width: "30%"
+    },
+    attrs: {
+      placeholder: "dia"
+    },
+    domProps: {
+      value: _vm.formRegister.dia
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "dia", $event.target.value);
+      }
+    }
+  }), _vm._v(" "), _c("select", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.mes,
+      expression: "formRegister.mes"
+    }],
+    staticClass: "form-control col-md-4",
+    staticStyle: {
+      width: "40%"
+    },
+    on: {
+      change: function change($event) {
+        var $$selectedVal = Array.prototype.filter.call($event.target.options, function (o) {
+          return o.selected;
+        }).map(function (o) {
+          var val = "_value" in o ? o._value : o.value;
+          return val;
+        });
+        _vm.$set(_vm.formRegister, "mes", $event.target.multiple ? $$selectedVal : $$selectedVal[0]);
+      }
+    }
+  }, [_c("option", {
+    attrs: {
+      value: ""
+    }
+  }, [_vm._v("Mês")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "1"
+    }
+  }, [_vm._v("Janeiro")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "2"
+    }
+  }, [_vm._v("Fevereiro")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "3"
+    }
+  }, [_vm._v("Março")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "4"
+    }
+  }, [_vm._v("Abril")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "5"
+    }
+  }, [_vm._v("Maio")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "6"
+    }
+  }, [_vm._v("Junho")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "7"
+    }
+  }, [_vm._v("Julho")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "8"
+    }
+  }, [_vm._v("Agosto")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "9"
+    }
+  }, [_vm._v("Setembro")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "10"
+    }
+  }, [_vm._v("Outubro")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "11"
+    }
+  }, [_vm._v("Novembro")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "12"
+    }
+  }, [_vm._v("Dezembro")])]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.ano,
+      expression: "formRegister.ano"
+    }],
+    staticClass: "form-control col-md-4",
+    staticStyle: {
+      width: "30%"
+    },
+    attrs: {
+      placeholder: "ano"
+    },
+    domProps: {
+      value: _vm.formRegister.ano
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "ano", $event.target.value);
+      }
+    }
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-6"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Email *")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group"
+  }, [_vm._m(10), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.email,
+      expression: "formRegister.email"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      tabindex: "8",
+      type: "email",
+      placeholder: "E-mail"
+    },
+    domProps: {
+      value: _vm.formRegister.email
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "email", $event.target.value);
+      }
+    }
+  })])])])]), _vm._v(" "), _c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-4"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Tipo Chave Pix *")]), _vm._v(" "), _c("select", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.pix_key_type,
+      expression: "formRegister.pix_key_type"
+    }],
+    staticClass: "form-control",
+    on: {
+      change: function change($event) {
+        var $$selectedVal = Array.prototype.filter.call($event.target.options, function (o) {
+          return o.selected;
+        }).map(function (o) {
+          var val = "_value" in o ? o._value : o.value;
+          return val;
+        });
+        _vm.$set(_vm.formRegister, "pix_key_type", $event.target.multiple ? $$selectedVal : $$selectedVal[0]);
+      }
+    }
+  }, [_c("option", {
+    attrs: {
+      value: "CPF"
+    }
+  }, [_vm._v("CPF")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "EMAIL"
+    }
+  }, [_vm._v("E-mail")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "TELEFONE"
+    }
+  }, [_vm._v("Telefone")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "ALEATORIA"
+    }
+  }, [_vm._v("Chave Aleatória")])])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-8"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("Chave Pix para Recebimento *")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group"
+  }, [_vm._m(11), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.pix_key,
+      expression: "formRegister.pix_key"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      placeholder: "Sua chave Pix"
+    },
+    domProps: {
+      value: _vm.formRegister.pix_key
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formRegister, "pix_key", $event.target.value);
+      }
+    }
+  })])])])])]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "margin-top": "15px",
+      "margin-bottom": "2%",
+      "font-size": "14px"
+    }
+  }, [_c("label", {
+    staticStyle: {
+      cursor: "pointer",
+      "font-weight": "normal",
+      display: "flex",
+      "align-items": "center",
+      gap: "8px"
+    }
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formRegister.termos,
+      expression: "formRegister.termos"
+    }],
+    staticStyle: {
+      width: "20px",
+      height: "20px",
+      cursor: "pointer !important",
+      "pointer-events": "all !important"
+    },
+    attrs: {
+      type: "checkbox"
+    },
+    domProps: {
+      checked: Array.isArray(_vm.formRegister.termos) ? _vm._i(_vm.formRegister.termos, null) > -1 : _vm.formRegister.termos
+    },
+    on: {
+      change: function change($event) {
+        var $$a = _vm.formRegister.termos,
+          $$el = $event.target,
+          $$c = $$el.checked ? true : false;
+        if (Array.isArray($$a)) {
+          var $$v = null,
+            $$i = _vm._i($$a, $$v);
+          if ($$el.checked) {
+            $$i < 0 && _vm.$set(_vm.formRegister, "termos", $$a.concat([$$v]));
+          } else {
+            $$i > -1 && _vm.$set(_vm.formRegister, "termos", $$a.slice(0, $$i).concat($$a.slice($$i + 1)));
+          }
+        } else {
+          _vm.$set(_vm.formRegister, "termos", $$c);
+        }
+      }
+    }
+  }), _vm._v(" "), _c("span", [_vm._v("Certifico que tenho mais de 18 anos de idade e declaro que li e concordo com os "), _c("a", {
+    staticClass: "cursor-pointer",
+    on: {
+      click: function click($event) {
+        $event.stopPropagation();
+        return _vm.loadRegulamento();
+      }
+    }
+  }, [_vm._v("termos de uso do site")])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal-footer d-flex justify-content-center",
+    staticStyle: {
+      "text-align": "center"
+    }
+  }, [_c("button", {
+    staticClass: "btn btn-success col-md-6 col-md-offset-3 col-xs-12",
+    staticStyle: {
+      "font-size": "20px",
+      "font-weight": "bold",
+      "margin-top": "10px"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.submitRegister();
+      }
+    }
+  }, [_vm._v("\n            Registrar-se\n          ")])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-deposit"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-sm"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(12), _vm._v(" "), _c("div", {
+    staticClass: "modal-body"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("Valor do Depósito (R$)")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.depositAmount,
+      expression: "depositAmount"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "number",
+      placeholder: "Ex: 20.00"
+    },
+    domProps: {
+      value: _vm.depositAmount
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.depositAmount = $event.target.value;
+      }
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "row"
+  }, _vm._l([10, 20, 50, 100, 200, 500], function (val) {
+    return _c("div", {
+      key: val,
+      staticClass: "col-xs-4",
+      staticStyle: {
+        "margin-bottom": "5px"
+      }
+    }, [_c("button", {
+      staticClass: "btn btn-default btn-block btn-xs",
+      on: {
+        click: function click($event) {
+          _vm.depositAmount = val;
+        }
+      }
+    }, [_vm._v("R$ " + _vm._s(val))])]);
+  }), 0)]), _vm._v(" "), _c("div", {
+    staticClass: "modal-footer"
+  }, [_c("button", {
+    staticClass: "btn btn-success btn-block",
+    attrs: {
+      disabled: _vm.loadingPix
+    },
+    on: {
+      click: function click($event) {
+        return _vm.submitPix();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-qrcode"
+  }), _vm._v(" GERAR QR CODE\n          ")])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-pix-display"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-md"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(13), _vm._v(" "), _c("div", {
+    staticClass: "modal-body text-center"
+  }, [_c("p", [_vm._v("Escaneie o QR Code abaixo para pagar:")]), _vm._v(" "), _vm.pixData.qr_code_base64 ? _c("img", {
+    staticStyle: {
+      "max-width": "250px",
+      margin: "10px auto",
+      display: "block"
+    },
+    attrs: {
+      src: "data:image/png;base64," + _vm.pixData.qr_code_base64
+    }
+  }) : _vm._e(), _vm._v(" "), _c("div", {
+    staticClass: "form-group",
+    staticStyle: {
+      "margin-top": "20px"
+    }
+  }, [_c("label", [_vm._v("PIX Copia e Cola:")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group"
+  }, [_c("input", {
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      readonly: ""
+    },
+    domProps: {
+      value: _vm.pixData.qr_code
+    }
+  }), _vm._v(" "), _c("span", {
+    staticClass: "input-group-btn"
+  }, [_c("button", {
+    staticClass: "btn btn-primary",
+    on: {
+      click: function click($event) {
+        return _vm.copyPix();
+      }
+    }
+  }, [_vm._v("COPIAR")])])])]), _vm._v(" "), _vm._m(14)])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-withdrawal"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-sm"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(15), _vm._v(" "), _c("div", {
+    staticClass: "modal-body"
+  }, [_vm._m(16), _vm._v(" "), _c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("Valor do Saque (R$)")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.withdrawalAmount,
+      expression: "withdrawalAmount"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "number",
+      placeholder: "Mínimo R$ 20.00"
+    },
+    domProps: {
+      value: _vm.withdrawalAmount
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.withdrawalAmount = $event.target.value;
+      }
+    }
+  })]), _vm._v(" "), _vm.caixaUser ? _c("p", {
+    staticStyle: {
+      "font-weight": "bold"
+    }
+  }, [_vm._v("Saldo disponível: R$ " + _vm._s(_vm.caixaUser.balance))]) : _vm._e(), _vm._v(" "), _c("hr"), _vm._v(" "), _vm._m(17), _vm._v(" "), _c("div", {
+    staticClass: "table-responsive"
+  }, [_c("table", {
+    staticClass: "table table-condensed",
+    staticStyle: {
+      "font-size": "11px",
+      color: "#333 !important"
+    }
+  }, [_vm._m(18), _vm._v(" "), _c("tbody", [_vm._l(_vm.withdrawalHistory, function (w) {
+    return _c("tr", {
+      key: w.id
+    }, [_c("td", [_vm._v(_vm._s(_vm._f("formatDateShort")(w.created_at)))]), _vm._v(" "), _c("td", [_vm._v("R$ " + _vm._s(w.amount))]), _vm._v(" "), _c("td", [w.status == "pending" ? _c("span", {
+      staticClass: "label label-warning"
+    }, [_vm._v("Pendente")]) : _vm._e(), _vm._v(" "), w.status == "approved" ? _c("span", {
+      staticClass: "label label-success"
+    }, [_vm._v("Pago")]) : _vm._e(), _vm._v(" "), w.status == "rejected" ? _c("span", {
+      staticClass: "label label-danger"
+    }, [_vm._v("Recusado")]) : _vm._e()])]);
+  }), _vm._v(" "), _vm.withdrawalHistory.length == 0 ? _c("tr", [_c("td", {
+    staticClass: "text-center",
+    attrs: {
+      colspan: "3"
+    }
+  }, [_vm._v("Nenhum saque solicitado.")])]) : _vm._e()], 2)])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal-footer"
+  }, [_c("button", {
+    staticClass: "btn btn-primary btn-block",
+    attrs: {
+      disabled: _vm.loadingWithdrawal
+    },
+    on: {
+      click: function click($event) {
+        return _vm.submitWithdrawal();
+      }
+    }
+  }, [_vm._v("\n            SOLICITAR SAQUE\n          ")])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-bonus"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-sm"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(19), _vm._v(" "), _c("div", {
+    staticClass: "modal-body"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("Código Promocional")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.promoCode,
+      expression: "promoCode"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      placeholder: "Digite seu código"
+    },
+    domProps: {
+      value: _vm.promoCode
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.promoCode = $event.target.value;
+      }
+    }
+  })]), _vm._v(" "), _vm.bonusData ? _c("div", {
+    staticClass: "alert alert-info",
+    staticStyle: {
+      color: "#31708f !important"
+    }
+  }, [_vm._m(20), _vm._v(" "), _c("p", [_vm._v("Saldo: R$ " + _vm._s(_vm.bonusData.current_balance))]), _vm._v(" "), _c("p", [_vm._v("Rollover: " + _vm._s(_vm.bonusData.current_rollover) + " / " + _vm._s(_vm.bonusData.target_rollover))]), _vm._v(" "), _c("div", {
+    staticClass: "progress progress-xs",
+    staticStyle: {
+      "margin-bottom": "0"
+    }
+  }, [_c("div", {
+    staticClass: "progress-bar progress-bar-success",
+    style: "width: " + _vm.bonusData.current_rollover / _vm.bonusData.target_rollover * 100 + "%"
+  })])]) : _vm._e()]), _vm._v(" "), _c("div", {
+    staticClass: "modal-footer"
+  }, [_c("button", {
+    staticClass: "btn btn-success btn-block",
+    attrs: {
+      disabled: _vm.loadingBonus
+    },
+    on: {
+      click: function click($event) {
+        return _vm.applyPromoCode();
+      }
+    }
+  }, [_vm._v("\n            ATIVAR CÓDIGO\n          ")])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-account"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-md"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(21), _vm._v(" "), _c("div", {
+    staticClass: "modal-body",
+    staticStyle: {
+      color: "#333 !important"
+    }
+  }, [_c("div", {
+    staticClass: "nav-tabs-custom"
+  }, [_vm._m(22), _vm._v(" "), _c("div", {
+    staticClass: "tab-content",
+    staticStyle: {
+      padding: "15px"
+    }
+  }, [_c("div", {
+    staticClass: "tab-pane active",
+    attrs: {
+      id: "tab_perfil"
+    }
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("Nome:")]), _vm._v(" "), _c("input", {
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      readonly: ""
+    },
+    domProps: {
+      value: _vm.name
+    }
+  })]), _vm._v(" "), _vm.caixaUser ? _c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("CPF:")]), _vm._v(" "), _c("input", {
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      readonly: ""
+    },
+    domProps: {
+      value: _vm.maskSensitiveData(_vm.caixaUser.cpf)
+    }
+  })]) : _vm._e(), _vm._v(" "), _vm.caixaUser ? _c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("Chave PIX:")]), _vm._v(" "), _c("input", {
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      readonly: ""
+    },
+    domProps: {
+      value: _vm.maskSensitiveData(_vm.caixaUser.pix_key)
+    }
+  }), _vm._v(" "), _c("small", [_vm._v("Tipo: " + _vm._s(_vm.caixaUser.pix_key_type))])]) : _vm._e()]), _vm._v(" "), _c("div", {
+    staticClass: "tab-pane",
+    attrs: {
+      id: "tab_senha"
+    }
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("Nova Senha:")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formPassword.password,
+      expression: "formPassword.password"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "password",
+      placeholder: "Mínimo 6 caracteres"
+    },
+    domProps: {
+      value: _vm.formPassword.password
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formPassword, "password", $event.target.value);
+      }
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("Confirmar Senha:")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.formPassword.password_confirmation,
+      expression: "formPassword.password_confirmation"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "password"
+    },
+    domProps: {
+      value: _vm.formPassword.password_confirmation
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.formPassword, "password_confirmation", $event.target.value);
+      }
+    }
+  })]), _vm._v(" "), _c("button", {
+    staticClass: "btn btn-primary btn-block",
+    attrs: {
+      disabled: _vm.loadingPassword
+    },
+    on: {
+      click: function click($event) {
+        return _vm.changePassword();
+      }
+    }
+  }, [_vm.loadingPassword ? _c("i", {
+    staticClass: "fa fa-refresh"
+  }) : _vm._e(), _vm._v(" ATUALIZAR SENHA\n                ")])])])])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-caixa"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_c("div", {
+    staticClass: "modal-header"
+  }, [_vm._m(23), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title"
+  }, [_c("i", {
+    staticClass: "fa fa-money"
+  }), _vm._v(" "), _c("b", [_vm._v(_vm._s(_vm.name))])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal-body box box-primary"
+  }, [_c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-12"
+  }, [_c("div", {
+    staticClass: "valor-fechamento-positivo"
+  }, [_vm._v("\n                Quantidade de Bilhetes: " + _vm._s(_vm.caixaUser.quantidade) + "\n              ")]), _vm._v(" "), _c("div", {
+    staticClass: "valor-fechamento-positivo"
+  }, [_vm._v("\n                Apostas no Ponto: " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.entradas)) + "\n              ")]), _vm._v(" "), _c("div", {
+    staticClass: "valor-fechamento-total-aberto"
+  }, [_vm._v("\n                Apostas Aguardando :\n                " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.entradas_abertas)) + "\n              ")]), _vm._v(" "), _c("div", {
+    staticClass: "valor-fechamento-total-negativo"
+  }, [_vm._v("\n                Total Prêmios: " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.saidas)) + "\n              ")]), _vm._v(" "), _c("div", {
+    staticClass: "valor-fechamento-positivo"
+  }, [_vm._v("\n                Adiantamentos: " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.lancamentos)) + "\n              ")]), _vm._v(" "), _c("div", {
+    staticClass: "valor-fechamento-positivo"
+  }, [_vm._v("\n                Comissões: " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.comissoes)) + "\n              ")]), _vm._v(" "), _vm.caixaUser.total >= 0 ? _c("div", {
+    staticClass: "valor-fechamento-total-positivo"
+  }, [_vm._v("\n                Total: " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.total)) + "\n              ")]) : _vm._e(), _vm._v(" "), _vm.caixaUser.total < 0 ? _c("div", {
+    staticClass: "valor-fechamento-total-negativo"
+  }, [_vm._v("\n                Total: " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.total)) + "\n              ")]) : _vm._e()])])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-relatorio"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(24), _vm._v(" "), _c("div", {
+    staticClass: "modal-body box box-primary"
+  }, [_c("div", {
+    staticClass: "form-inline relatorio"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("De:")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group date"
+  }, [_vm._m(25), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.date1,
+      expression: "date1"
+    }],
+    staticClass: "form-control pull-right",
+    attrs: {
+      type: "date",
+      id: "datepicker-start"
+    },
+    domProps: {
+      value: _vm.date1
+    },
+    on: {
+      change: function change($event) {
+        return _vm.sendRelatorio();
+      },
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.date1 = $event.target.value;
+      }
+    }
+  })]), _vm._v(" "), _c("label", [_vm._v("Até:")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group date"
+  }, [_vm._m(26), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.date2,
+      expression: "date2"
+    }],
+    staticClass: "form-control pull-right",
+    attrs: {
+      type: "date",
+      id: "datepicker-end"
+    },
+    domProps: {
+      value: _vm.date2
+    },
+    on: {
+      change: function change($event) {
+        return _vm.sendRelatorio();
+      },
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.date2 = $event.target.value;
+      }
+    }
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "row"
+  }, [_c("clip-loader", {
+    attrs: {
+      loading: _vm.loadingCaixa,
+      color: _vm.color,
+      size: _vm.size
+    }
+  }), _vm._v(" "), Object.values(this.relatorio).length > 0 ? _c("div", {
+    staticClass: "col-md-12"
+  }, [_c("div", {
+    staticClass: "valor-fechamento-positivo"
+  }, [_vm._v("\n                Quantidade: " + _vm._s(_vm.relatorio.quantidade) + "\n              ")]), _vm._v(" "), _c("div", {
+    staticClass: "valor-fechamento-positivo"
+  }, [_vm._v("\n                Entradas: " + _vm._s(_vm._f("formatMoeda")(_vm.relatorio.entradas)) + "\n              ")]), _vm._v(" "), _c("div", {
+    staticClass: "valor-fechamento-total-negativo"
+  }, [_vm._v("\n                Saídas: " + _vm._s(_vm._f("formatMoeda")(_vm.relatorio.saidas)) + "\n              ")]), _vm._v(" "), _c("div", {
+    staticClass: "valor-fechamento-positivo"
+  }, [_vm._v("\n                Comissões: " + _vm._s(_vm._f("formatMoeda")(_vm.relatorio.comissaocambista)) + "\n              ")]), _vm._v(" "), _vm.relatorio.saldo >= 0 ? _c("div", {
+    staticClass: "valor-fechamento-total-positivo"
+  }, [_vm._v("\n                Total: " + _vm._s(_vm._f("formatMoeda")(_vm.relatorio.saldo)) + "\n              ")]) : _vm._e(), _vm._v(" "), _vm.relatorio.saldo < 0 ? _c("div", {
+    staticClass: "valor-fechamento-total-negativo"
+  }, [_vm._v("\n                Total: " + _vm._s(_vm._f("formatMoeda")(_vm.relatorio.saldo)) + "\n              ")]) : _vm._e()]) : _vm._e()], 1)])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-pre-aposta",
+      tabindex: "-1",
+      role: "dialog",
+      "aria-hidden": "true"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog"
+  }, [_c("div", {
+    staticClass: "modal-content",
+    staticStyle: {
+      "border-radius": "4px",
+      border: "none",
+      "box-shadow": "0 4px 15px rgba(0,0,0,0.2)"
+    }
+  }, [_vm._m(27), _vm._v(" "), _c("div", {
+    staticClass: "modal-body",
+    staticStyle: {
+      "text-align": "center",
+      padding: "30px 20px"
+    }
+  }, [_c("p", {
+    staticStyle: {
+      "font-size": "16px",
+      color: "#555",
+      "text-align": "left",
+      "margin-bottom": "25px"
+    }
+  }, [_vm._v("Procure o colaborador mais próximo, informando o seguinte código, para validação:")]), _vm._v(" "), _c("h2", {
+    staticStyle: {
+      "font-weight": "800",
+      "font-size": "34px",
+      "letter-spacing": "1px",
+      "margin-bottom": "25px",
+      color: "#333"
+    }
+  }, [_vm._v(_vm._s(_vm.cupom_pre_aposta))]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "margin-bottom": "30px",
+      display: "flex",
+      "justify-content": "center",
+      gap: "10px",
+      "flex-wrap": "wrap"
+    }
+  }, [_c("button", {
+    staticClass: "btn btn-info",
+    staticStyle: {
+      "background-color": "#17a2b8",
+      "border-color": "#17a2b8",
+      color: "#fff",
+      padding: "8px 15px",
+      "font-weight": "bold",
+      "border-radius": "3px"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.copyToClipboard(_vm.cupom_pre_aposta);
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-copy"
+  }), _vm._v(" COPIAR CÓDIGO\n            ")]), _vm._v(" "), _c("a", {
+    staticClass: "btn btn-info",
+    staticStyle: {
+      "background-color": "#17a2b8",
+      "border-color": "#17a2b8",
+      color: "#fff",
+      padding: "8px 15px",
+      "font-weight": "bold",
+      "border-radius": "3px"
+    },
+    attrs: {
+      href: _vm.link,
+      target: "_blank"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-whatsapp"
+  }), _vm._v(" COMPARTILHAR\n            ")])]), _vm._v(" "), _vm._m(28)])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-bilhete",
+      tabindex: "-1",
+      role: "dialog",
+      "aria-hidden": "true"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog"
+  }, _vm._l(_vm.bilhetes, function (palpite) {
+    return _c("div", {
+      key: palpite.id,
+      staticClass: "modal-content",
+      staticStyle: {
+        border: "none",
+        "border-radius": "0",
+        "background-color": "#FDF5D2",
+        color: "#333",
+        "font-family": "'Montserrat', sans-serif"
+      }
+    }, [_c("div", {
+      staticClass: "modal-header",
+      staticStyle: {
+        "background-color": "#00ADEF",
+        border: "none",
+        padding: "15px",
+        "text-align": "center",
+        "border-radius": "0"
+      }
+    }, [_vm._m(29, true), _vm._v(" "), _c("h4", {
+      staticClass: "modal-title",
+      staticStyle: {
+        color: "#fff",
+        "font-weight": "900",
+        "text-transform": "uppercase",
+        margin: "0",
+        "letter-spacing": "1.5px",
+        "font-size": "22px"
+      }
+    }, [_vm._v("\n              " + _vm._s(palpite.status) + "\n            ")])]), _vm._v(" "), _c("div", {
+      staticClass: "modal-body",
+      staticStyle: {
+        padding: "0"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        padding: "20px 0",
+        "text-align": "center"
+      }
+    }, [_c("img", {
+      staticStyle: {
+        "max-width": "200px",
+        height: "auto"
+      },
+      attrs: {
+        src: _vm.server.logo_img || "/img/logo.png"
+      }
+    }), _vm._v(" "), _vm.server.logo ? _c("h3", {
+      staticStyle: {
+        margin: "10px 0 0",
+        "font-weight": "900",
+        color: "#000",
+        "text-transform": "uppercase",
+        "font-size": "18px",
+        "letter-spacing": "1px"
+      }
+    }, [_vm._v("\n                  " + _vm._s(_vm.server.logo.split(" - ")[0]) + "\n                ")]) : _vm._e()]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "border-top": "1.5px dashed #BDB76B",
+        width: "90%",
+        margin: "0 auto 20px"
+      }
+    }), _vm._v(" "), _c("div", {
+      staticStyle: {
+        padding: "0 20px"
+      }
+    }, [palpite.modalidade != "Loto" && (!palpite.cupom || !palpite.cupom.startsWith("LOTO-")) ? _c("h4", {
+      staticStyle: {
+        "text-align": "center",
+        "font-weight": "800",
+        "text-transform": "uppercase",
+        "margin-bottom": "20px",
+        color: "#444",
+        "letter-spacing": "1px"
+      }
+    }, [_vm._v("\n                  " + _vm._s(palpite.tipo) + "\n                ")]) : _vm._e(), _vm._v(" "), palpite.modalidade != "Loto" && (!palpite.cupom || !palpite.cupom.startsWith("LOTO-")) ? _c("div", {
+      staticStyle: {
+        "font-size": "13px",
+        "line-height": "1.8",
+        "margin-bottom": "20px",
+        color: "#555"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between"
+      }
+    }, [_c("span", [_vm._v("DATA")]), _vm._v(" "), _c("b", {
+      staticStyle: {
+        color: "#000"
+      }
+    }, [_vm._v(_vm._s(_vm._f("formatDate")(palpite.created_at)))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between"
+      }
+    }, [_c("span", [_vm._v("VENDEDOR")]), _vm._v(" "), _c("b", {
+      staticStyle: {
+        color: "#000"
+      }
+    }, [_vm._v(_vm._s(palpite.vendedor))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between"
+      }
+    }, [_c("span", [_vm._v("CLIENTE")]), _vm._v(" "), _c("b", {
+      staticStyle: {
+        color: "#000"
+      }
+    }, [_vm._v(_vm._s(palpite.cliente))])])]) : _vm._e(), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "border-top": "1.5px dashed #BDB76B",
+        width: "100%",
+        "margin-bottom": "15px"
+      }
+    }), _vm._v(" "), palpite.modalidade != "Loto" && (!palpite.palpites_loto || palpite.palpites_loto.length == 0) && (!palpite.cupom || !palpite.cupom.startsWith("LOTO-")) ? _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        "font-size": "11px",
+        "font-weight": "700",
+        color: "#888",
+        "text-transform": "uppercase",
+        "margin-bottom": "10px"
+      }
+    }, [_c("span", [_vm._v("EVENTO / MERCADO")]), _vm._v(" "), _c("span", [_vm._v("COTAÇÃO")])]) : _vm._e(), _vm._v(" "), _vm._l(palpite.palpites, function (palp) {
+      return palpite.modalidade != "Loto" && (!palpite.palpites_loto || palpite.palpites_loto.length == 0) && (!palpite.cupom || !palpite.cupom.startsWith("LOTO-")) ? _c("div", {
+        key: palp.id,
+        staticStyle: {
+          "margin-bottom": "25px"
+        }
+      }, [_c("div", {
+        staticStyle: {
+          "font-size": "11px",
+          color: "#777",
+          "margin-bottom": "3px"
+        }
+      }, [_vm._v("\n                      " + _vm._s(palp.sport) + " • " + _vm._s(_vm._f("formatDate")(palp.match_temp)) + "\n                    ")]), _vm._v(" "), _c("div", {
+        staticStyle: {
+          color: "#D37D2A",
+          "font-weight": "800",
+          "font-size": "13px",
+          "text-transform": "uppercase",
+          "margin-bottom": "4px"
+        }
+      }, [_vm._v("\n                      " + _vm._s(palp.league) + "\n                    ")]), _vm._v(" "), _c("div", {
+        staticStyle: {
+          "font-weight": "900",
+          "font-size": "16px",
+          color: "#000",
+          "margin-bottom": "4px"
+        }
+      }, [_vm._v("\n                      " + _vm._s(palp.home) + " X " + _vm._s(palp.away) + "\n                    ")]), _vm._v(" "), _c("div", {
+        staticStyle: {
+          "font-size": "12px",
+          color: "#666",
+          "font-style": "italic",
+          "margin-bottom": "8px"
+        }
+      }, [_vm._v("\n                      " + _vm._s(palp.group_opp) + "\n                    ")]), _vm._v(" "), _c("div", {
+        staticStyle: {
+          display: "flex",
+          "justify-content": "space-between",
+          "align-items": "flex-end",
+          "margin-bottom": "5px"
+        }
+      }, [_c("b", {
+        staticStyle: {
+          "font-size": "16px",
+          color: "#000"
+        }
+      }, [_vm._v(_vm._s(palp.palpite))]), _vm._v(" "), _c("b", {
+        staticStyle: {
+          "font-size": "18px",
+          color: "#000"
+        }
+      }, [_vm._v(_vm._s(_vm._f("formatCotacao")(palp.cotacao)))])]), _vm._v(" "), _c("div", {
+        staticStyle: {
+          "background-color": "#00ADEF",
+          color: "#fff",
+          "text-align": "center",
+          "font-weight": "900",
+          "font-size": "12px",
+          padding: "4px 0",
+          "text-transform": "uppercase",
+          "border-radius": "4px"
+        }
+      }, [_vm._v("\n                      " + _vm._s(palp.status) + "\n                    ")])]) : _vm._e();
+    }), _vm._v(" "), palpite.modalidade == "Loto" || palpite.palpites_loto && palpite.palpites_loto.length > 0 || palpite.cupom && palpite.cupom.startsWith("LOTO-") ? _c("div", {
+      staticStyle: {
+        padding: "10px 0"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        background: "#00ADEF",
+        color: "#fff",
+        padding: "10px",
+        "border-radius": "8px",
+        "margin-bottom": "20px",
+        "text-align": "center"
+      }
+    }, [_c("div", {
+      staticClass: "thermal-loto-ticket",
+      staticStyle: {
+        background: "#f8ecc2",
+        color: "#000",
+        "font-family": "'Courier New', Courier, monospace",
+        padding: "25px 20px",
+        border: "1px solid #e1d1a1",
+        "box-shadow": "0 4px 10px rgba(0,0,0,0.1)",
+        "margin-bottom": "20px",
+        position: "relative",
+        overflow: "hidden",
+        "font-size": "13px",
+        "line-height": "1.4"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        position: "absolute",
+        top: "-5px",
+        left: "0",
+        right: "0",
+        height: "10px",
+        background: "radial-gradient(circle, transparent 70%, #fff 70%)",
+        "background-size": "15px 15px"
+      }
+    }), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "text-align": "center",
+        "border-bottom": "1.5px dashed #000",
+        "padding-bottom": "15px",
+        "margin-bottom": "15px"
+      }
+    }, [_c("h2", {
+      staticStyle: {
+        margin: "0",
+        "font-weight": "900",
+        "font-size": "24px",
+        "letter-spacing": "1px"
+      }
+    }, [_vm._v(_vm._s(palpite.tipo.toUpperCase()))]), _vm._v(" "), _c("p", {
+      staticStyle: {
+        margin: "8px 0",
+        "font-size": "15px",
+        "font-weight": "900",
+        background: "#000",
+        color: "#f8ecc2",
+        display: "inline-block",
+        padding: "2px 10px"
+      }
+    }, [_vm._v("CONCURSO: " + _vm._s(palpite.concurso || "OFICIAL"))]), _vm._v(" "), _c("p", {
+      staticStyle: {
+        margin: "5px 0",
+        "font-size": "12px"
+      }
+    }, [_vm._v("EMISSÃO: " + _vm._s(_vm._f("formatDate")(palpite.created_at)))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "margin-bottom": "20px"
+      }
+    }, [_c("p", {
+      staticStyle: {
+        "font-weight": "900",
+        "margin-bottom": "12px",
+        "text-decoration": "underline",
+        "text-align": "center"
+      }
+    }, [_vm._v("DEZENAS ESCOLHIDAS")]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "flex-wrap": "wrap",
+        "justify-content": "center",
+        gap: "8px"
+      }
+    }, _vm._l(palpite.palpites_loto, function (palp) {
+      return _c("div", {
+        key: palp.id,
+        staticStyle: {
+          border: "1.5px solid #000",
+          "min-width": "35px",
+          height: "35px",
+          display: "flex",
+          "align-items": "center",
+          "justify-content": "center",
+          "font-weight": "900",
+          "font-size": "18px",
+          "border-radius": "4px"
+        }
+      }, [_vm._v("\n                            " + _vm._s(palp.dezena) + "\n                          ")]);
+    }), 0)]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "border-top": "1.5px dashed #000",
+        "border-bottom": "1.5px dashed #000",
+        padding: "15px 0",
+        "margin-bottom": "15px"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        "margin-bottom": "6px"
+      }
+    }, [_c("span", [_vm._v("VALOR DA APOSTA:")]), _vm._v(" "), _c("strong", [_vm._v("R$ " + _vm._s(palpite.valor_apostado || 0))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        "margin-bottom": "6px"
+      }
+    }, [_c("span", [_vm._v("COTAÇÃO ATRIBUÍDA:")]), _vm._v(" "), _c("strong", [_vm._v(_vm._s(palpite.cotacao || 1) + "x")])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        "margin-top": "12px",
+        "padding-top": "10px",
+        "border-top": "1px solid rgba(0,0,0,0.2)"
+      }
+    }, [_c("span", {
+      staticStyle: {
+        "font-weight": "900"
+      }
+    }, [_vm._v("PREMIAÇÃO ESTIMADA:")]), _vm._v(" "), _c("strong", {
+      staticStyle: {
+        "font-size": "20px",
+        "font-weight": "900"
+      }
+    }, [_vm._v("R$ " + _vm._s(palpite.retorno_possivel || 0))])])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "text-align": "center",
+        "font-size": "12px",
+        "line-height": "1.5"
+      }
+    }, [_c("p", {
+      staticStyle: {
+        margin: "0",
+        "font-weight": "900",
+        "text-transform": "uppercase"
+      }
+    }, [_vm._v(_vm._s(_vm.server.name || "IHUB BETS"))]), _vm._v(" "), _c("p", {
+      staticStyle: {
+        margin: "3px 0"
+      }
+    }, [_vm._v("VALIDO PELO RESULTADO DA LOTERIA FEDERAL")]), _vm._v(" "), _c("p", {
+      staticStyle: {
+        margin: "10px 0 0",
+        "font-weight": "900",
+        "font-size": "16px",
+        border: "2px solid #000",
+        padding: "5px",
+        display: "inline-block"
+      }
+    }, [_vm._v("PIN: " + _vm._s(palpite.cupom))]), _vm._v(" "), _c("p", {
+      staticStyle: {
+        margin: "5px 0 0",
+        "font-size": "10px",
+        opacity: "0.8"
+      }
+    }, [_vm._v("Cliente: " + _vm._s(palpite.cliente || "Consumidor"))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        position: "absolute",
+        bottom: "-5px",
+        left: "0",
+        right: "0",
+        height: "10px",
+        background: "radial-gradient(circle, transparent 70%, #fff 70%)",
+        "background-size": "15px 15px",
+        transform: "rotate(180deg)"
+      }
+    })])])]) : _vm._e(), _vm._v(" "), palpite.modalidade != "Loto" ? _c("div", {
+      staticStyle: {
+        margin: "30px 0",
+        "text-align": "center",
+        "border-top": "2px solid #000",
+        "border-bottom": "2px solid #000",
+        padding: "15px 0"
+      }
+    }, [_c("h1", {
+      staticStyle: {
+        "font-weight": "900",
+        "font-size": "42px",
+        margin: "0",
+        color: "#000",
+        "letter-spacing": "2px"
+      }
+    }, [_vm._v("\n                      " + _vm._s(palpite.cupom) + "\n                    ")])]) : _vm._e(), _vm._v(" "), palpite.modalidade != "Loto" ? _c("div", {
+      staticStyle: {
+        "padding-bottom": "20px"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        padding: "6px 0",
+        "border-bottom": "1px solid rgba(0,0,0,0.05)"
+      }
+    }, [_c("span", [_vm._v("Quantidade de Jogos")]), _vm._v(" "), _c("b", [_vm._v(_vm._s(palpite.total_palpites))])]), _vm._v(" "), palpite.status != "Aberto" ? _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        padding: "6px 0",
+        "border-bottom": "1px solid rgba(0,0,0,0.05)"
+      }
+    }, [_c("span", [_vm._v("Acertos")]), _vm._v(" "), _c("b", [_vm._v(_vm._s(palpite.acertos_palpites))])]) : _vm._e(), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        padding: "6px 0",
+        "border-bottom": "1px solid rgba(0,0,0,0.05)"
+      }
+    }, [_c("span", [_vm._v("Cotação Total")]), _vm._v(" "), _c("b", [_vm._v(_vm._s(_vm._f("formatCotacao")(palpite.cotacao || palpite.total_cotacao)))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        padding: "6px 0",
+        "border-bottom": "1px solid rgba(0,0,0,0.05)"
+      }
+    }, [_c("span", [_vm._v("Valor Apostado")]), _vm._v(" "), _c("b", [_vm._v(_vm._s(_vm._f("formatMoeda")(palpite.valor_apostado)))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        padding: "15px 0",
+        "align-items": "center"
+      }
+    }, [_c("span", {
+      staticStyle: {
+        "font-weight": "800",
+        "font-size": "16px"
+      }
+    }, [_vm._v("Retorno Possível")]), _vm._v(" "), _c("b", {
+      staticStyle: {
+        "font-size": "22px",
+        color: "var(--container_jogos--color)",
+        "font-weight": "900"
+      }
+    }, [_vm._v(_vm._s(_vm._f("formatMoeda")(palpite.retorno_possivel)))])])]) : _vm._e(), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "border-top": "1.5px solid #000",
+        width: "100%",
+        "margin-bottom": "15px"
+      }
+    }), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "padding-bottom": "30px"
+      }
+    }, [_c("b", {
+      staticStyle: {
+        "font-size": "10px",
+        "text-transform": "uppercase",
+        color: "#000"
+      }
+    }, [_vm._v("REGRAS:")]), _vm._v(" "), _c("p", {
+      staticStyle: {
+        "font-size": "10px",
+        color: "#666",
+        "margin-top": "5px",
+        "line-height": "1.4"
+      }
+    }, [_vm._v("\n                       " + _vm._s(_vm.server.texto_rodape) + "\n                    ")])]), _vm._v(" "), _c("div", {
+      staticClass: "no-print",
+      staticStyle: {
+        padding: "10px 0 20px",
+        display: "flex",
+        "flex-direction": "column",
+        gap: "10px"
+      }
+    }, [_c("a", {
+      staticClass: "btn btn-success btn-block",
+      staticStyle: {
+        "background-color": "#25D366",
+        border: "none",
+        "font-weight": "800",
+        padding: "12px",
+        "border-radius": "8px",
+        "text-transform": "uppercase"
+      },
+      attrs: {
+        href: _vm.link
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-whatsapp"
+    }), _vm._v(" Compartilhar WhatsApp\n                    ")]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        gap: "10px"
+      }
+    }, [_c("button", {
+      staticClass: "btn btn-dark",
+      staticStyle: {
+        flex: "1",
+        "font-weight": "700",
+        padding: "10px",
+        "border-radius": "8px"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.printJogos(palpite.id);
+        }
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-print"
+    }), _vm._v(" Imprimir\n                        ")]), _vm._v(" "), _c("button", {
+      staticClass: "btn btn-info",
+      staticStyle: {
+        flex: "1",
+        "font-weight": "700",
+        padding: "10px",
+        "border-radius": "8px"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.downloadTicketImage(palpite.cupom);
+        }
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-download"
+    }), _vm._v(" Baixar Imagem\n                        ")])]), _vm._v(" "), _c("button", {
+      staticClass: "btn btn-secondary btn-block",
+      staticStyle: {
+        "font-weight": "700",
+        padding: "10px",
+        "border-radius": "8px",
+        "margin-top": "5px"
+      },
+      attrs: {
+        "data-dismiss": "modal"
+      }
+    }, [_vm._v("\n                        Fechar\n                    ")])])], 2)])]);
+  }), 0)]), _vm._v(" "), _c("header", {
+    staticClass: "main-header"
+  }, [_c("a", {
+    staticClass: "logo",
+    attrs: {
+      href: "/"
+    }
+  }, [_c("span", {
+    staticClass: "logo-mini"
+  }, [_vm._v("\n       " + _vm._s(_vm.server.logoMini) + "\n      ")]), _vm._v(" "), _c("span", {
+    staticClass: "logo-lg"
+  }, [_vm._v("\n       " + _vm._s(_vm.server.logo) + "\n      ")])]), _vm._v(" "), _c("nav", {
+    staticClass: "navbar navbar-static-top"
+  }, [_vm._m(30), _vm._v(" "), _c("div", {
+    staticClass: "navbar-custom-menu"
+  }, [_c("ul", {
+    staticClass: "nav navbar-nav"
+  }, [_vm.logar ? _c("li", {
+    staticStyle: {
+      "margin-top": "4px",
+      padding: "6px 2px 6px 6px"
+    }
+  }, [_vm._m(31)]) : _vm._e(), _vm._v(" "), _vm.logar ? _c("li", {
+    staticStyle: {
+      "margin-top": "4px",
+      padding: "6px 8px 6px 10px"
+    }
+  }, [_vm._m(32)]) : _vm._e(), _vm._v(" "), _vm.logout ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.sair();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-close"
+  }, [_vm._v("Sair")])])]) : _vm._e()])])]), _vm._v(" "), _c("nav", {
+    staticClass: "navbar navbar-static-top",
+    attrs: {
+      id: "nav-mobile"
+    }
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.apostado,
+      expression: "apostado"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      id: "input-mobile-top",
+      placeholder: "valor",
+      type: "number"
+    },
+    domProps: {
+      value: _vm.apostado
+    },
+    on: {
+      keyup: function keyup($event) {
+        return _vm.calculaCotacao();
+      },
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.apostado = $event.target.value;
+      }
+    }
+  }), _vm._v(" "), _vm.selection.length > 0 ? _c("span", {
+    staticClass: "ganho-mobile"
+  }, [_vm._v(_vm._s(_vm._f("formatMoeda")(_vm.retorno)))]) : _vm._e(), _vm._v(" "), _vm.selection.length == 0 ? _c("span", {
+    staticClass: "ganho-mobile"
+  }, [_vm._v(_vm._s(_vm._f("formatMoeda")(0)))]) : _vm._e(), _vm._v(" "), _vm.selection.length > 0 ? _c("button", {
+    staticClass: "btn btn-danger",
+    attrs: {
+      id: "btn-zerar-mobile"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.removePalpites(_vm.selection);
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-trash",
+    staticStyle: {
+      color: "#fff !important"
+    }
+  })]) : _vm._e(), _vm._v(" "), _c("button", {
+    staticClass: "btn btn-info btnSendBet",
+    attrs: {
+      id: "btn-finalizar-mobile"
+    },
+    on: {
+      click: _vm.mostraPalpites
+    }
+  }, [_vm._v("( " + _vm._s(_vm.selection.length) + " ) Finalizar")])])]), _vm._v(" "), _c("aside", {
+    staticClass: "main-sidebar"
+  }, [_c("section", {
+    staticClass: "sidebar"
+  }, [_c("div", {
+    staticClass: "user-panel"
+  }, [_vm.server.logo_img ? _c("img", {
+    attrs: {
+      src: _vm.server.logo_img,
+      alt: _vm.server.logo
+    }
+  }) : _vm._e(), _vm._v(" "), _c("div", {
+    staticClass: "dados-logado"
+  }, [_vm.logado ? _c("p", [_vm._v(_vm._s(_vm.name))]) : _vm._e(), _vm._v(" "), _vm.logado ? _c("p", {
+    staticStyle: {
+      "font-size": "13px",
+      color: "#fff"
+    }
+  }, [_vm._v("\n            Saldo: " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.saldo_simples)) + "\n          ")]) : _vm._e(), _vm._v(" "), _vm.logado ? _c("p", {
+    staticStyle: {
+      "font-size": "13px",
+      color: "#ffc107"
+    }
+  }, [_vm._v("\n            Bônus: " + _vm._s(_vm._f("formatMoeda")(_vm.caixaUser.saldo_casadinha)) + "\n          ")]) : _vm._e()])]), _vm._v(" "), _c("div", {
+    staticClass: "sidebar-form"
+  }, [_c("div", {
+    staticClass: "input-group"
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.cupom,
+      expression: "cupom"
+    }],
+    staticClass: "form-control",
+    staticStyle: {
+      "background-color": "var(--search_bar_bg--color, #fff)",
+      color: "var(--search_bar_text--color, #333)",
+      border: "1px solid var(--linhas--color, #eee)",
+      "border-right": "none"
+    },
+    attrs: {
+      type: "text",
+      placeholder: "Conferir bilhete"
+    },
+    domProps: {
+      value: _vm.cupom
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.cupom = $event.target.value;
+      }
+    }
+  }), _vm._v(" "), _c("span", {
+    staticClass: "input-group-btn"
+  }, [_c("button", {
+    staticClass: "btn btn-flat",
+    staticStyle: {
+      "background-color": "var(--ticket_consult_bg--color, var(--primary-color))",
+      color: "#fff",
+      border: "1px solid var(--ticket_consult_bg--color, var(--primary-color))"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.searchBilhete();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-search"
+  })])])])]), _vm._v(" "), _c("ul", {
+    staticClass: "sidebar-menu tree",
+    attrs: {
+      "data-widget": "tree"
+    }
+  }, [_vm._m(33), _vm._v(" "), _c("li", {
+    staticClass: "treeview"
+  }, [_c("a", {
+    attrs: {
+      href: "#"
+    },
+    on: {
+      click: _vm.loadRegulamento
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-map"
+  }), _vm._v(" "), _c("span", [_vm._v("Regulamento")])])]), _vm._v(" "), _c("li", [_c("a", {
+    attrs: {
+      href: "".concat(_vm.server.linkApp)
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-android"
+  }), _vm._v(" "), _c("span", [_vm._v("Baixar Aplicativo")])])]), _vm._v(" "), _vm.token != null && _vm.nivel == "cambista" ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadValidarPin();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-code"
+  }), _vm._v(" "), _c("span", [_vm._v("Validar PIN")])])]) : _vm._e(), _vm._v(" "), _vm.token != null && _vm.nivel == "cambista" ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadMeusClientes();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-users"
+  }), _vm._v(" "), _c("span", [_vm._v("Meus Clientes")])])]) : _vm._e(), _vm._v(" "), _vm.token != null && _vm.nivel == "cambista" ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadCaixa();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-money"
+  }), _vm._v(" "), _c("span", [_vm._v("Meu Caixa")])])]) : _vm._e(), _vm._v(" "), _vm.token != null && _vm.nivel == "cambista" ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadRelatorio();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-pie-chart"
+  }), _vm._v(" "), _c("span", [_vm._v("Relatório")])])]) : _vm._e(), _vm._v(" "), _vm.token != null && _vm.nivel == "cambista" ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadBilhetes();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-tags"
+  }), _vm._v(" "), _c("span", [_vm._v("Bilhetes")])])]) : _vm._e(), _vm._v(" "), _vm.token != null && (_vm.nivel == "gerente" || _vm.nivel == "manager") ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadMeusCambistas();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-users"
+  }), _vm._v(" "), _c("span", [_vm._v("Meus Cambistas")])])]) : _vm._e(), _vm._v(" "), _vm.token != null && (_vm.nivel == "gerente" || _vm.nivel == "manager") ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadRelatorioGeral();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-line-chart"
+  }), _vm._v(" "), _c("span", [_vm._v("Relatório Geral")])])]) : _vm._e(), _vm._v(" "), _vm.logado && (_vm.nivel == "cliente" || _vm.nivel == "user") ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadBilhetes();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-tags"
+  }), _vm._v(" "), _c("span", [_vm._v("Meus Bilhetes")])])]) : _vm._e(), _vm._v(" "), _vm.logado && (_vm.nivel == "cliente" || _vm.nivel == "user") ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.load_deposit();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-money"
+  }), _vm._v(" "), _c("span", [_vm._v("Depositar")])])]) : _vm._e(), _vm._v(" "), _vm.logado && (_vm.nivel == "cliente" || _vm.nivel == "user") ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.load_withdrawal();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-university"
+  }), _vm._v(" "), _c("span", [_vm._v("Sacar")])])]) : _vm._e(), _vm._v(" "), _vm.logado ? _c("li", [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadMinhaConta();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-user"
+  }), _vm._v(" "), _c("span", [_vm._v("Minha Conta")])])]) : _vm._e(), _vm._v(" "), _vm.op_quininha == "Sim" || _vm.op_quininha == "Ativado" || _vm.op_seninha == "Sim" || _vm.op_seninha == "Ativado" || _vm.configuracoes.op_quininha == "Sim" || _vm.configuracoes.op_quininha == "Ativado" || _vm.configuracoes.op_seninha == "Sim" || _vm.configuracoes.op_seninha == "Ativado" ? [_vm._m(34), _vm._v(" "), _vm.op_quininha == "Sim" || _vm.op_quininha == "Ativado" || _vm.configuracoes.op_quininha == "Sim" || _vm.configuracoes.op_quininha == "Ativado" ? _c("li", {
+    "class": {
+      active: _vm.modalitySelected == "Quininha"
+    }
+  }, [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadQuininha();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-ticket",
+    staticStyle: {
+      color: "var(--container_jogos--color)"
+    }
+  }), _vm._v(" "), _c("span", [_vm._v("Quininha")])])]) : _vm._e(), _vm._v(" "), _vm.op_seninha == "Sim" || _vm.op_seninha == "Ativado" || _vm.configuracoes.op_seninha == "Sim" || _vm.configuracoes.op_seninha == "Ativado" ? _c("li", {
+    "class": {
+      active: _vm.modalitySelected == "Seninha"
+    }
+  }, [_c("a", {
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadSeninha();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-ticket",
+    staticStyle: {
+      color: "#ff9800"
+    }
+  }), _vm._v(" "), _c("span", [_vm._v("Seninha")])])]) : _vm._e()] : _vm._e(), _vm._v(" "), _vm.manualLeagues && _vm.manualLeagues.length > 0 ? [_vm._m(35), _vm._v(" "), _vm._l(_vm.manualLeagues, function (league) {
+    return _c("li", {
+      key: league.id
+    }, [_c("a", {
+      staticStyle: {
+        display: "flex",
+        "align-items": "center",
+        padding: "8px 15px"
+      },
+      attrs: {
+        href: "javascript:void(0)"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.seachLeague(league.league || league.name);
+        }
+      }
+    }, [_c("img", {
+      staticStyle: {
+        width: "18px",
+        height: "13px",
+        "margin-right": "10px",
+        "border-radius": "2px",
+        "object-fit": "cover"
+      },
+      attrs: {
+        src: league.flag || league.image
+      },
+      on: {
+        error: function error($event) {
+          $event.target.src = "/img/countries/trophy.svg";
+        }
+      }
+    }), _vm._v(" "), _c("span", {
+      staticStyle: {
+        "font-size": "13px",
+        "font-weight": "400",
+        color: "#ccc"
+      }
+    }, [_vm._v(_vm._s(league.league || league.name))])])]);
+  })] : _vm._e(), _vm._v(" "), _vm._m(36), _vm._v(" "), _vm._l(_vm.filteredLeaguesMain, function (league_main) {
+    return _c("li", {
+      key: league_main.id
+    }, [_c("a", {
+      staticStyle: {
+        display: "flex",
+        "align-items": "center",
+        padding: "8px 15px"
+      },
+      attrs: {
+        href: "javascript:void(0)"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.seachLeague(league_main.league || league_main.name);
+        }
+      }
+    }, [_c("img", {
+      staticStyle: {
+        width: "18px",
+        height: "13px",
+        "margin-right": "10px",
+        "border-radius": "2px",
+        "object-fit": "cover"
+      },
+      attrs: {
+        src: league_main.flag || league_main.image
+      },
+      on: {
+        error: function error($event) {
+          $event.target.src = "/img/countries/trophy.svg";
+        }
+      }
+    }), _vm._v(" "), _c("span", {
+      staticStyle: {
+        "font-size": "13px",
+        "font-weight": "400",
+        color: "#ccc"
+      }
+    }, [_vm._v(_vm._s(league_main.league || league_main.name))])])]);
+  }), _vm._v(" "), _vm._m(37), _vm._v(" "), _vm._l(_vm.groupedLeaguesOthers, function (group) {
+    return _c("li", {
+      key: group.cc || "other_group"
+    }, [_c("a", {
+      staticStyle: {
+        display: "flex",
+        "align-items": "center",
+        "justify-content": "space-between",
+        padding: "8px 15px",
+        cursor: "pointer"
+      },
+      attrs: {
+        href: "javascript:void(0)"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.toggleCountry(group.cc || "other");
+        }
+      }
+    }, [_c("div", {
+      staticStyle: {
+        display: "flex",
+        "align-items": "center"
+      }
+    }, [_c("img", {
+      staticStyle: {
+        width: "18px",
+        height: "13px",
+        "margin-right": "10px",
+        "border-radius": "2px",
+        "object-fit": "cover"
+      },
+      attrs: {
+        src: group.flag
+      },
+      on: {
+        error: function error($event) {
+          $event.target.src = "/img/countries/trophy.svg";
+        }
+      }
+    }), _vm._v(" "), _c("span", {
+      staticStyle: {
+        "font-size": "13px",
+        "font-weight": "400",
+        color: "#ccc"
+      }
+    }, [_vm._v(_vm._s(group.country || group.name) + " (" + _vm._s(group.leagues.length) + ")")])]), _vm._v(" "), _c("i", {
+      staticClass: "fa",
+      "class": _vm.openedCountries.includes(group.cc || "other") ? "fa-angle-down" : "fa-angle-left",
+      staticStyle: {
+        "font-size": "14px",
+        color: "#777"
+      }
+    })]), _vm._v(" "), _vm.openedCountries.includes(group.cc || "other") ? _c("ul", {
+      staticStyle: {
+        "list-style": "none",
+        padding: "4px 0",
+        margin: "0",
+        background: "rgba(0,0,0,0.12)"
+      }
+    }, _vm._l(group.leagues, function (l, idx) {
+      return _c("li", {
+        key: idx
+      }, [_c("a", {
+        staticStyle: {
+          padding: "6px 15px 6px 40px",
+          "font-size": "12px",
+          "font-weight": "300",
+          color: "#aaa",
+          display: "block",
+          "white-space": "normal",
+          transition: "color 0.2s"
+        },
+        attrs: {
+          href: "javascript:void(0)",
+          onmouseover: "this.style.color='#fff'",
+          onmouseout: "this.style.color='#aaa'"
+        },
+        on: {
+          click: function click($event) {
+            return _vm.seachLeague(l.league);
+          }
+        }
+      }, [_vm._v("\n                " + _vm._s(l.league) + "\n              ")])]);
+    }), 0) : _vm._e()]);
+  })], 2), _vm._v(" "), _vm.sidebarBanners && _vm.sidebarBanners.length > 0 ? _c("div", {
+    staticClass: "banner-sidebar mt-2"
+  }, _vm._l(_vm.sidebarBanners, function (banner, index) {
+    return _c("div", {
+      key: "sb-" + index,
+      staticStyle: {
+        "margin-bottom": "10px"
+      }
+    }, [_c("a", {
+      attrs: {
+        href: banner.link || "#"
+      }
+    }, [_c("img", {
+      staticStyle: {
+        width: "100%",
+        "border-radius": "4px",
+        "box-shadow": "0 4px 6px rgba(0,0,0,0.1)"
+      },
+      attrs: {
+        src: banner.image || banner.img
+      }
+    })])]);
+  }), 0) : _vm._e()])]), _vm._v(" "), _c("div", {
+    staticClass: "content-wrapper"
+  }, [_c("section", {
+    staticClass: "content"
+  }, [_c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-9"
+  }, [_vm.bilheteView && _vm.logado ? _c("div", {
+    staticClass: "bilhetes-content"
+  }, [_c("div", {
+    staticClass: "form-inline relatorio"
+  }, [_c("div", {
+    staticClass: "form-group"
+  }, [_c("label", [_vm._v("Data:")]), _vm._v(" "), _c("div", {
+    staticClass: "input-group date"
+  }, [_vm._m(38), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.date1,
+      expression: "date1"
+    }],
+    staticClass: "form-control pull-right",
+    attrs: {
+      type: "date",
+      id: "datepicker"
+    },
+    domProps: {
+      value: _vm.date1
+    },
+    on: {
+      change: function change($event) {
+        return _vm.pesquisaBilhetes(_vm.date1);
+      },
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.date1 = $event.target.value;
+      }
+    }
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "table-responsive"
+  }, [_c("table", {
+    staticClass: "table table-bordered"
+  }, [_vm._m(39), _vm._v(" "), _c("tbody", _vm._l(_vm.bilhetesLogado, function (bilhete) {
+    return _c("tr", {
+      key: bilhete.id
+    }, [_c("td", {
+      "class": bilhete.tipo_aposta
+    }, [_c("b", [_vm._v(_vm._s(bilhete.cupom))])]), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm._f("formatDate")(bilhete.created_at)))]), _vm._v(" "), _c("td", {
+      "class": bilhete.status
+    }, [_vm._v("\n                      " + _vm._s(bilhete.status) + "\n                    ")]), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm._f("formatMoeda")(bilhete.valor_apostado)))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm._f("formatMoeda")(bilhete.retorno_possivel)))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(bilhete.cliente))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm._f("formatMoeda")(bilhete.comicao)))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm._f("formatCotacao")(bilhete.cotacao)))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(bilhete.tipo))]), _vm._v(" "), _c("td", [_vm._v("\n                      " + _vm._s(bilhete.andamento_palpites) + "/" + _vm._s(bilhete.total_palpites) + "\n                    ")]), _vm._v(" "), _c("td", [_c("button", {
+      staticClass: "btn btn-primary",
+      on: {
+        click: function click($event) {
+          return _vm.viewBilhete(bilhete.id, bilhete.status, bilhete.cupom, bilhete.created_at, bilhete.vendedor, bilhete.cliente, bilhete.total_palpites, bilhete.cotacao, bilhete.valor_apostado, bilhete.retorno_possivel);
+        }
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-eye"
+    })])]), _vm._v(" "), _c("td", [bilhete.status == "Cancelado" ? _c("button", {
+      staticClass: "btn btn-default",
+      attrs: {
+        disabled: ""
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-exclamation-circle"
+    })]) : _vm._e(), _vm._v(" "), bilhete.status != "Cancelado" ? _c("button", {
+      staticClass: "btn btn-danger",
+      on: {
+        click: function click($event) {
+          return _vm.alterarBilhete(bilhete.id, bilhete);
+        }
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-remove"
+    })]) : _vm._e()])]);
+  }), 0)]), _vm._v(" "), _c("clip-loader", {
+    attrs: {
+      loading: _vm.loading,
+      color: _vm.color,
+      size: _vm.size
+    }
+  })], 1)]) : _vm._e(), _vm._v(" "), _vm.jogosView ? _c("div", [_c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-lg-12"
+  }, [_vm.mainBanners.length > 0 ? _c("div", {
+    staticClass: "carousel slide mb-3",
+    attrs: {
+      id: "carouselbanners",
+      "data-ride": "carousel"
+    }
+  }, [_c("div", {
+    staticClass: "carousel-inner"
+  }, _vm._l(_vm.mainBanners, function (banner, index) {
+    return _c("div", {
+      key: "banner-" + index,
+      "class": ["item", {
+        active: index === 0
+      }]
+    }, [_c("a", {
+      attrs: {
+        href: banner.link || "#"
+      }
+    }, [_c("img", {
+      staticClass: "w-100",
+      attrs: {
+        src: banner.image
+      }
+    })])]);
+  }), 0), _vm._v(" "), _vm._m(40), _vm._v(" "), _vm._m(41)]) : _vm._e()])]), _vm._v(" "), _vm.filteredFeaturedGames.length > 0 && !_vm.live ? _c("div", {
+    staticClass: "events-carousel-container",
+    staticStyle: {
+      background: "transparent !important",
+      "background-color": "transparent !important",
+      "box-shadow": "none !important",
+      "-webkit-box-shadow": "none !important"
+    }
+  }, [_c("div", {
+    staticClass: "carousel-header theme-bg"
+  }, [_vm._m(42), _vm._v(" "), _c("div", {
+    staticClass: "carousel-controls"
+  }, [_c("button", {
+    staticClass: "control-btn prev",
+    on: {
+      click: function click($event) {
+        _vm.scrollCarousel(-1);
+        _vm.stopAutoplay();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-chevron-left"
+  })]), _vm._v(" "), _c("button", {
+    staticClass: "control-btn next",
+    on: {
+      click: function click($event) {
+        _vm.scrollCarousel(1);
+        _vm.stopAutoplay();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-chevron-right"
+  })])])]), _vm._v(" "), _c("div", {
+    ref: "carouselScroller",
+    staticClass: "carousel-scroller-wrapper no-scrollbar",
+    staticStyle: {
+      background: "transparent !important",
+      "background-color": "transparent !important",
+      "box-shadow": "none !important",
+      "-webkit-box-shadow": "none !important"
+    },
+    on: {
+      mouseenter: _vm.stopAutoplay,
+      mouseleave: _vm.startAutoplay
+    }
+  }, _vm._l(_vm.filteredFeaturedGames, function (match) {
+    return _c("div", {
+      key: "featured-" + match.id,
+      staticClass: "carousel-card"
+    }, [_c("div", {
+      staticClass: "card-bg",
+      style: {
+        backgroundImage: "url(" + (match.img_featured || "/images/featured_bg.jpg") + ")"
+      }
+    }), _vm._v(" "), _c("div", {
+      staticClass: "card-overlay"
+    }), _vm._v(" "), _c("div", {
+      staticClass: "card-top-info"
+    }, [_c("div", {
+      staticClass: "info-league"
+    }, [match.flag ? _c("img", {
+      staticClass: "info-league-flag",
+      attrs: {
+        src: match.flag
+      }
+    }) : _c("i", {
+      staticClass: "fa fa-trophy info-league-flag",
+      staticStyle: {
+        color: "#ffd700",
+        display: "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "font-size": "10px"
+      }
+    }), _vm._v(" "), _c("span", [_vm._v(_vm._s(match.league))])]), _vm._v(" "), _c("div", {
+      staticClass: "info-right"
+    }, [_c("div", {
+      staticClass: "info-time-row"
+    }, [_c("span", {
+      staticClass: "info-time"
+    }, [_c("i", {
+      staticClass: "fa fa-clock-o"
+    }), _vm._v(" " + _vm._s(match.time))]), _vm._v(" "), _vm.getTimeRemaining(match.date) !== "Iniciado" ? _c("span", {
+      staticClass: "info-countdown"
+    }, [_c("i", {
+      staticClass: "fa fa-hourglass-half"
+    }), _vm._v(" " + _vm._s(_vm.getTimeRemaining(match.date)) + "\n                        ")]) : _vm._e()]), _vm._v(" "), _c("span", {
+      staticClass: "info-category"
+    }, [_vm._v(_vm._s(match.sport || "Futebol") + " - " + _vm._s(_vm._f("formatDateHome")(match.date)))])])]), _vm._v(" "), _c("div", {
+      staticClass: "card-competitors"
+    }, [_c("div", {
+      staticClass: "competitor-logos"
+    }, [_c("div", {
+      staticClass: "logo-wrapper"
+    }, [_c("img", {
+      attrs: {
+        src: match.logo_home || "/img/placeholder_team.png"
+      }
+    })]), _vm._v(" "), _c("div", {
+      staticClass: "logo-wrapper logo-down"
+    }, [_c("img", {
+      attrs: {
+        src: match.logo_away || "/img/placeholder_team.png"
+      }
+    })])]), _vm._v(" "), _c("div", {
+      staticClass: "competitor-names"
+    }, [_c("div", {
+      staticClass: "competitor-name"
+    }, [_vm._v(_vm._s(match.home))]), _vm._v(" "), _c("div", {
+      staticClass: "competitor-name"
+    }, [_vm._v(_vm._s(match.away))])]), _vm._v(" "), _c("button", {
+      staticClass: "offer-badge",
+      on: {
+        click: function click($event) {
+          $event.stopPropagation();
+          return _vm.loadOdd(match.league, match, null);
+        }
+      }
+    }, [_vm._v("\n                       " + _vm._s(match.badge_text || match.count_odd_label || "Apostar Agora") + "\n                    ")])]), _vm._v(" "), _c("div", {
+      staticClass: "card-markets"
+    }, _vm._l(match.odds, function (odd) {
+      return _c("div", {
+        key: odd.uuid,
+        staticClass: "market-btn",
+        "class": {
+          active: _vm.isPalpiteActive(odd.uuid),
+          "disabled-market": !odd.cotacao || odd.cotacao <= 0
+        },
+        on: {
+          click: function click($event) {
+            odd.cotacao && odd.cotacao > 0 ? _vm.addPalpite(odd.uuid, odd.id, match.sport, match.id, odd.group_opp, odd.odd, odd.cotacao, match.league, match.date, match.home, match.away, odd.type, odd.cotacaoOriginal, match.logo_home, match.logo_away) : null;
+          }
+        }
+      }, [_c("span", {
+        staticClass: "market-indicator"
+      }, [_vm._v(_vm._s(odd.odd))]), _vm._v(" "), odd.cotacao && odd.cotacao > 0 ? _c("span", {
+        staticClass: "market-value"
+      }, [_vm._v(_vm._s(_vm._f("formatCotacao")(odd.cotacao)))]) : _c("span", {
+        staticClass: "market-value"
+      }, [_vm._v("---")])]);
+    }), 0)]);
+  }), 0)]) : _vm._e(), _vm._v(" "), _c("ul", {
+    staticClass: "menu-jogos no-scrollbar",
+    staticStyle: {
+      background: "var(--sidebar--color) !important",
+      "overflow-x": "auto",
+      "-webkit-overflow-scrolling": "touch",
+      "white-space": "nowrap",
+      display: "flex",
+      "list-style": "none",
+      padding: "0",
+      margin: "0 !important",
+      "margin-bottom": "0 !important",
+      "padding-right": "30px",
+      "border-bottom": "none !important"
+    }
+  }, [_vm.op_futebol == "Sim" || _vm.op_futebol == "Ativado" || _vm.configuracoes.op_futebol == "Sim" || _vm.configuracoes.op_futebol == "Ativado" ? _c("li", {
+    staticClass: "modality-item-demo",
+    staticStyle: {
+      flex: "0 0 auto",
+      "flex-shrink": "0"
+    }
+  }, [_c("a", {
+    "class": {
+      ativo: _vm.futebol && !_vm.modalitySelected && !_vm.live
+    },
+    staticStyle: {
+      color: "var(--sidebar_text--color, #fff)",
+      "text-decoration": "none",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      "font-weight": "600",
+      "text-transform": "uppercase"
+    },
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadFutebol();
+      }
+    }
+  }, [_c("img", {
+    staticClass: "modality-icon-img",
+    attrs: {
+      src: "/img/icons/football.png"
+    }
+  }), _vm._v(" Futebol\n                ")])]) : _vm._e(), _vm._v(" "), _vm.op_ufcbox == "Sim" || _vm.op_ufcbox == "Ativado" || _vm.configuracoes.op_ufcbox == "Sim" || _vm.configuracoes.op_ufcbox == "Ativado" ? _c("li", {
+    staticClass: "modality-item-demo",
+    staticStyle: {
+      flex: "0 0 auto",
+      "flex-shrink": "0"
+    }
+  }, [_c("a", {
+    "class": {
+      ativo: _vm.modalitySelected == "Luta"
+    },
+    staticStyle: {
+      color: "var(--sidebar_text--color, #fff)",
+      "text-decoration": "none",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      "font-weight": "600",
+      "text-transform": "uppercase"
+    },
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadModality("Luta");
+      }
+    }
+  }, [_c("img", {
+    staticClass: "modality-icon-img",
+    attrs: {
+      src: "/img/icons/boxing.png"
+    }
+  }), _vm._v(" Luta\n                ")])]) : _vm._e(), _vm._v(" "), _vm.op_basquete == "Sim" || _vm.op_basquete == "Ativado" || _vm.configuracoes.op_basquete == "Sim" || _vm.configuracoes.op_basquete == "Ativado" ? _c("li", {
+    staticClass: "modality-item-demo",
+    staticStyle: {
+      flex: "0 0 auto",
+      "flex-shrink": "0"
+    }
+  }, [_c("a", {
+    "class": {
+      ativo: _vm.modalitySelected == "Basquete"
+    },
+    staticStyle: {
+      color: "var(--sidebar_text--color, #fff)",
+      "text-decoration": "none",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      "font-weight": "600",
+      "text-transform": "uppercase"
+    },
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadModality("Basquete");
+      }
+    }
+  }, [_c("img", {
+    staticClass: "modality-icon-img",
+    attrs: {
+      src: "/img/icons/basketball.png"
+    }
+  }), _vm._v(" Basquete\n                ")])]) : _vm._e(), _vm._v(" "), _vm.op_tenis == "Sim" || _vm.op_tenis == "Ativado" || _vm.configuracoes.op_tenis == "Sim" || _vm.configuracoes.op_tenis == "Ativado" ? _c("li", {
+    staticClass: "modality-item-demo",
+    staticStyle: {
+      flex: "0 0 auto",
+      "flex-shrink": "0"
+    }
+  }, [_c("a", {
+    "class": {
+      ativo: _vm.modalitySelected == "Tenis"
+    },
+    staticStyle: {
+      color: "var(--sidebar_text--color, #fff)",
+      "text-decoration": "none",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      "font-weight": "600",
+      "text-transform": "uppercase"
+    },
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadModality("Tenis");
+      }
+    }
+  }, [_c("img", {
+    staticClass: "modality-icon-img",
+    attrs: {
+      src: "/img/icons/tennis.png"
+    }
+  }), _vm._v(" Tênis\n                ")])]) : _vm._e(), _vm._v(" "), _vm.op_volei == "Sim" || _vm.op_volei == "Ativado" || _vm.configuracoes.op_volei == "Sim" || _vm.configuracoes.op_volei == "Ativado" ? _c("li", {
+    staticClass: "modality-item-demo",
+    staticStyle: {
+      "border-right": "none",
+      flex: "0 0 auto",
+      "flex-shrink": "0"
+    }
+  }, [_c("a", {
+    "class": {
+      ativo: _vm.modalitySelected == "Volei"
+    },
+    staticStyle: {
+      color: "var(--sidebar_text--color, #fff)",
+      "text-decoration": "none",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      "font-weight": "600",
+      "text-transform": "uppercase"
+    },
+    attrs: {
+      href: "javascript:void(0)"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadModality("Volei");
+      }
+    }
+  }, [_c("img", {
+    staticClass: "modality-icon-img",
+    attrs: {
+      src: "/img/icons/volleyball.png"
+    }
+  }), _vm._v(" Vôlei\n                ")])]) : _vm._e()]), _vm._v(" "), _c("div", {
+    staticClass: "header-jogos-nexus"
+  }, [_c("div", {
+    staticClass: "no-scrollbar tabs-container",
+    staticStyle: {
+      display: "flex",
+      "align-items": "stretch",
+      height: "55px",
+      "overflow-x": "auto",
+      "-webkit-overflow-scrolling": "touch"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      display: "flex",
+      "align-items": "stretch",
+      gap: "0"
+    }
+  }, [_c("div", {
+    staticClass: "day-tab-demo",
+    "class": {
+      active: _vm.hoje && !_vm.live && !_vm.modalitySelected
+    },
+    staticStyle: {
+      cursor: "pointer",
+      display: "flex",
+      "flex-direction": "column",
+      "justify-content": "center",
+      padding: "0 20px",
+      "border-right": "1px solid #eee"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadFutebol();
+      }
+    }
+  }, [_c("div", {
+    staticStyle: {
+      "font-weight": "500",
+      "font-size": "13px",
+      color: "#111"
+    }
+  }, [_vm._v("Hoje")]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "font-size": "11px",
+      color: "#888"
+    }
+  }, [_vm._v(_vm._s(_vm.moment().format("DD/MM")))])]), _vm._v(" "), _vm._l(_vm.days.slice(1, 3), function (day, index) {
+    return _c("div", {
+      key: day.id,
+      staticClass: "day-tab-demo",
+      "class": {
+        active: _vm.activeTabIdx === index && !_vm.hoje && !_vm.live && !_vm.modalitySelected
+      },
+      staticStyle: {
+        cursor: "pointer",
+        display: "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        padding: "0 20px",
+        "border-right": "1px solid #eee"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.searchDay(day.id, index);
+        }
+      }
+    }, [_c("div", {
+      staticStyle: {
+        "font-weight": "400",
+        "font-size": "13px",
+        color: "#333",
+        "text-transform": "lowercase"
+      }
+    }, [_vm._v(_vm._s(_vm.moment(day.day, "DD/MM").format("dddd").split("-")[0]))]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "font-size": "11px",
+        color: "#888"
+      }
+    }, [_vm._v(_vm._s(day.day))])]);
+  }), _vm._v(" "), _c("div", {
+    staticClass: "day-tab-demo tab-ao-vivo",
+    "class": {
+      active: _vm.live
+    },
+    staticStyle: {
+      cursor: "pointer",
+      display: "flex",
+      "align-items": "center",
+      padding: "0 20px",
+      color: "var(--live-color, #cc3333)",
+      "font-weight": "400",
+      "font-size": "12px",
+      gap: "6px",
+      "border-right": "1px solid #eee",
+      "white-space": "nowrap"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.loadVivo();
+      }
+    }
+  }, [_vm._v("\n                    AO VIVO "), _c("span", {
+    staticClass: "live-circle"
+  })])], 2)]), _vm._v(" "), _c("div", {
+    staticClass: "search-container-nexus"
+  }, [_c("div", {
+    staticClass: "input-group",
+    staticStyle: {
+      width: "100%"
+    }
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.search,
+      expression: "search"
+    }],
+    staticClass: "form-control",
+    staticStyle: {
+      height: "38px",
+      "border-radius": "4px 0 0 4px",
+      border: "1px solid var(--linhas--color, #ddd)",
+      "border-right": "none",
+      "box-shadow": "none",
+      "font-size": "13px",
+      "background-color": "var(--search_bar_bg--color) !important",
+      color: "var(--search_bar_text--color) !important"
+    },
+    attrs: {
+      type: "text",
+      placeholder: "Pesquisar por Liga, Time, Horário"
+    },
+    domProps: {
+      value: _vm.search
+    },
+    on: {
+      keyup: function keyup($event) {
+        if (!$event.type.indexOf("key") && _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")) return null;
+        return _vm.searchMatches();
+      },
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.search = $event.target.value;
+      }
+    }
+  }), _vm._v(" "), _c("span", {
+    staticClass: "input-group-btn"
+  }, [_c("button", {
+    staticClass: "btn btn-info btn-flat",
+    staticStyle: {
+      height: "38px",
+      "border-radius": "0 4px 4px 0",
+      border: "none",
+      background: "var(--search_icon_bg--color, var(--primary-color)) !important",
+      color: "#fff !important",
+      padding: "0 15px",
+      transition: "filter 0.3s"
+    },
+    attrs: {
+      type: "button",
+      onmouseover: "this.style.filter='brightness(1.1)'",
+      onmouseout: "this.style.filter='brightness(1)'"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.searchMatches();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-search"
+  })])])])])]), _vm._v(" "), _c("clip-loader", {
+    attrs: {
+      loading: _vm.loading,
+      color: _vm.color,
+      size: _vm.size
+    }
+  }), _vm._v(" "), _vm.modalitySelected == "Quininha" || _vm.modalitySelected == "Seninha" ? _c("div", {
+    staticClass: "loto-container",
+    staticStyle: {
+      background: "var(--container_jogos--color, #fff)",
+      padding: "20px",
+      "border-radius": "8px",
+      "margin-top": "10px",
+      "box-shadow": "0 2px 10px rgba(0,0,0,0.1)"
+    }
+  }, [_c("div", {
+    staticClass: "loto-header",
+    staticStyle: {
+      "border-bottom": "2px solid var(--sidebar--color)",
+      "padding-bottom": "15px",
+      "margin-bottom": "20px",
+      display: "flex",
+      "justify-content": "space-between",
+      "align-items": "center",
+      "flex-wrap": "wrap",
+      gap: "15px"
+    }
+  }, [_c("div", [_c("h3", {
+    staticStyle: {
+      margin: "0",
+      color: "var(--sidebar--color)",
+      "font-weight": "800",
+      "text-transform": "uppercase"
+    }
+  }, [_vm._v(_vm._s(_vm.modalitySelected))]), _vm._v(" "), _c("p", {
+    staticStyle: {
+      margin: "5px 0 0",
+      color: "#666",
+      "font-size": "13px"
+    }
+  }, [_vm._v("Selecione suas dezenas e boa sorte!")])]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      display: "flex",
+      gap: "10px",
+      "align-items": "center"
+    }
+  }, [_c("div", {
+    staticClass: "form-group",
+    staticStyle: {
+      "margin-bottom": "0"
+    }
+  }, [_c("label", {
+    staticStyle: {
+      "font-size": "11px",
+      display: "block",
+      color: "#888"
+    }
+  }, [_vm._v("CONCURSO")]), _vm._v(" "), _c("select", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.lotoDateSelected,
+      expression: "lotoDateSelected"
+    }],
+    staticClass: "form-control input-sm",
+    staticStyle: {
+      "min-width": "150px"
+    },
+    on: {
+      change: function change($event) {
+        var $$selectedVal = Array.prototype.filter.call($event.target.options, function (o) {
+          return o.selected;
+        }).map(function (o) {
+          var val = "_value" in o ? o._value : o.value;
+          return val;
+        });
+        _vm.lotoDateSelected = $event.target.multiple ? $$selectedVal : $$selectedVal[0];
+      }
+    }
+  }, _vm._l(_vm.datesLoto, function (date) {
+    return _c("option", {
+      key: date.date,
+      domProps: {
+        value: date.date
+      }
+    }, [_vm._v(_vm._s(date.date) + " - " + _vm._s(date.day))]);
+  }), 0)])])]), _vm._v(" "), _c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-8"
+  }, [_c("div", {
+    staticClass: "loto-grid",
+    staticStyle: {
+      display: "grid",
+      "grid-template-columns": "repeat(10, 1fr)",
+      gap: "5px"
+    }
+  }, _vm._l(_vm.numbersLoto, function (num) {
+    return _c("div", {
+      key: num,
+      staticClass: "loto-number",
+      "class": {
+        "selected-loto": _vm.selectedNumbersLoto.includes(num)
+      },
+      staticStyle: {
+        "aspect-ratio": "1",
+        display: "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        border: "1px solid #ddd",
+        "border-radius": "4px",
+        cursor: "pointer",
+        "font-weight": "bold",
+        "font-size": "14px",
+        transition: "0.2s"
+      },
+      style: _vm.selectedNumbersLoto.includes(num) ? "background: var(--sidebar--color); color: #fff; border-color: var(--sidebar--color);" : "background: var(--container_jogos--color, #f9f9f9); color: #333;",
+      on: {
+        click: function click($event) {
+          return _vm.selectNumberLoto(num);
+        }
+      }
+    }, [_vm._v("\n                      " + _vm._s(num) + "\n                    ")]);
+  }), 0)]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-4"
+  }, [_c("div", {
+    staticClass: "loto-panel",
+    staticStyle: {
+      background: "var(--modal_bg--color, #f4f6f9)",
+      padding: "15px",
+      "border-radius": "6px",
+      border: "1px solid #dee2e6"
+    }
+  }, [_c("h4", {
+    staticStyle: {
+      "margin-top": "0",
+      "font-weight": "bold",
+      "font-size": "15px",
+      "border-bottom": "1px solid #ddd",
+      "padding-bottom": "10px"
+    }
+  }, [_vm._v("CONFIGURAÇÃO")]), _vm._v(" "), _c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticStyle: {
+      "font-size": "12px"
+    }
+  }, [_vm._v("MODALIDADE / COTAÇÃO")]), _vm._v(" "), _c("select", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.lotoTaxaSelected,
+      expression: "lotoTaxaSelected"
+    }],
+    staticClass: "form-control",
+    on: {
+      change: function change($event) {
+        var $$selectedVal = Array.prototype.filter.call($event.target.options, function (o) {
+          return o.selected;
+        }).map(function (o) {
+          var val = "_value" in o ? o._value : o.value;
+          return val;
+        });
+        _vm.lotoTaxaSelected = $event.target.multiple ? $$selectedVal : $$selectedVal[0];
+      }
+    }
+  }, _vm._l(_vm.taxasLoto, function (taxa) {
+    return _c("option", {
+      key: taxa.id,
+      domProps: {
+        value: taxa
+      }
+    }, [_vm._v("Acertar " + _vm._s(taxa.dezena) + " dezenas - " + _vm._s(taxa.taxa) + "x")]);
+  }), 0)]), _vm._v(" "), _c("div", {
+    staticClass: "form-group"
+  }, [_c("label", {
+    staticStyle: {
+      "font-size": "12px"
+    }
+  }, [_vm._v("VALOR DA APOSTA (R$)")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.lotoValue,
+      expression: "lotoValue"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "number",
+      min: _vm.valor_mini_aposta || 2
+    },
+    domProps: {
+      value: _vm.lotoValue
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.lotoValue = $event.target.value;
+      }
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "info-selecao",
+    staticStyle: {
+      "margin-top": "15px",
+      padding: "10px",
+      background: "var(--container_jogos--color, #fff)",
+      "border-radius": "4px",
+      "border-left": "4px solid var(--sidebar--color)"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      display: "flex",
+      "justify-content": "space-between",
+      "font-size": "13px"
+    }
+  }, [_c("span", [_vm._v("Dezenas:")]), _vm._v(" "), _c("b", {
+    style: _vm.lotoTaxaSelected && _vm.selectedNumbersLoto.length == _vm.lotoTaxaSelected.dezena ? "color: green" : "color: red"
+  }, [_vm._v("\n                          " + _vm._s(_vm.selectedNumbersLoto.length) + " / " + _vm._s(_vm.lotoTaxaSelected ? _vm.lotoTaxaSelected.dezena : "?") + "\n                        ")])]), _vm._v(" "), _vm.logado ? _c("div", {
+    staticStyle: {
+      display: "flex",
+      "justify-content": "space-between",
+      "font-size": "13px",
+      "margin-top": "5px"
+    }
+  }, [_c("span", [_vm._v("Retorno:")]), _vm._v(" "), _c("b", {
+    staticStyle: {
+      color: "var(--sidebar--color)"
+    }
+  }, [_vm._v("R$ " + _vm._s((_vm.lotoValue * (_vm.lotoTaxaSelected ? _vm.lotoTaxaSelected.taxa : 0)).toFixed(2)))])]) : _vm._e()]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "margin-top": "20px",
+      display: "grid",
+      "grid-template-columns": "1fr 1fr",
+      gap: "10px"
+    }
+  }, [_c("button", {
+    staticClass: "btn btn-default btn-block",
+    staticStyle: {
+      "font-weight": "bold",
+      "text-transform": "uppercase",
+      "font-size": "11px"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.surpresinhaLoto();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-magic"
+  }), _vm._v(" Surpresinha\n                      ")]), _vm._v(" "), _c("button", {
+    staticClass: "btn btn-danger btn-block",
+    staticStyle: {
+      "font-weight": "bold",
+      "text-transform": "uppercase",
+      "font-size": "11px"
+    },
+    on: {
+      click: function click($event) {
+        _vm.selectedNumbersLoto = [];
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-trash"
+  }), _vm._v(" Limpar\n                      ")])]), _vm._v(" "), _c("button", {
+    staticClass: "btn btn-success btn-block",
+    staticStyle: {
+      "margin-top": "15px",
+      height: "45px",
+      "font-weight": "800",
+      "font-size": "14px",
+      "text-transform": "uppercase",
+      "background-color": "var(--container_jogos--color) !important",
+      border: "none",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      gap: "10px"
+    },
+    attrs: {
+      disabled: _vm.loading
+    },
+    on: {
+      click: function click($event) {
+        return _vm.addLotoToCart();
+      }
+    }
+  }, [_vm.loading ? _c("span", [_c("i", {
+    staticClass: "fa fa-refresh fa-spin"
+  }), _vm._v(" ENVIANDO...")]) : _c("span", [_vm._v(_vm._s(_vm.logado ? "FINALIZAR APOSTA" : "APOSTAR"))])])])])])]) : _vm._e(), _vm._v(" "), _vm._l(_vm.filterLiegues, function (event) {
+    return !["Quininha", "Seninha"].includes(_vm.modalitySelected) ? _c("div", {
+      key: event.id,
+      staticClass: "content-jogos"
+    }, [_c("h4", {
+      staticClass: "header-campeonato-matchs",
+      staticStyle: {
+        "margin-bottom": "-1px",
+        display: "flex",
+        "align-items": "center"
+      }
+    }, [_c("img", {
+      staticStyle: {
+        width: "20px",
+        height: "14px",
+        "margin-right": "8px",
+        "border-radius": "2px",
+        "object-fit": "cover"
+      },
+      attrs: {
+        src: event.flag
+      },
+      on: {
+        error: function error($event) {
+          $event.target.src = "/img/countries/trophy.svg";
+        }
+      }
+    }), _vm._v("\n                " + _vm._s(event.league) + "\n                "), _vm.live ? _c("span", {
+      staticStyle: {
+        "margin-left": "8px",
+        "font-size": "10px",
+        color: "#fff",
+        background: "var(--live-color, #cc3333)",
+        padding: "2px 6px",
+        "border-radius": "3px",
+        animation: "pulse 1.5s infinite"
+      }
+    }, [_vm._v("AO VIVO")]) : _vm._e()]), _vm._v(" "), _c("div", {
+      staticClass: "jogo"
+    }, _vm._l(event.match, function (match) {
+      return _c("div", {
+        key: match.id,
+        staticClass: "row container-lista-jogos",
+        "class": {
+          "live-match-row": _vm.live
+        },
+        style: _vm.live ? "border-left: 3px solid var(--live-color, #cc3333);" : ""
+      }, [_c("div", {
+        staticClass: "col-lg-6 col-md-6 col-xs-9 jogos"
+      }, [_c("table", {
+        staticStyle: {
+          width: "100%"
+        }
+      }, [_c("tr", [_c("td", {
+        attrs: {
+          align: "left",
+          width: "15%"
+        }
+      }, [_c("img", {
+        staticClass: "team-logo-img",
+        attrs: {
+          loading: "lazy",
+          src: match.logo_home || "/img/placeholders/shield.png",
+          alt: match.home
+        },
+        on: {
+          error: function error($event) {
+            $event.target.src = "/img/placeholders/shield.png";
+          }
+        }
+      })]), _vm._v(" "), _c("td", {
+        staticClass: "team-name",
+        attrs: {
+          align: "center",
+          width: "30%"
+        }
+      }, [_vm._v("\n                          " + _vm._s(match.home) + "\n                        ")]), _vm._v(" "), _c("td", {
+        attrs: {
+          align: "center",
+          width: "10%"
+        }
+      }, [_vm.live && match.score ? _c("strong", {
+        staticStyle: {
+          color: "var(--live-color, #cc3333)",
+          "font-size": "16px"
+        }
+      }, [_vm._v(_vm._s(match.score))]) : _c("strong", {
+        staticStyle: {
+          color: "#777"
+        }
+      }, [_vm._v("X")])]), _vm._v(" "), _c("td", {
+        staticClass: "team-name",
+        attrs: {
+          align: "center",
+          width: "30%"
+        }
+      }, [_vm._v("\n                          " + _vm._s(match.away) + "\n                        ")]), _vm._v(" "), _c("td", {
+        attrs: {
+          align: "right",
+          width: "15%"
+        }
+      }, [_c("img", {
+        staticClass: "team-logo-img",
+        attrs: {
+          loading: "lazy",
+          src: match.logo_away || "/img/placeholders/shield.png",
+          alt: match.away
+        },
+        on: {
+          error: function error($event) {
+            $event.target.src = "/img/placeholders/shield.png";
+          }
+        }
+      })])])])]), _vm._v(" "), _c("div", {
+        staticClass: "col-lg-1 col-md-1 col-xs-3 data-hora"
+      }, [!_vm.live ? _c("span", [_vm._v(_vm._s(_vm._f("formatDate")(match.date)))]) : _c("span", {
+        staticClass: "text-danger",
+        staticStyle: {
+          "font-weight": "bold"
+        }
+      }, [_c("i", {
+        staticClass: "fa fa-circle pisca",
+        staticStyle: {
+          "font-size": "8px"
+        }
+      }), _vm._v("\n                      " + _vm._s(match.elapsed || match.time) + "'\n                    ")])]), _vm._v(" "), _c("div", {
+        staticClass: "col-lg-5 col-md-5 col-xs-12 btn-apostas"
+      }, [_c("div", {
+        staticClass: "cotacoes-principais"
+      }, [_vm._l(match.odds ? match.odds.slice(0, 3) : [], function (odd, index) {
+        return [odd.cotacao == 0 ? _c("div", {
+          key: "lock-" + odd.id,
+          staticClass: "btn-home"
+        }, [_c("i", {
+          staticClass: "fa fa-lock"
+        })]) : _vm._e(), _vm._v(" "), odd.cotacao > 0 ? _c("div", {
+          key: "odd-" + odd.id,
+          staticClass: "btn-home",
+          "class": {
+            selecionado: _vm.selectionsIds.includes(odd.id)
+          },
+          on: {
+            click: function click($event) {
+              return _vm.addPalpite(odd.uuid, odd.id, match.sport, match.id, odd.group_opp, odd.odd, odd.cotacao, event.league, match.date, match.home, match.away, odd.type, odd.cotacaoOriginal, match.logo_home, match.logo_away);
+            }
+          }
+        }, [_c("strong", [_vm._v(_vm._s(odd.odd.charAt(0)))]), _vm._v("\n                          " + _vm._s(_vm._f("formatCotacao")(odd.cotacao)) + "\n                        ")]) : _vm._e()];
+      })], 2), _vm._v(" "), _c("div", {
+        staticClass: "plus-odd",
+        attrs: {
+          title: "Mais mercados"
+        },
+        on: {
+          click: function click($event) {
+            return _vm.loadOdd(event.league, match, event);
+          }
+        }
+      }, [_c("i", {
+        staticClass: "fa fa-plus"
+      }), _vm._v("\n                      " + _vm._s(match.count_odd) + "\n                    ")]), _vm._v(" "), _c("div", {
+        staticClass: "btn-share",
+        attrs: {
+          title: "Compartilhar banner"
+        },
+        on: {
+          click: function click($event) {
+            return _vm.openShareMatch(match, event);
+          }
+        }
+      }, [_c("i", {
+        staticClass: "fa fa-picture-o fa-lg"
+      })])])]);
+    }), 0)]) : _vm._e();
+  })], 2) : _vm._e()]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-3",
+    attrs: {
+      id: "cupom-site"
+    }
+  }, [_c("div", {
+    staticClass: "cupom-fixed"
+  }, [_c("div", {
+    staticClass: "box box-widget overflow-hidden",
+    staticStyle: {
+      "margin-bottom": "65px",
+      "border-radius": "4px",
+      "box-shadow": "0 4px 6px rgba(0,0,0,0.1)"
+    }
+  }, [_c("div", {
+    staticClass: "ticket-title-new box-header",
+    staticStyle: {
+      background: "var(--cupom_header--color, var(--sidebar--color, #173133)) !important",
+      padding: "10px 15px"
+    }
+  }, [_c("h3", {
+    staticClass: "box-title",
+    staticStyle: {
+      "font-size": "13px !important",
+      "font-weight": "400",
+      color: "#fff !important",
+      "text-transform": "uppercase",
+      "letter-spacing": "0.5px"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-ticket"
+  }), _vm._v("\n                  BILHETE (" + _vm._s(_vm.selection.length) + ")\n                ")]), _vm._v(" "), _c("div", {
+    staticClass: "box-tools pull-right"
+  }, [_c("a", {
+    staticStyle: {
+      cursor: "pointer",
+      color: "#ffffff !important",
+      opacity: "1 !important"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.removePalpites();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-trash-o",
+    staticStyle: {
+      "font-size": "16px"
+    }
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "box-body",
+    staticStyle: {
+      padding: "12px"
+    }
+  }, [_vm.selection.length > 0 ? _c("div", {
+    staticClass: "box-cupon-list",
+    staticStyle: {
+      "max-height": "400px",
+      "overflow-y": "auto",
+      "margin-bottom": "15px",
+      padding: "0 5px"
+    }
+  }, [_vm._l(_vm.selection, function (select, index) {
+    return [index > 0 ? _c("div", {
+      key: "div-" + index,
+      staticClass: "ticket-divider"
+    }) : _vm._e(), _vm._v(" "), _c("div", {
+      key: select.uuid,
+      staticClass: "box-cupon",
+      staticStyle: {
+        "margin-bottom": "0",
+        padding: "0",
+        border: "none",
+        background: "transparent"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        "background-color": "var(--card_header_bg--color, var(--container_jogos--color))",
+        color: "var(--card_header_text--color, #fff)",
+        padding: "5px 10px",
+        "font-size": "12px",
+        "font-weight": "600",
+        display: "flex",
+        "justify-content": "space-between",
+        "align-items": "center"
+      }
+    }, [_c("span", [_c("i", {
+      staticClass: "fa fa-trophy"
+    }), _vm._v(" " + _vm._s(select.league))]), _vm._v(" "), _c("a", {
+      staticStyle: {
+        cursor: "pointer"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.removePalpite(select.idOdd);
+        }
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-trash",
+      staticStyle: {
+        color: "#ffffff !important",
+        opacity: "1 !important"
+      }
+    })])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        padding: "8px 10px"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        "font-size": "13px",
+        color: "#444",
+        "font-weight": "600",
+        display: "flex",
+        "align-items": "center",
+        gap: "6px"
+      }
+    }, [select.logo_home ? _c("img", {
+      staticStyle: {
+        width: "18px",
+        height: "18px",
+        "object-fit": "contain"
+      },
+      attrs: {
+        src: select.logo_home
+      }
+    }) : _vm._e(), _vm._v("\n                        " + _vm._s(select.home) + " \n                        "), _c("span", {
+      staticStyle: {
+        color: "#999",
+        "font-weight": "400"
+      }
+    }, [_vm._v("X")]), _vm._v("\n                        " + _vm._s(select.away) + "\n                        "), select.logo_away ? _c("img", {
+      staticStyle: {
+        width: "18px",
+        height: "18px",
+        "object-fit": "contain"
+      },
+      attrs: {
+        src: select.logo_away
+      }
+    }) : _vm._e()]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "font-size": "11px",
+        color: "#e74c3c"
+      }
+    }, [_vm._v(_vm._s(_vm._f("formatDate")(select.date)) + " hs")]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "font-size": "12px",
+        "font-weight": "700",
+        color: "#333",
+        "margin-top": "5px"
+      }
+    }, [_vm._v(_vm._s(select.group_opp))]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "margin-top": "2px"
+      }
+    }, [_c("span", {
+      staticStyle: {
+        "font-size": "13px",
+        "font-weight": "700",
+        color: "var(--primary-color, #3ca569) !important"
+      }
+    }, [_vm._v("\n                          " + _vm._s(select.odd) + " "), select.type == "ao-vivo" ? _c("span", {
+      staticStyle: {
+        "font-size": "10px"
+      }
+    }, [_vm._v("(" + _vm._s(select.type) + ")")]) : _vm._e()]), _vm._v(" "), _c("span", {
+      staticStyle: {
+        "font-size": "13px",
+        color: "#333"
+      }
+    }, [_vm._v(_vm._s(_vm._f("formatCotacao")(select.cotacao)))])])])])];
+  })], 2) : _vm._e(), _vm._v(" "), _c("div", {
+    staticClass: "form-apostas-premium"
+  }, [_c("div", {
+    staticClass: "form-group",
+    staticStyle: {
+      "margin-bottom": "10px"
+    }
+  }, [_c("div", {
+    staticClass: "input-group",
+    staticStyle: {
+      border: "1px solid #ddd",
+      "border-radius": "0"
+    }
+  }, [_vm._m(43), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.cliente,
+      expression: "cliente"
+    }],
+    staticClass: "form-control",
+    staticStyle: {
+      border: "none",
+      "box-shadow": "none",
+      "font-size": "13px",
+      "font-weight": "300"
+    },
+    attrs: {
+      type: "text",
+      placeholder: "Apostador"
+    },
+    domProps: {
+      value: _vm.cliente
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.cliente = $event.target.value;
+      }
+    }
+  })])]), _vm._v(" "), _c("div", {
+    staticClass: "form-group",
+    staticStyle: {
+      "margin-bottom": "10px"
+    }
+  }, [_c("div", {
+    staticClass: "input-group",
+    staticStyle: {
+      border: "1px solid #ddd",
+      "border-radius": "0"
+    }
+  }, [_c("span", {
+    staticClass: "input-group-addon",
+    staticStyle: {
+      background: "var(--container_jogos--color, #fff)",
+      border: "none",
+      color: "var(--search_bar_text--color, #666)",
+      "font-size": "12px"
+    }
+  }, [_vm._v("R$")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.apostado,
+      expression: "apostado"
+    }],
+    staticClass: "form-control",
+    staticStyle: {
+      border: "none",
+      "box-shadow": "none",
+      "font-weight": "400",
+      "font-size": "14px",
+      color: "#555"
+    },
+    attrs: {
+      type: "number",
+      placeholder: "0,00"
+    },
+    domProps: {
+      value: _vm.apostado
+    },
+    on: {
+      input: [function ($event) {
+        if ($event.target.composing) return;
+        _vm.apostado = $event.target.value;
+      }, function ($event) {
+        return _vm.calculaCotacao();
+      }]
+    }
+  })])]), _vm._v(" "), _c("div", {
+    staticClass: "value-btn-group",
+    staticStyle: {
+      display: "flex",
+      gap: "1px",
+      "margin-bottom": "15px"
+    }
+  }, [_c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 5
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(5);
+      }
+    }
+  }, [_vm._v("5,00")]), _vm._v(" "), _c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 10
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(10);
+      }
+    }
+  }, [_vm._v("10,00")]), _vm._v(" "), _c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 20
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(20);
+      }
+    }
+  }, [_vm._v("20,00")]), _vm._v(" "), _c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 30
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(30);
+      }
+    }
+  }, [_vm._v("30,00")]), _vm._v(" "), _c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 50
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(50);
+      }
+    }
+  }, [_vm._v("50,00")])]), _vm._v(" "), _c("div", {
+    staticClass: "info-ticket",
+    staticStyle: {
+      "margin-top": "10px",
+      padding: "0 5px"
+    }
+  }, [_vm._m(44), _vm._v(" "), _c("div", {
+    staticStyle: {
+      display: "flex",
+      "justify-content": "space-between",
+      "align-items": "center",
+      "margin-bottom": "15px"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      "font-weight": "700",
+      "font-size": "15px",
+      color: "#333"
+    }
+  }, [_vm._v(_vm._s(_vm._f("formatCotacao")(_vm.total_cotacao)))]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "font-weight": "700",
+      "font-size": "16px",
+      color: "#3ca569 !important"
+    }
+  }, [_vm._v(_vm._s(_vm._f("formatMoeda")(_vm.retorno)))])]), _vm._v(" "), _c("button", {
+    staticClass: "btn-block btn btn-lg btn-success btnSendBet",
+    staticStyle: {
+      "background-color": "var(--cupom_apostar_btn--color, var(--container_jogos--color)) !important",
+      color: "#fff !important",
+      border: "none",
+      "border-radius": "4px",
+      padding: "10px",
+      "font-weight": "800",
+      "font-size": "16px",
+      transition: "all 0.2s",
+      opacity: "1 !important"
+    },
+    attrs: {
+      disabled: _vm.loadingBtn
+    },
+    on: {
+      click: function click($event) {
+        return _vm.enviarAposta();
+      }
+    }
+  }, [_vm.loadingBtn ? _c("span", [_c("i", {
+    staticClass: "fa fa-refresh fa-spin"
+  }), _vm._v(" ENVIANDO...")]) : _c("span", [_c("i", {
+    staticClass: "fa fa-ticket"
+  }), _vm._v(" APOSTAR")])])])])])])]), _vm._v(" "), _vm.belowTicketBanners.length > 0 ? _c("div", {
+    staticClass: "banner-below-ticket mt-1"
+  }, _vm._l(_vm.belowTicketBanners, function (banner, index) {
+    return _c("div", {
+      key: "btb-" + index,
+      staticClass: "mb-2"
+    }, [_c("a", {
+      attrs: {
+        href: banner.link || "#"
+      }
+    }, [_c("img", {
+      staticStyle: {
+        width: "100%",
+        "border-radius": "4px",
+        "box-shadow": "0 4px 6px rgba(0,0,0,0.1)"
+      },
+      attrs: {
+        src: banner.image || banner.img
+      }
+    })])]);
+  }), 0) : _vm._e()])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-validar-pin"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-sm"
+  }, [_c("div", {
+    staticClass: "modal-content",
+    staticStyle: {
+      "border-radius": "12px",
+      border: "none",
+      "box-shadow": "0 10px 30px rgba(0,0,0,0.4)"
+    }
+  }, [_vm._m(45), _vm._v(" "), _c("div", {
+    staticClass: "modal-body box box-primary",
+    staticStyle: {
+      padding: "25px"
+    }
+  }, [_c("p", {
+    staticStyle: {
+      "font-size": "13px",
+      color: "#666",
+      "margin-bottom": "15px"
+    }
+  }, [_vm._v("Informe o código do bilhete (PIN) para validar e transformar em aposta real.")]), _vm._v(" "), _c("div", {
+    staticClass: "form-group has-feedback",
+    staticStyle: {
+      "margin-bottom": "20px"
+    }
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.pin,
+      expression: "pin"
+    }],
+    staticClass: "form-control",
+    staticStyle: {
+      height: "50px",
+      "font-size": "20px",
+      "font-weight": "800",
+      "text-align": "center",
+      "text-transform": "uppercase",
+      "border-radius": "8px",
+      border: "2px solid #eee",
+      background: "var(--container_jogos--color, #f9f9f9)"
+    },
+    attrs: {
+      type: "text",
+      placeholder: "Ex: ABC123"
+    },
+    domProps: {
+      value: _vm.pin
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.pin = $event.target.value;
+      }
+    }
+  }), _vm._v(" "), _c("span", {
+    staticClass: "fa fa-key form-control-feedback",
+    staticStyle: {
+      "line-height": "50px",
+      color: "var(--sidebar--color)"
+    }
+  })]), _vm._v(" "), _c("button", {
+    staticClass: "btn btn-primary btn-block",
+    staticStyle: {
+      height: "50px",
+      "font-weight": "800",
+      "font-size": "16px",
+      "border-radius": "8px",
+      "background-color": "var(--sidebar--color) !important",
+      border: "none",
+      "text-transform": "uppercase",
+      "letter-spacing": "1px"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.validaPin();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-check-circle"
+  }), _vm._v(" VALIDAR AGORA\n          ")])])])])]), _vm._v(" "), _c("footer", {
+    staticClass: "main-footer",
+    staticStyle: {
+      background: "var(--footer_bg--color, #f4f6f9)",
+      padding: "30px 20px 15px",
+      color: "var(--footer_text--color, #555)",
+      "border-top": "1px solid #dee2e6"
+    }
+  }, [_c("div", {
+    staticClass: "container-fluid"
+  }, [_c("div", {
+    staticClass: "row",
+    staticStyle: {
+      "margin-bottom": "25px"
+    }
+  }, [_c("div", {
+    staticClass: "col-sm-3"
+  }, [_c("h4", {
+    staticStyle: {
+      "font-size": "15px",
+      "font-weight": "700",
+      color: "#333",
+      "margin-bottom": "10px"
+    }
+  }, [_vm._v("Sobre Nós")]), _vm._v(" "), _c("p", {
+    staticStyle: {
+      "font-size": "13px",
+      color: "#777",
+      "line-height": "1.6"
+    }
+  }, [_vm._v(_vm._s(_vm.server.footer_sobre || "Conte um pouco sobre sua plataforma."))])]), _vm._v(" "), _vm._m(46), _vm._v(" "), _vm._m(47), _vm._v(" "), _c("div", {
+    staticClass: "col-sm-3"
+  }, [_c("h4", {
+    staticStyle: {
+      "font-size": "15px",
+      "font-weight": "700",
+      color: "#333",
+      "margin-bottom": "10px"
+    }
+  }, [_vm._v("Redes Sociais")]), _vm._v(" "), _c("div", [_vm.site_info.social_instagram ? _c("a", {
+    staticStyle: {
+      display: "inline-block",
+      "margin-right": "10px",
+      "margin-bottom": "8px",
+      color: "#e1306c",
+      "font-size": "26px"
+    },
+    attrs: {
+      href: _vm.site_info.social_instagram,
+      target: "_blank"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-instagram"
+  })]) : _vm._e(), _vm._v(" "), _vm.site_info.social_facebook ? _c("a", {
+    staticStyle: {
+      display: "inline-block",
+      "margin-right": "10px",
+      "margin-bottom": "8px",
+      color: "#1877f2",
+      "font-size": "26px"
+    },
+    attrs: {
+      href: _vm.site_info.social_facebook,
+      target: "_blank"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-facebook-square"
+  })]) : _vm._e(), _vm._v(" "), _vm.site_info.social_twitter ? _c("a", {
+    staticStyle: {
+      display: "inline-block",
+      "margin-right": "10px",
+      "margin-bottom": "8px",
+      color: "#1da1f2",
+      "font-size": "26px"
+    },
+    attrs: {
+      href: _vm.site_info.social_twitter,
+      target: "_blank"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-twitter-square"
+  })]) : _vm._e(), _vm._v(" "), _vm.site_info.social_youtube ? _c("a", {
+    staticStyle: {
+      display: "inline-block",
+      "margin-right": "10px",
+      "margin-bottom": "8px",
+      color: "#ff0000",
+      "font-size": "26px"
+    },
+    attrs: {
+      href: _vm.site_info.social_youtube,
+      target: "_blank"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-youtube-play"
+  })]) : _vm._e(), _vm._v(" "), _vm.site_info.whatsapp_number ? _c("a", {
+    staticStyle: {
+      display: "inline-block",
+      "margin-right": "10px",
+      "margin-bottom": "8px",
+      color: "#25d366",
+      "font-size": "26px"
+    },
+    attrs: {
+      href: "https://wa.me/" + _vm.site_info.whatsapp_number,
+      target: "_blank"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-whatsapp"
+  })]) : _vm._e(), _vm._v(" "), !_vm.site_info.social_instagram && !_vm.site_info.social_facebook && !_vm.site_info.social_twitter && !_vm.site_info.social_youtube && !_vm.site_info.whatsapp_number ? _c("p", {
+    staticStyle: {
+      "font-size": "13px",
+      color: "#888"
+    }
+  }, [_vm._v("\n              Configure as redes sociais no painel Admin.\n            ")]) : _vm._e()])])]), _vm._v(" "), _vm._m(48), _vm._v(" "), _c("hr", {
+    staticStyle: {
+      "border-top": "1px solid #ddd",
+      margin: "15px 0"
+    }
+  }), _vm._v(" "), _c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-sm-6",
+    staticStyle: {
+      "font-size": "13px"
+    }
+  }, [_c("strong", [_vm._v("Copyright © " + _vm._s(_vm.server.year) + " "), _c("a", {
+    staticStyle: {
+      color: "var(--container_jogos--color)"
+    },
+    attrs: {
+      href: "/"
+    }
+  }, [_vm._v(_vm._s(_vm.server.logo))]), _vm._v(".")]), _vm._v(" Todos os direitos reservados.\n        ")]), _vm._v(" "), _vm._m(49)])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-cupon",
+      tabindex: "-1",
+      role: "dialog"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog",
+    staticStyle: {
+      margin: "10px auto",
+      "max-width": "500px"
+    }
+  }, [_c("div", {
+    staticClass: "modal-content",
+    staticStyle: {
+      background: "var(--modal_bg--color, var(--background--color, #fff))"
+    }
+  }, [_c("div", {
+    staticClass: "modal-header",
+    staticStyle: {
+      background: "var(--container_jogos--color, #f4f4f4)",
+      padding: "10px 15px",
+      "border-bottom": "1px solid #ddd"
+    }
+  }, [_vm._m(50), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title",
+    staticStyle: {
+      color: "#333",
+      "font-weight": "700"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-ticket"
+  }), _vm._v(" Bilhete (" + _vm._s(_vm.selection.length) + ")\n          ")])]), _vm._v(" "), _c("div", {
+    staticClass: "modal-body",
+    staticStyle: {
+      padding: "10px",
+      background: "var(--modal_bg--color, var(--background--color, #fff))"
+    }
+  }, [_c("div", {
+    staticClass: "input-group",
+    staticStyle: {
+      "margin-bottom": "8px"
+    }
+  }, [_vm._m(51), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.cliente,
+      expression: "cliente"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      placeholder: "Apostador"
+    },
+    domProps: {
+      value: _vm.cliente
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.cliente = $event.target.value;
+      }
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "input-group",
+    staticStyle: {
+      "margin-bottom": "8px"
+    }
+  }, [_c("span", {
+    staticClass: "input-group-addon"
+  }, [_vm._v("R$")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.apostado,
+      expression: "apostado"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "number",
+      placeholder: "Valor Apostado",
+      min: "0",
+      step: "0.50"
+    },
+    domProps: {
+      value: _vm.apostado
+    },
+    on: {
+      keyup: function keyup($event) {
+        return _vm.calculaCotacao();
+      },
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.apostado = $event.target.value;
+      }
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "value-btn-group",
+    staticStyle: {
+      display: "flex",
+      gap: "1px",
+      "margin-bottom": "15px"
+    }
+  }, [_c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 5
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(5);
+      }
+    }
+  }, [_vm._v("5,00")]), _vm._v(" "), _c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 10
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(10);
+      }
+    }
+  }, [_vm._v("10,00")]), _vm._v(" "), _c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 20
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(20);
+      }
+    }
+  }, [_vm._v("20,00")]), _vm._v(" "), _c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 30
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(30);
+      }
+    }
+  }, [_vm._v("30,00")]), _vm._v(" "), _c("button", {
+    staticClass: "btn-valor",
+    "class": {
+      active: _vm.apostado == 50
+    },
+    staticStyle: {
+      flex: "1",
+      border: "none",
+      "border-radius": "0",
+      padding: "8px 0",
+      "font-size": "10px",
+      "font-weight": "400",
+      color: "#fff"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.setValApostado(50);
+      }
+    }
+  }, [_vm._v("50,00")])]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      display: "flex",
+      "justify-content": "space-between",
+      "margin-bottom": "10px",
+      padding: "4px 0",
+      "border-top": "1px solid #eee",
+      "border-bottom": "1px solid #eee"
+    }
+  }, [_c("span", {
+    staticStyle: {
+      "font-size": "13px"
+    }
+  }, [_vm._v("\n              Cotação "), _c("br"), _vm._v(" "), _c("strong", {
+    staticStyle: {
+      "font-size": "18px"
+    }
+  }, [_vm._v(_vm._s(_vm._f("formatCotacao")(_vm.total_cotacao)))])]), _vm._v(" "), _c("span", {
+    staticStyle: {
+      "font-size": "13px",
+      "text-align": "right"
+    }
+  }, [_vm._v("\n              Possível Retorno "), _c("br"), _vm._v(" "), _c("strong", {
+    staticStyle: {
+      "font-size": "18px",
+      color: "#3ca569 !important"
+    }
+  }, [_vm._v(_vm._s(_vm._f("formatMoeda")(_vm.retorno)))])])]), _vm._v(" "), _c("button", {
+    staticClass: "btn btn-block btn-lg",
+    staticStyle: {
+      "background-color": "var(--cupom_apostar_btn--color, #3ca569) !important",
+      color: "#ffffff !important",
+      "font-weight": "800",
+      "font-size": "16px",
+      "border-radius": "6px",
+      "margin-bottom": "12px"
+    },
+    attrs: {
+      disabled: _vm.loadingBtn
+    },
+    on: {
+      click: function click($event) {
+        return _vm.enviarAposta();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-ticket"
+  }), _vm._v(" Apostar\n          ")]), _vm._v(" "), _vm._m(52), _vm._v(" "), _c("hr", {
+    staticStyle: {
+      "border-style": "dashed",
+      margin: "8px 0"
+    }
+  }), _vm._v(" "), _vm._l(_vm.selection, function (select, index) {
+    return [index > 0 ? _c("div", {
+      key: "m-div-" + index,
+      staticClass: "ticket-divider"
+    }) : _vm._e(), _vm._v(" "), _c("div", {
+      key: select.id,
+      staticStyle: {
+        padding: "8px 0",
+        "margin-bottom": "0"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        background: "var(--card_header_bg--color, var(--container_jogos--color))",
+        color: "var(--card_header_text--color, #fff)",
+        padding: "5px 8px",
+        "border-radius": "3px",
+        "margin-bottom": "5px",
+        display: "flex",
+        "justify-content": "space-between",
+        "align-items": "center"
+      }
+    }, [_c("span", {
+      staticStyle: {
+        "font-size": "13px",
+        "font-weight": "700",
+        color: "#ffffff !important"
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-trophy"
+    }), _vm._v(" " + _vm._s(select.league) + "\n              ")]), _vm._v(" "), _c("span", {
+      staticStyle: {
+        cursor: "pointer"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.removePalpite(select.idOdd);
+        }
+      }
+    }, [_c("i", {
+      staticClass: "fa fa-trash",
+      staticStyle: {
+        color: "#ffffff !important",
+        opacity: "1 !important"
+      }
+    })])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        padding: "0 5px"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        "font-weight": "700",
+        "font-size": "14px",
+        display: "flex",
+        "align-items": "center",
+        gap: "8px"
+      }
+    }, [select.logo_home ? _c("img", {
+      staticStyle: {
+        width: "22px",
+        height: "22px",
+        "object-fit": "contain"
+      },
+      attrs: {
+        src: select.logo_home
+      }
+    }) : _vm._e(), _vm._v("\n                " + _vm._s(select.home) + " \n                "), _c("span", {
+      staticStyle: {
+        color: "#999",
+        "font-weight": "400",
+        "font-size": "12px"
+      }
+    }, [_vm._v("X")]), _vm._v(" \n                " + _vm._s(select.away) + "\n                "), select.logo_away ? _c("img", {
+      staticStyle: {
+        width: "22px",
+        height: "22px",
+        "object-fit": "contain"
+      },
+      attrs: {
+        src: select.logo_away
+      }
+    }) : _vm._e()]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        color: "#e74c3c",
+        "font-size": "12px"
+      }
+    }, [_vm._v(_vm._s(_vm._f("formatDate")(select.date)) + " hs")]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "font-size": "13px"
+      }
+    }, [_vm._v(_vm._s(select.sport))]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        "font-size": "13px",
+        color: "#333"
+      }
+    }, [_c("b", [_vm._v(_vm._s(select.group_opp))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "margin-top": "4px"
+      }
+    }, [_c("span", {
+      staticStyle: {
+        color: "#3ca569 !important",
+        "font-weight": "700",
+        "font-size": "13px"
+      }
+    }, [select.type == "ao-vivo" ? _c("span", {
+      staticStyle: {
+        color: "#3ca569 !important"
+      }
+    }, [_vm._v(_vm._s(select.odd) + " (" + _vm._s(select.type) + ")")]) : _c("span", {
+      staticStyle: {
+        color: "#3ca569 !important"
+      }
+    }, [_vm._v(_vm._s(select.odd))])]), _vm._v(" "), _c("span", {
+      staticStyle: {
+        "font-weight": "700",
+        "font-size": "15px"
+      }
+    }, [_vm._v(_vm._s(_vm._f("formatCotacao")(select.cotacao)))])])])])];
+  })], 2)])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-share",
+      tabindex: "-1",
+      role: "dialog"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-md",
+    attrs: {
+      role: "document"
+    }
+  }, [_c("div", {
+    staticClass: "modal-content",
+    staticStyle: {
+      background: "var(--cupom_header--color, var(--sidebar--color, #173133))",
+      color: "#fff",
+      border: "1px solid var(--container_jogos--color)"
+    }
+  }, [_vm._m(53), _vm._v(" "), _c("div", {
+    staticClass: "modal-body text-center",
+    staticStyle: {
+      padding: "15px",
+      "max-height": "75vh",
+      "overflow-y": "auto"
+    }
+  }, [_vm.loading_share ? _c("div", {
+    staticStyle: {
+      padding: "60px 0"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-refresh fa-spin fa-3x",
+    staticStyle: {
+      color: "var(--container_jogos--color)"
+    }
+  }), _vm._v(" "), _c("p", {
+    staticStyle: {
+      "margin-top": "15px",
+      "font-weight": "500",
+      color: "#aaa"
+    }
+  }, [_vm._v("Gerando banner personalizado...")])]) : _c("div", [_vm.image_share ? _c("img", {
+    staticStyle: {
+      width: "100%",
+      "max-width": "360px",
+      "border-radius": "8px",
+      "box-shadow": "0 8px 25px rgba(0,0,0,0.6)"
+    },
+    attrs: {
+      src: _vm.image_share
+    }
+  }) : _c("div", {
+    staticClass: "alert alert-warning",
+    staticStyle: {
+      background: "rgba(255,193,7,0.1)",
+      "border-color": "#ffc107",
+      color: "#ffc107"
+    }
+  }, [_vm._v("\n              Não foi possível gerar o banner para este jogo.\n            ")]), _vm._v(" "), _vm.image_share ? _c("div", {
+    staticClass: "share-actions",
+    staticStyle: {
+      "margin-top": "18px",
+      display: "flex",
+      gap: "10px",
+      "justify-content": "center",
+      "flex-wrap": "wrap"
+    }
+  }, [_c("button", {
+    staticClass: "btn",
+    staticStyle: {
+      background: "var(--container_jogos--color)",
+      color: "#fff",
+      "font-weight": "700",
+      padding: "10px 20px",
+      "border-radius": "6px"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.downloadBanner();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-download"
+  }), _vm._v(" Baixar Imagem\n              ")]), _vm._v(" "), _c("button", {
+    staticClass: "btn",
+    staticStyle: {
+      background: "#25D366",
+      color: "#fff",
+      "font-weight": "700",
+      padding: "10px 20px",
+      "border-radius": "6px"
+    },
+    on: {
+      click: function click($event) {
+        return _vm.shareImageWhatsapp();
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-whatsapp"
+  }), _vm._v(" WhatsApp\n              ")])]) : _vm._e()])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-regulamento",
+      tabindex: "-1",
+      role: "dialog"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(54), _vm._v(" "), _c("div", {
+    staticClass: "modal-body box box-primary",
+    staticStyle: {
+      "max-height": "70vh",
+      "overflow-y": "auto"
+    }
+  }, [!_vm.regulamento ? _c("div", {
+    staticStyle: {
+      "text-align": "center",
+      padding: "40px",
+      color: "#64748b"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-refresh fa-spin fa-2x",
+    staticStyle: {
+      color: "#3c8dbc",
+      "margin-bottom": "15px"
+    }
+  }), _vm._v(" "), _c("p", {
+    staticStyle: {
+      "font-size": "14px"
+    }
+  }, [_vm._v("Carregando...")])]) : _c("div", {
+    staticClass: "regulamento-content-demo",
+    domProps: {
+      innerHTML: _vm._s(_vm.regulamento)
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "modal-footer",
+    staticStyle: {
+      "text-align": "center",
+      "border-top": "1px solid #f4f4f4"
+    }
+  }, [_c("button", {
+    staticClass: "btn btn-success btn-lg",
+    staticStyle: {
+      "font-weight": "700",
+      padding: "10px 60px",
+      "border-radius": "4px",
+      "text-transform": "uppercase"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal"
+    },
+    on: {
+      click: function click($event) {
+        _vm.formRegister.termos = true;
+      }
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-check"
+  }), _vm._v(" LI E ACEITO\n          ")])])])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "modal-match",
+      tabindex: "-1",
+      role: "dialog"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog modal-lg",
+    attrs: {
+      role: "document"
+    }
+  }, [_c("div", {
+    staticClass: "modal-content",
+    staticStyle: {
+      border: "none",
+      "border-radius": "4px",
+      overflow: "hidden",
+      background: "#eaebec"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      "background-color": "#2b323a",
+      padding: "12px 20px",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "space-between",
+      "border-radius": "4px 4px 0 0"
+    }
+  }, [_c("h4", {
+    staticStyle: {
+      "font-weight": "500",
+      color: "#ffffff",
+      margin: "0",
+      "font-size": "16px",
+      display: "flex",
+      "align-items": "center"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-trophy",
+    staticStyle: {
+      "margin-right": "10px",
+      color: "#ffffff",
+      "font-size": "16px"
+    }
+  }), _vm._v(" " + _vm._s(_vm.match.league || _vm.liga) + "\n          ")]), _vm._v(" "), _vm._m(55)]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "background-image": "url('/img/login_bg.png')",
+      "background-size": "cover",
+      "background-position": "center",
+      position: "relative",
+      overflow: "hidden"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      position: "absolute",
+      top: "0",
+      left: "0",
+      right: "0",
+      bottom: "0",
+      background: "linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 100%)"
+    }
+  }), _vm._v(" "), _c("div", {
+    staticStyle: {
+      position: "relative",
+      "z-index": "1",
+      padding: "35px 20px 25px 20px",
+      "text-align": "center",
+      color: "#fff"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      display: "flex",
+      "justify-content": "center",
+      "align-items": "center",
+      gap: "40px",
+      "margin-bottom": "25px"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      flex: "1",
+      "text-align": "right",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "flex-end",
+      gap: "20px"
+    }
+  }, [_c("h4", {
+    staticStyle: {
+      margin: "0",
+      "font-size": "24px",
+      "font-weight": "300",
+      "letter-spacing": "-0.5px"
+    }
+  }, [_vm._v(_vm._s(_vm.match.home))]), _vm._v(" "), _vm.match.logo_home ? _c("img", {
+    staticStyle: {
+      width: "75px",
+      height: "75px",
+      "object-fit": "contain",
+      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.5))"
+    },
+    attrs: {
+      src: _vm.match.logo_home
+    }
+  }) : _vm._e()]), _vm._v(" "), _vm._m(56), _vm._v(" "), _c("div", {
+    staticStyle: {
+      flex: "1",
+      "text-align": "left",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "flex-start",
+      gap: "20px"
+    }
+  }, [_vm.match.logo_away ? _c("img", {
+    staticStyle: {
+      width: "75px",
+      height: "75px",
+      "object-fit": "contain",
+      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.5))"
+    },
+    attrs: {
+      src: _vm.match.logo_away
+    }
+  }) : _vm._e(), _vm._v(" "), _c("h4", {
+    staticStyle: {
+      margin: "0",
+      "font-size": "24px",
+      "font-weight": "300",
+      "letter-spacing": "-0.5px"
+    }
+  }, [_vm._v(_vm._s(_vm.match.away))])])]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      display: "inline-flex",
+      "align-items": "center",
+      gap: "10px",
+      background: "rgba(255,255,255,0.05)",
+      padding: "8px 20px",
+      "border-radius": "30px",
+      "font-size": "13px",
+      "font-weight": "300",
+      border: "1px solid rgba(255,255,255,0.1)",
+      "backdrop-filter": "blur(4px)"
+    }
+  }, [!_vm.live ? _c("span", {
+    staticStyle: {
+      display: "flex",
+      "align-items": "center",
+      gap: "8px"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-calendar-check-o",
+    staticStyle: {
+      color: "rgba(255,255,255,0.6)"
+    }
+  }), _vm._v(" " + _vm._s(_vm._f("formatDate")(_vm.match.date)) + "\n              ")]) : _vm._e(), _vm._v(" "), _vm.live ? _c("span", {
+    staticClass: "label label-danger pisca",
+    staticStyle: {
+      "background-color": "#ff3333 !important",
+      "border-radius": "20px",
+      padding: "3px 12px",
+      "font-weight": "600",
+      "text-transform": "uppercase",
+      "font-size": "10px",
+      "letter-spacing": "0.5px"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-circle",
+    staticStyle: {
+      "font-size": "8px",
+      "margin-right": "5px"
+    }
+  }), _vm._v(" Ao Vivo " + _vm._s(_vm.match.time ? "- " + _vm.match.time + "'" : "") + "\n              ")]) : _vm._e()])])]), _vm._v(" "), _c("div", {
+    staticClass: "modal-body",
+    staticStyle: {
+      "background-color": "#eaebec",
+      padding: "15px",
+      "max-height": "65vh",
+      "overflow-y": "auto",
+      position: "relative"
+    }
+  }, [_vm.showMarketInfo ? _c("div", {
+    staticStyle: {
+      position: "absolute",
+      top: "0",
+      left: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0,0,0,0.5)",
+      "z-index": "1000",
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      padding: "20px"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      background: "#fff",
+      "border-radius": "8px",
+      width: "100%",
+      "max-width": "400px",
+      overflow: "hidden",
+      "box-shadow": "0 10px 25px rgba(0,0,0,0.3)"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      background: "#1e4b82",
+      color: "#fff",
+      padding: "15px",
+      display: "flex",
+      "justify-content": "space-between",
+      "align-items": "center"
+    }
+  }, [_vm._m(57), _vm._v(" "), _c("button", {
+    staticStyle: {
+      background: "none",
+      border: "none",
+      color: "#fff",
+      "font-size": "20px",
+      cursor: "pointer"
+    },
+    on: {
+      click: function click($event) {
+        _vm.showMarketInfo = false;
+      }
+    }
+  }, [_vm._v("×")])]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      padding: "20px"
+    }
+  }, [_c("p", {
+    staticStyle: {
+      "font-weight": "bold",
+      color: "#333",
+      "margin-bottom": "10px"
+    }
+  }, [_vm._v(_vm._s(_vm.selectedMarketName))]), _vm._v(" "), _c("p", {
+    staticStyle: {
+      color: "#666",
+      "font-size": "14px",
+      "line-height": "1.5"
+    }
+  }, [_vm._v("\n                  " + _vm._s(_vm.getMarketDescription(_vm.selectedMarketName)) + "\n                ")]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "text-align": "right",
+      "margin-top": "20px"
+    }
+  }, [_c("button", {
+    staticStyle: {
+      background: "#f39c12",
+      color: "#fff",
+      border: "none",
+      padding: "8px 25px",
+      "border-radius": "4px",
+      "font-weight": "bold",
+      cursor: "pointer"
+    },
+    on: {
+      click: function click($event) {
+        _vm.showMarketInfo = false;
+      }
+    }
+  }, [_vm._v("Entendi")])])])])]) : _vm._e(), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "margin-bottom": "15px",
+      position: "relative"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-search",
+    staticStyle: {
+      position: "absolute",
+      left: "15px",
+      top: "12px",
+      color: "#888"
+    }
+  }), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.searchMercado,
+      expression: "searchMercado"
+    }],
+    staticStyle: {
+      width: "100%",
+      padding: "10px 15px 10px 40px",
+      border: "1px solid #ddd",
+      "border-radius": "25px",
+      outline: "none",
+      background: "#fff",
+      "font-size": "14px"
+    },
+    attrs: {
+      type: "text",
+      placeholder: "Buscar mercado..."
+    },
+    domProps: {
+      value: _vm.searchMercado
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.searchMercado = $event.target.value;
+      }
+    }
+  })]), _vm._v(" "), _vm.loading_odds ? _c("div", {
+    staticStyle: {
+      padding: "40px",
+      "text-align": "center"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-refresh fa-spin fa-3x",
+    staticStyle: {
+      color: "var(--container_jogos--color, #3c8dbc)"
+    }
+  }), _vm._v(" "), _c("p", {
+    staticStyle: {
+      "margin-top": "15px",
+      color: "#666"
+    }
+  }, [_vm._v("Carregando cotações...")])]) : _c("div", _vm._l(_vm.mercados, function (mercado, mIndex) {
+    return _c("div", {
+      directives: [{
+        name: "show",
+        rawName: "v-show",
+        value: !_vm.searchMercado || _vm.translateLabel(mercado.name).toLowerCase().includes(_vm.searchMercado.toLowerCase()) || mercado.odds.some(function (o) {
+          return _vm.translateLabel(o.odd).toLowerCase().includes(_vm.searchMercado.toLowerCase());
+        }),
+        expression: "!searchMercado || translateLabel(mercado.name).toLowerCase().includes(searchMercado.toLowerCase()) || mercado.odds.some(o => translateLabel(o.odd).toLowerCase().includes(searchMercado.toLowerCase()))"
+      }],
+      key: mIndex,
+      staticStyle: {
+        "margin-bottom": "15px"
+      }
+    }, [_c("div", {
+      staticStyle: {
+        "background-color": "var(--botao_aposta--color, #3ca569)",
+        color: "#fff",
+        padding: "10px 15px",
+        "border-radius": "4px",
+        display: "flex",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "margin-bottom": "8px",
+        cursor: "pointer",
+        transition: "opacity 0.2s"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.toggleMarket(mercado.name);
+        }
+      }
+    }, [_c("div", {
+      staticStyle: {
+        display: "flex",
+        "align-items": "center",
+        gap: "10px"
+      }
+    }, [_c("i", {
+      "class": ["fa", _vm.isMarketCollapsed(mercado.name) ? "fa-chevron-right" : "fa-chevron-down"],
+      staticStyle: {
+        "font-size": "12px",
+        opacity: "0.7",
+        width: "14px"
+      }
+    }), _vm._v(" "), _c("span", {
+      staticStyle: {
+        "font-weight": "bold",
+        "font-size": "14px",
+        "text-shadow": "1px 1px 1px rgba(0,0,0,0.1)"
+      }
+    }, [_vm._v(_vm._s(_vm.translateLabel(mercado.name)))])]), _vm._v(" "), _c("div", {
+      staticStyle: {
+        display: "flex",
+        "align-items": "center",
+        gap: "10px"
+      }
+    }, [_c("span", {
+      staticStyle: {
+        background: "rgba(255,255,255,0.2)",
+        "border-radius": "50%",
+        width: "22px",
+        height: "22px",
+        display: "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "font-size": "11px",
+        "font-weight": "bold"
+      }
+    }, [_vm._v("\n                    " + _vm._s(mercado.odds.length) + "\n                  ")]), _vm._v(" "), _c("i", {
+      staticClass: "fa fa-info-circle",
+      staticStyle: {
+        "font-size": "18px",
+        cursor: "pointer",
+        opacity: "0.8",
+        hover: "opacity 1"
+      },
+      on: {
+        click: function click($event) {
+          $event.stopPropagation();
+          _vm.selectedMarketName = _vm.translateLabel(mercado.name);
+          _vm.showMarketInfo = true;
+        }
+      }
+    })])]), _vm._v(" "), !_vm.isMarketCollapsed(mercado.name) ? _c("div", {
+      staticClass: "row",
+      staticStyle: {
+        "margin-left": "-4px",
+        "margin-right": "-4px"
+      }
+    }, _vm._l(mercado.odds, function (odd, oIndex) {
+      return _c("div", {
+        directives: [{
+          name: "show",
+          rawName: "v-show",
+          value: !_vm.searchMercado || _vm.translateLabel(mercado.name).toLowerCase().includes(_vm.searchMercado.toLowerCase()) || _vm.translateLabel(odd.odd).toLowerCase().includes(_vm.searchMercado.toLowerCase()),
+          expression: "!searchMercado || translateLabel(mercado.name).toLowerCase().includes(searchMercado.toLowerCase()) || translateLabel(odd.odd).toLowerCase().includes(searchMercado.toLowerCase())"
+        }],
+        key: oIndex,
+        staticClass: "col-md-4 col-sm-6 col-xs-12",
+        staticStyle: {
+          "padding-left": "4px",
+          "padding-right": "4px",
+          "margin-bottom": "8px"
+        }
+      }, [_c("div", {
+        staticClass: "market-option",
+        style: _vm.isPalpiteActive(odd.id) ? "background: #ffffff; border: 1px solid var(--btn_selecionado-color, #23a73d); border-radius: 3px; display: flex; justify-content: space-between; align-items: stretch; cursor: pointer; overflow: hidden; height: 38px; transition: all 0.2s;" : "background: #ffffff; border: 1px solid #dcdcdc; border-radius: 3px; display: flex; justify-content: space-between; align-items: stretch; cursor: pointer; overflow: hidden; height: 38px; transition: all 0.2s;",
+        attrs: {
+          "data-dismiss": "modal"
+        },
+        on: {
+          click: function click($event) {
+            odd.cotacao > 0 ? _vm.addPalpite(odd.uuid, odd.id, _vm.match.sport, _vm.match.id || _vm.match.event_id, odd.group_opp, odd.odd, odd.cotacao, _vm.match.league || _vm.liga, _vm.match.date, _vm.match.home, _vm.match.away, odd.type, odd.cotacaoOriginal, _vm.match.logo_home, _vm.match.logo_away) : null;
+          }
+        }
+      }, [_c("div", {
+        staticStyle: {
+          padding: "0 10px",
+          display: "flex",
+          "align-items": "center",
+          "font-size": "13px",
+          color: "#444",
+          "flex-grow": "1",
+          "white-space": "nowrap",
+          overflow: "hidden",
+          "text-overflow": "ellipsis"
+        }
+      }, [_vm._v("\n                      " + _vm._s(_vm.translateLabel(odd.odd)) + "\n                    ")]), _vm._v(" "), _c("div", {
+        style: _vm.isPalpiteActive(odd.id) ? "background: var(--btn_selecionado-color, #23a73d); color: #fff; padding: 0 12px; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; min-width: 55px; border-left: 1px solid var(--btn_selecionado-color, #23a73d);" : "background: #2a323b; color: #fff; padding: 0 12px; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; min-width: 55px; border-left: 1px solid #dcdcdc;"
+      }, [odd.cotacao > 0 ? _c("span", [_vm._v(_vm._s(_vm._f("formatCotacao")(odd.cotacao)))]) : _c("i", {
+        staticClass: "fa fa-lock"
+      })])])]);
+    }), 0) : _vm._e()]);
+  }), 0)])])])])], 1);
+};
+var staticRenderFns = [function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header",
+    staticStyle: {
+      "border-bottom": "none",
+      padding: "15px 15px 0"
+    }
+  }, [_c("button", {
+    staticClass: "close",
+    staticStyle: {
+      opacity: "0.5",
+      outline: "none"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-close"
+  })])])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticStyle: {
+      "margin-bottom": "20px"
+    }
+  }, [_c("a", {
+    staticStyle: {
+      color: "#333",
+      "font-size": "14px",
+      "font-weight": "500"
+    },
+    attrs: {
+      href: "password/reset"
+    }
+  }, [_vm._v("Esqueceu a senha?")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header",
+    staticStyle: {
+      color: "#333 !important"
+    }
+  }, [_c("button", {
+    staticClass: "close",
+    staticStyle: {
+      color: "#333 !important",
+      opacity: "1"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-close"
+  })])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title",
+    staticStyle: {
+      color: "#333 !important"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-user-plus",
+    staticStyle: {
+      "margin-right": "5px",
+      color: "#333 !important"
+    }
+  }), _vm._v(" "), _c("strong", {
+    staticStyle: {
+      color: "#333 !important"
+    }
+  }, [_vm._v("CADASTRO DE USUÁRIO")])])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-user"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-tag"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-key"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-key"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("label", {
+    staticClass: "hidden-xs text-center",
+    staticStyle: {
+      "margin-left": "3%"
+    }
+  }, [_vm._v("CPF * "), _c("small", [_vm._v("(Seu CPF será sua chave Pix)")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-id-card"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("select", {
+    staticClass: "form-control",
+    staticStyle: {
+      width: "30%"
+    }
+  }, [_c("option", {
+    attrs: {
+      value: "55"
+    }
+  }, [_vm._v("+55")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-envelope"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-key"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header"
+  }, [_c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal"
+    }
+  }, [_c("span", [_vm._v("×")])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title"
+  }, [_c("i", {
+    staticClass: "fa fa-money"
+  }), _vm._v(" DEPOSITAR VIA PIX")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header"
+  }, [_c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal"
+    }
+  }, [_c("span", [_vm._v("×")])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title"
+  }, [_vm._v("PAGAMENTO PIX")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "alert alert-info"
+  }, [_c("i", {
+    staticClass: "fa fa-info-circle"
+  }), _vm._v(" O saldo será adicionado automaticamente após a confirmação.\n          ")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header"
+  }, [_c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal"
+    }
+  }, [_c("span", [_vm._v("×")])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title"
+  }, [_c("i", {
+    staticClass: "fa fa-university"
+  }), _vm._v(" SOLICITAR SAQUE")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "alert alert-warning",
+    staticStyle: {
+      "font-size": "12px"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-info-circle"
+  }), _vm._v(" O valor será enviado para sua chave Pix cadastrada.\n          ")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("h5", {
+    staticStyle: {
+      "font-weight": "bold"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-history"
+  }), _vm._v(" Meus Saques Recentes")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("thead", [_c("tr", {
+    staticStyle: {
+      background: "var(--container_jogos--color, #f4f4f4)"
+    }
+  }, [_c("th", [_vm._v("Data")]), _vm._v(" "), _c("th", [_vm._v("Valor")]), _vm._v(" "), _c("th", [_vm._v("Status")])])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header"
+  }, [_c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal"
+    }
+  }, [_c("span", [_vm._v("×")])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title"
+  }, [_c("i", {
+    staticClass: "fa fa-gift"
+  }), _vm._v(" ATIVAR BÔNUS")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("h5", {
+    staticStyle: {
+      "margin-top": "0"
+    }
+  }, [_c("b", [_vm._v("Bônus Ativo:")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header"
+  }, [_c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal"
+    }
+  }, [_c("span", [_vm._v("×")])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title"
+  }, [_c("i", {
+    staticClass: "fa fa-user"
+  }), _vm._v(" MINHA CONTA")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("ul", {
+    staticClass: "nav nav-tabs"
+  }, [_c("li", {
+    staticClass: "active"
+  }, [_c("a", {
+    attrs: {
+      href: "#tab_perfil",
+      "data-toggle": "tab"
+    }
+  }, [_vm._v("Perfil")])]), _vm._v(" "), _c("li", [_c("a", {
+    attrs: {
+      href: "#tab_senha",
+      "data-toggle": "tab"
+    }
+  }, [_vm._v("Alterar Senha")])])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-close"
+  })])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header"
+  }, [_c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-close"
+  })])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title"
+  }, [_c("i", {
+    staticClass: "fa fa-money"
+  }), _vm._v(" "), _c("b", [_vm._v("Relatório")])])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-calendar"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-calendar"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header",
+    staticStyle: {
+      "background-color": "#fff",
+      "border-bottom": "3px solid #3c8dbc",
+      padding: "15px 20px"
+    }
+  }, [_c("button", {
+    staticClass: "close",
+    staticStyle: {
+      "font-size": "24px",
+      opacity: "0.5"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-hidden": "true"
+    }
+  }, [_vm._v("×")]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title",
+    staticStyle: {
+      "font-weight": "500",
+      color: "#555",
+      "font-size": "18px"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-ticket"
+  }), _vm._v(" PIN GERADO")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticStyle: {
+      "background-color": "#dd4b39",
+      color: "#fff",
+      padding: "15px",
+      "border-radius": "3px",
+      "font-size": "14px",
+      "text-align": "left",
+      "line-height": "1.4"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-exclamation-triangle"
+  }), _vm._v(" O PIN não poderá ser validado após "), _c("strong", [_vm._v("300 minutos")]), _vm._v(" ou em caso de indisponibilidade de partidas no momento da validação\n          ")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("button", {
+    staticClass: "close",
+    staticStyle: {
+      color: "#fff",
+      opacity: "1",
+      "font-size": "20px",
+      position: "absolute",
+      right: "15px",
+      top: "15px"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_vm._v("×")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("a", {
+    staticClass: "sidebar-toggle",
+    attrs: {
+      href: "javascript:void(0)",
+      "data-toggle": "push-menu",
+      role: "button"
+    }
+  }, [_c("span", {
+    staticClass: "sr-only"
+  }, [_vm._v("Toggle navigation")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("a", {
+    staticClass: "btn btn-acessar-demo",
+    attrs: {
+      href: "javascript:void(0)",
+      "data-toggle": "modal",
+      "data-target": "#modal-login"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-sign-in",
+    staticStyle: {
+      "margin-right": "1px"
+    }
+  }), _vm._v(" Entrar\n            ")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("a", {
+    staticClass: "btn btn-cadastrar-demo",
+    attrs: {
+      href: "javascript:void(0)",
+      "data-toggle": "modal",
+      "data-target": "#modal-register"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-user-plus",
+    staticStyle: {
+      "margin-right": "2px"
+    }
+  }), _vm._v(" Cadastre-se\n            ")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("li", {
+    staticClass: "header"
+  }, [_c("i", {
+    staticClass: "fa fa-list"
+  }), _vm._v(" MENU PRINCIPAL")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("li", {
+    staticClass: "header"
+  }, [_c("i", {
+    staticClass: "fa fa-money"
+  }), _vm._v(" LOTO")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("li", {
+    staticClass: "header"
+  }, [_c("i", {
+    staticClass: "fa fa-star"
+  }), _vm._v(" ESPECIAIS")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("li", {
+    staticClass: "header"
+  }, [_c("i", {
+    staticClass: "fa fa-trophy"
+  }), _vm._v(" LIGAS PRINCIPAIS")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("li", {
+    staticClass: "header"
+  }, [_c("i", {
+    staticClass: "fa fa-globe"
+  }), _vm._v(" OUTRAS LIGAS")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-calendar"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("thead", {
+    staticClass: "tabela-class-home"
+  }, [_c("tr", [_c("th", [_vm._v("CUPOM")]), _vm._v(" "), _c("th", [_vm._v("DATA")]), _vm._v(" "), _c("th", [_vm._v("STATUS")]), _vm._v(" "), _c("th", [_vm._v("APOSTADO")]), _vm._v(" "), _c("th", [_vm._v("RETORNO")]), _vm._v(" "), _c("th", [_vm._v("CLIENTE")]), _vm._v(" "), _c("th", [_vm._v("COMISSÃO")]), _vm._v(" "), _c("th", [_vm._v("COTAÇÃO")]), _vm._v(" "), _c("th", [_vm._v("TIPO")]), _vm._v(" "), _c("th", [_vm._v("AP. ABERTAS")]), _vm._v(" "), _c("th", [_vm._v("MOSTRAR")]), _vm._v(" "), _c("th", [_vm._v("CANCELAR")])])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("a", {
+    staticClass: "left carousel-control",
+    attrs: {
+      href: "#carouselbanners",
+      "data-slide": "prev"
+    }
+  }, [_c("span", {
+    staticClass: "glyphicon glyphicon-chevron-left"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("a", {
+    staticClass: "right carousel-control",
+    attrs: {
+      href: "#carouselbanners",
+      "data-slide": "next"
+    }
+  }, [_c("span", {
+    staticClass: "glyphicon glyphicon-chevron-right"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("h2", {
+    staticClass: "carousel-title"
+  }, [_c("span", {
+    staticClass: "carousel-title-icon"
+  }, [_c("i", {
+    staticClass: "fa fa-star"
+  })]), _vm._v(" "), _c("span", {
+    staticClass: "carousel-title-text"
+  }, [_vm._v("Jogos em destaque")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon",
+    staticStyle: {
+      background: "var(--container_jogos--color, #fff)",
+      border: "none",
+      color: "var(--search_bar_text--color, #666)"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-user"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticStyle: {
+      display: "flex",
+      "justify-content": "space-between",
+      "margin-bottom": "5px"
+    }
+  }, [_c("div", {
+    staticStyle: {
+      "font-size": "12px",
+      color: "#777"
+    }
+  }, [_vm._v("Cotação")]), _vm._v(" "), _c("div", {
+    staticStyle: {
+      "font-size": "12px",
+      color: "#777",
+      "font-weight": "600"
+    }
+  }, [_vm._v("Possível Retorno")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header",
+    staticStyle: {
+      background: "var(--sidebar--color)",
+      color: "#fff",
+      "border-radius": "12px 12px 0 0",
+      padding: "20px"
+    }
+  }, [_c("button", {
+    staticClass: "close",
+    staticStyle: {
+      color: "#fff",
+      opacity: "0.8"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-close"
+  })])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title",
+    staticStyle: {
+      "font-weight": "800",
+      "letter-spacing": "1px"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-lock"
+  }), _vm._v(" VALIDAR PIN")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "col-sm-3"
+  }, [_c("h4", {
+    staticStyle: {
+      "font-size": "15px",
+      "font-weight": "700",
+      color: "#333",
+      "margin-bottom": "10px"
+    }
+  }, [_vm._v("Aviso de Idade")]), _vm._v(" "), _c("p", {
+    staticStyle: {
+      "font-size": "13px",
+      color: "#777",
+      "line-height": "1.6"
+    }
+  }, [_c("strong", [_vm._v("ATENÇÃO:")]), _vm._v(" Este site é destinado apenas a maiores de 18 anos.\n            Ao continuar navegando, você confirma que possui idade legal para participar de jogos de azar.\n          ")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "col-sm-3"
+  }, [_c("h4", {
+    staticStyle: {
+      "font-size": "15px",
+      "font-weight": "700",
+      color: "#333",
+      "margin-bottom": "10px"
+    }
+  }, [_vm._v("Suporte e Tratamento para Dependências")]), _vm._v(" "), _c("p", {
+    staticStyle: {
+      "font-size": "13px",
+      color: "#777",
+      "line-height": "1.6"
+    }
+  }, [_vm._v("\n            Se você ou alguém que conhece está enfrentando dificuldades com o vício em jogos de azar, existem recursos disponíveis.\n            Acesse "), _c("a", {
+    staticStyle: {
+      color: "#3c8dbc"
+    },
+    attrs: {
+      href: "https://www.gamcare.org.uk/",
+      target: "_blank"
+    }
+  }, [_vm._v("GamCare")]), _vm._v(" ou\n            "), _c("a", {
+    staticStyle: {
+      color: "#3c8dbc"
+    },
+    attrs: {
+      href: "https://www.gambleaware.co.uk/",
+      target: "_blank"
+    }
+  }, [_vm._v("GambleAware")]), _vm._v(" para obter suporte e tratamento.\n          ")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "row text-center",
+    staticStyle: {
+      "margin-bottom": "15px",
+      opacity: "0.75"
+    }
+  }, [_c("div", {
+    staticClass: "col-md-12"
+  }, [_c("a", {
+    attrs: {
+      href: "https://www.gamcare.org.uk/",
+      target: "_blank"
+    }
+  }, [_c("img", {
+    staticStyle: {
+      height: "32px",
+      margin: "4px 12px",
+      filter: "grayscale(30%)"
+    },
+    attrs: {
+      src: "/img/gamcare-footer.png",
+      alt: "GamCare"
+    }
+  })]), _vm._v(" "), _c("a", {
+    attrs: {
+      href: "https://www.gambleaware.org/",
+      target: "_blank"
+    }
+  }, [_c("img", {
+    staticStyle: {
+      height: "28px",
+      margin: "4px 12px",
+      filter: "grayscale(30%)"
+    },
+    attrs: {
+      src: "/img/gambleaware-logo.png",
+      alt: "BeGambleAware"
+    }
+  })]), _vm._v(" "), _c("img", {
+    staticStyle: {
+      height: "32px",
+      margin: "4px 12px"
+    },
+    attrs: {
+      src: "/img/more18.png",
+      alt: "18+"
+    }
+  }), _vm._v(" "), _c("a", {
+    attrs: {
+      href: "https://www.gamblersanonymous.org.uk/",
+      target: "_blank"
+    }
+  }, [_c("img", {
+    staticStyle: {
+      height: "32px",
+      margin: "4px 12px",
+      filter: "grayscale(30%)"
+    },
+    attrs: {
+      src: "/img/gamblers-anonymous-logo.png",
+      alt: "Gamblers Anonymous"
+    }
+  })]), _vm._v(" "), _c("img", {
+    staticStyle: {
+      height: "32px",
+      margin: "4px 12px",
+      filter: "grayscale(30%)"
+    },
+    attrs: {
+      src: "/img/pix-106.png",
+      alt: "PIX"
+    }
+  })])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "col-sm-6 text-right",
+    staticStyle: {
+      "font-size": "12px",
+      color: "#888"
+    }
+  }, [_c("div", {
+    staticClass: "pull-right hidden-xs"
+  }, [_c("b", [_vm._v("Versão")]), _vm._v(" 2.1.0\n          ")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("button", {
+    staticClass: "close",
+    staticStyle: {
+      color: "#333",
+      opacity: "1"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_vm._v("×")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("span", {
+    staticClass: "input-group-addon"
+  }, [_c("i", {
+    staticClass: "fa fa-user"
+  })]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "loadSendBet",
+    staticStyle: {
+      "text-align": "center",
+      display: "none"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-refresh fa-spin"
+  }), _vm._v(" Validando Aposta...\n          ")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header",
+    staticStyle: {
+      "border-bottom": "1px solid #333",
+      padding: "12px 15px"
+    }
+  }, [_c("button", {
+    staticClass: "close",
+    staticStyle: {
+      color: "#fff",
+      opacity: "1"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal"
+    }
+  }, [_vm._v("×")]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title",
+    staticStyle: {
+      "font-size": "15px"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-picture-o"
+  }), _vm._v(" Salve ou copie essa imagem, e compartilhe!")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header"
+  }, [_c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-close"
+  })])]), _vm._v(" "), _c("h4", {
+    staticClass: "modal-title"
+  }, [_c("i", {
+    staticClass: "fa fa-star",
+    staticStyle: {
+      color: "#060606 !important"
+    }
+  }), _vm._v(" Regulamento")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("button", {
+    staticClass: "close",
+    staticStyle: {
+      color: "#ffffff",
+      opacity: "1",
+      "text-shadow": "none",
+      "font-size": "20px",
+      "font-weight": "bold",
+      margin: "0",
+      outline: "none",
+      "line-height": "1",
+      padding: "0",
+      "float": "none"
+    },
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-times"
+  })])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticStyle: {
+      display: "flex",
+      "align-items": "center",
+      "justify-content": "center"
+    }
+  }, [_c("span", {
+    staticStyle: {
+      "font-size": "28px",
+      "font-weight": "100",
+      color: "rgba(255,255,255,0.4)",
+      "font-family": "sans-serif"
+    }
+  }, [_vm._v("X")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("h4", {
+    staticStyle: {
+      margin: "0",
+      "font-size": "16px",
+      "font-weight": "bold"
+    }
+  }, [_c("i", {
+    staticClass: "fa fa-info-circle"
+  }), _vm._v(" Como funciona?")]);
+}];
+render._withStripped = true;
+
 
 /***/ }),
 

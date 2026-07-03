@@ -432,7 +432,7 @@
       </div>
     </div>
 
-    <div class="modal fade" id="modal-caixa" v-show="logado">
+    <div class="modal fade" id="modal-caixa">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -497,7 +497,7 @@
     </div>
     <!--End Modal Caixa-->
 
-    <div class="modal fade" id="modal-relatorio" v-show="logado">
+    <div class="modal fade" id="modal-relatorio">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -834,207 +834,7 @@
     </div>
     <!--End Modal Bilhete-->
 
-    <div class="modal fade" id="modal-match-old-1" v-show="false">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">
-                <i class="fa fa-close"></i>
-              </span>
-            </button>
-            <h4 class="modal-title">
-              <i class="fa fa-trophy"></i>
-              {{ liga }} - {{ match.date | formatDate() }}
-            </h4>
-          </div>
-
-          <div class="modal-body box box-primary">
-            <table style="width: 100%" v-if="!live">
-              <tr>
-                <td align="left" width="45%">
-                  <span class="timeMatch"> {{ match.home }} </span>
-                </td>
-                <td align="center" width="10%">
-                  <span class="score-real-time">
-                    <strong> X </strong>
-                  </span>
-                </td>
-                <td align="right" width="45%">
-                  <span class="timeMatch">{{ match.away }} </span>
-                </td>
-              </tr>
-              <br />
-            </table>
-            <br />
-
-            <div class="real-time" v-if="live">
-              <div class="placar">
-                <span class="score-real-time">
-                  <strong v-if="live">{{ match.score }}</strong>
-                </span>
-                <div class="time-real-time" v-if="match.time == 0">
-                  Não Iniciado {{ match.time }}
-                  <span class="pisca">'</span>
-                </div>
-                <div
-                  class="time-real-time"
-                  v-if="match.time < 45 && match.time != 0"
-                >
-                  1º Tempo {{ match.time }}
-                  <span class="pisca">'</span>
-                </div>
-                <div class="time-real-time" v-if="match.time == 45">
-                  Intervalo
-                  <span class="pisca">'</span>
-                </div>
-                <div class="time-real-time" v-if="match.time > 45">
-                  2º Tempo {{ match.time }}
-                  <span class="pisca">'</span>
-                </div>
-
-                <table class="tableInfo">
-                  <thead>
-                    <tr class="table-header">
-                      <th class="left padding-10">
-                        <span>{{ liga }}</span>
-                      </th>
-                      <th class="cell-soccer">1T</th>
-                      <th class="cell-soccer">2T</th>
-                      <th class="cell-soccer">
-                        <label class="icon corner"></label>
-                      </th>
-                      <th class="cell-soccer">
-                        <label class="icon yellow-card"></label>
-                      </th>
-                      <th class="cell-soccer">
-                        <label class="icon red-card"></label>
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    <tr class="table-row">
-                      <td class="left padding-10">{{ match.home }}</td>
-                      <td class="cell-soccer">{{ match.halfTimeScoreHome }}</td>
-                      <td class="cell-soccer">{{ match.fullTimeScoreHome }}</td>
-                      <td class="cell-soccer">
-                        {{ match.numberOfCornersHome }}
-                      </td>
-                      <td class="cell-soccer">
-                        {{ match.numberOfYellowCardsHome }}
-                      </td>
-                      <td class="cell-soccer">
-                        {{ match.numberOfRedCardsHome }}
-                      </td>
-                    </tr>
-                    <tr class="table-row">
-                      <td class="left padding-10">{{ match.away }}</td>
-                      <td class="cell-soccer">{{ match.halfTimeScoreAway }}</td>
-                      <td class="cell-soccer">{{ match.fullTimeScoreAway }}</td>
-                      <td class="cell-soccer">
-                        {{ match.numberOfCornersAway }}
-                      </td>
-                      <td class="cell-soccer">
-                        {{ match.numberOfYellowCardsAway }}
-                      </td>
-                      <td class="cell-soccer">
-                        {{ match.numberOfRedCardsAway }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <clip-loader
-              :loading="loading_odds"
-              :color="color"
-              :size="size"
-            ></clip-loader>
-
-            <div class="row" v-for="mercado in mercados" :key="mercado.id">
-              <div class="titulo-grupo">{{ mercado.name }}</div>
-              <div class="row">
-                <div
-                  class="col-md-12"
-                  v-for="odd in mercado.odds"
-                  :key="odd.id"
-                >
-                    <div class="odd-match-plus" v-if="odd.cotacao == 0">
-                      <span class="odd-match-plus-left">
-                        <strong>{{ odd.odd }}</strong>
-                      </span>
-                      <span
-                        class="odd-match-plus-right"
-                        :class="{ 'selecionado': selectionsIds.includes(odd.uuid) }"
-                        :taxaJogo="match.event_id"
-                        :taxa="odd.id"
-                        @click="
-                          addPalpite(
-                            odd.uuid,
-                            odd.id,
-                            match.sport,
-                            match.event_id,
-                            odd.group_opp,
-                            odd.odd,
-                            odd.cotacao,
-                            liga,
-                            match.date,
-                            match.home,
-                            match.away,
-                            odd.type,
-                            odd.cotacaoOriginal
-                          )
-                        "
-                      >
-                        <i class="fa fa-lock"></i>
-                      </span>
-                    </div>
-                    <div class="odd-match-plus" v-if="odd.cotacao > 0">
-                      <span class="odd-match-plus-left">
-                        <strong>{{ odd.odd }}</strong>
-                      </span>
-                      <span
-                        class="odd-match-plus-right"
-                        :class="{ 'selecionado': selectionsIds.includes(odd.uuid) }"
-                        :taxaJogo="match.event_id"
-                        :taxa="odd.id"
-                        @click="
-                          addPalpite(
-                            odd.uuid,
-                            odd.id,
-                            match.sport,
-                            match.event_id,
-                            odd.group_opp,
-                            odd.odd,
-                            odd.cotacao,
-                            liga,
-                            match.date,
-                            match.home,
-                            match.away,
-                            odd.type,
-                            odd.cotacaoOriginal
-                          )
-                        "
-                        >{{ odd.cotacao | formatCotacao() }}</span
-                      >
-                    </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /.modal-content -->
-      </div>
-      <!-- /.modal-dialog -->
-    </div>
-    <!--End Modal -->
+    <!-- modal-match-old-1 removido (duplicado morto) -->
 
     <header class="main-header">
       <!-- Logo -->
@@ -1154,7 +954,7 @@
         <ul class="sidebar-menu tree" data-widget="tree">
           <li class="header"><i class="fa fa-list"></i> MENU PRINCIPAL</li>
           <li class="treeview">
-            <a href="#" @click="loadRegulamento" class="sidebar-toggle">
+            <a href="#" @click="loadRegulamento">
               <i class="fa fa-map"></i>
               <span>Regulamento</span>
             </a>
@@ -1835,384 +1635,7 @@
     </div>
     <!-- /.content-wrapper -->
 
-    <!-- Modals moved to bottom -->
-    <div class="modal fade" id="modal-login-disabled">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">
-                <i class="fa fa-close"></i>
-              </span>
-            </button>
-            <h4 class="modal-title"><i class="fa fa-lock"></i> Login</h4>
-          </div>
-
-          <div class="modal-body box box-primary">
-            <div class="login-box-body">
-              <div
-                class="alert alert-danger alert-dismissible"
-                v-if="errorLogin"
-              >
-                <h4><i class="icon fa fa-ban"></i> Alerta!</h4>
-                {{ messageError }}
-              </div>
-
-              <div class="form-group has-feedback">
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="username"
-                  placeholder="Login"
-                />
-                <span
-                  class="glyphicon glyphicon-envelope form-control-feedback"
-                ></span>
-              </div>
-              <div class="form-group has-feedback">
-                <input
-                  type="password"
-                  v-model="password"
-                  @keyup.enter="login()"
-                  class="form-control"
-                  placeholder="Senha"
-                />
-                <span
-                  class="glyphicon glyphicon-lock form-control-feedback"
-                ></span>
-              </div>
-              <div class="row">
-                <div class="col-xs-8">
-                  <div class="checkbox icheck">
-                    <label>
-                      <div
-                        class="icheckbox_square-blue"
-                        aria-checked="false"
-                        aria-disabled="false"
-                        style="position: relative"
-                      >
-                        <input
-                          type="checkbox"
-                          style="
-                            position: absolute;
-                            top: -20%;
-                            left: -20%;
-                            display: block;
-                            width: 140%;
-                            height: 140%;
-                            margin: 0px;
-                            padding: 0px;
-                            background: rgb(255, 255, 255);
-                            border: 0px;
-                            opacity: 0;
-                          "
-                        />
-                        <ins
-                          class="iCheck-helper"
-                          style="
-                            position: absolute;
-                            top: -20%;
-                            left: -20%;
-                            display: block;
-                            width: 140%;
-                            height: 140%;
-                            margin: 0px;
-                            padding: 0px;
-                            background: rgb(255, 255, 255);
-                            border: 0px;
-                            opacity: 0;
-                          "
-                        ></ins>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-                <div class="col-xs-4">
-                  <button
-                    type="submit"
-                    @click="login()"
-                    class="btn btn-primary btn-block btn-flat"
-                  >
-                    Acessar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="modal-register-disabled" aria-modal="true" role="dialog" class="modal fade">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header" style="color: #333 !important;">
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-              style="color: #333 !important; opacity: 1;"
-            >
-              <span aria-hidden="true">
-                <i class="fa fa-close"></i>
-              </span>
-            </button>
-            <h4 class="modal-title" style="color: #333 !important;"><i class="fa fa-user-plus" style="color: #333 !important;"></i> Cadastro</h4>
-          </div>
-          <div class="modal-body box box-primary">
-            <!-- <modal-register></modal-register> -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal fade" id="modal-caixa" v-show="logado">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">
-                <i class="fa fa-close"></i>
-              </span>
-            </button>
-            <h4 class="modal-title">
-              <i class="fa fa-university"></i> MINHA CONTA
-            </h4>
-          </div>
-
-          <div class="modal-body">
-            <div class="nav-tabs-custom">
-              <ul class="nav nav-tabs">
-                <li class="active">
-                  <a href="#tab_1" data-toggle="tab" aria-expanded="true"
-                    >MEUS DADOS</a
-                  >
-                </li>
-                <li class="" v-if="account.nivel == 'cambista'">
-                  <a
-                    href="#tab_2"
-                    data-toggle="tab"
-                    aria-expanded="false"
-                    @click="loadCaixa()"
-                    >MEU CAIXA</a
-                  >
-                </li>
-              </ul>
-              <div class="tab-content">
-                <div class="tab-pane active" id="tab_1">
-                  <div class="box-body box-profile">
-                    <img
-                      class="profile-user-img img-responsive img-circle"
-                      src="/dist/img/user4-128x128.jpg"
-                      alt="User profile picture"
-                    />
-
-                    <h3 class="profile-username text-center">
-                      {{ account.name }}
-                    </h3>
-
-                    <p class="text-muted text-center">{{ account.nivel }}</p>
-
-                    <ul class="list-group list-group-unbordered">
-                      <li class="list-group-item">
-                        <b>Login</b>
-                        <a class="pull-right">{{ account.username }}</a>
-                      </li>
-                      <li class="list-group-item">
-                        <b>Telefone</b>
-                        <a class="pull-right">{{ account.phone }}</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="tab-pane" id="tab_2" v-if="account.nivel == 'cambista'">
-                  <div class="box-body" v-if="!loadingCaixa">
-                    <ul class="list-group list-group-unbordered">
-                      <li class="list-group-item">
-                        <b>Total Entradas</b>
-                        <a class="pull-right">R$ {{ caixa.entradas }}</a>
-                      </li>
-                      <li class="list-group-item">
-                        <b>Total Saidas</b>
-                        <a class="pull-right">R$ {{ caixa.saidas }}</a>
-                      </li>
-                      <li class="list-group-item">
-                        <b>Comissão</b>
-                        <a class="pull-right">R$ {{ caixa.comissao }}</a>
-                      </li>
-                      <li class="list-group-item">
-                        <b>Total Liquido</b>
-                        <a class="pull-right">R$ {{ caixa.liquido }}</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="box-body text-center" v-else>
-                    <clip-loader
-                      :loading="loadingCaixa"
-                      :color="'#3c8dbc'"
-                      :size="'45px'"
-                    ></clip-loader>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- /.modal-content -->
-      </div>
-      <!-- /.modal-dialog -->
-    </div>
-
-    <div class="modal fade" id="modal-relatorio" v-show="logado">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">
-                <i class="fa fa-close"></i>
-              </span>
-            </button>
-            <h4 class="modal-title">
-              <i class="fa fa-sticky-note"></i> MEUS BILHETES
-            </h4>
-          </div>
-
-          <div class="modal-body">
-            <div class="row">
-              <div class="col-md-3">
-                <div class="form-group">
-                  <label>Início:</label>
-                  <div class="input-group date">
-                    <div class="input-group-addon">
-                      <i class="fa fa-calendar"></i>
-                    </div>
-                    <input
-                      type="date"
-                      class="form-control pull-right"
-                      v-model="data_inicio"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="form-group">
-                  <label>Fim:</label>
-                  <div class="input-group date">
-                    <div class="input-group-addon">
-                      <i class="fa fa-calendar"></i>
-                    </div>
-                    <input
-                      type="date"
-                      class="form-control pull-right"
-                      v-model="data_fim"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="form-group">
-                  <label>Status:</label>
-                  <select class="form-control" v-model="status">
-                    <option value="">Todos</option>
-                    <option value="Aberto">Aberto</option>
-                    <option value="Venceu">Venceu</option>
-                    <option value="Perdeu">Perdeu</option>
-                    <option value="Cancelado">Cancelado</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="form-group">
-                  <label style="color: #fff">.</label>
-                  <button
-                    class="btn btn-primary btn-block"
-                    @click="loadRelatorio()"
-                  >
-                    PESQUISAR
-                  </button>
-                </div>
-              </div>
-            </div>
-            <br />
-            <div class="row" v-if="!loading">
-              <div class="col-md-12">
-                <div class="table-responsive">
-                  <table class="table no-margin">
-                    <thead>
-                      <tr>
-                        <th>Cód</th>
-                        <th>Data</th>
-                        <th>Apostado</th>
-                        <th>Retorno</th>
-                        <th>Status</th>
-                        <th>Ver</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="bilhete in relatorio" :key="bilhete.id">
-                        <td>
-                          <a href="javascript:void(0)">{{ bilhete.cupom }}</a>
-                        </td>
-                        <td>{{ bilhete.created_at | formatDate() }}</td>
-                        <td>R$ {{ bilhete.valor_apostado }}</td>
-                        <td>R$ {{ bilhete.valor_retorno }}</td>
-                        <td>
-                          <span
-                            class="label"
-                            :class="{
-                              'label-success': bilhete.status == 'Venceu',
-                              'label-danger': bilhete.status == 'Perdeu',
-                              'label-warning': bilhete.status == 'Aberto',
-                              'label-default': bilhete.status == 'Cancelado',
-                            }"
-                            >{{ bilhete.status }}</span
-                          >
-                        </td>
-                        <td>
-                          <button
-                            class="btn btn-primary btn-xs"
-                            @click="verBilhete(bilhete.id)"
-                          >
-                            <i class="fa fa-eye"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            <div class="row text-center" v-else>
-              <clip-loader
-                :loading="loading"
-                :color="'#3c8dbc'"
-                :size="'45px'"
-              ></clip-loader>
-            </div>
-          </div>
-        </div>
-        <!-- /.modal-content -->
-      </div>
-      <!-- /.modal-dialog -->
-    </div>
-
+    <!-- modals-login-disabled e register-disabled removidos (mortos) -->
 
     <div class="modal fade" id="modal-validar-pin">
       <div class="modal-dialog modal-sm">
@@ -2249,67 +1672,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="modal fade" id="modal-match-old-2" v-show="false">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">
-                <i class="fa fa-close"></i>
-              </span>
-            </button>
-            <h4 class="modal-title">
-              <i class="fa fa-soccer-ball-o"></i> MAIS OPÇÕES
-            </h4>
-          </div>
-
-          <div class="modal-body">
-            <div class="row" v-if="!loading_odds">
-              <div class="col-md-12" v-for="group in mercados" :key="group.name">
-                <div class="box box-solid box-default">
-                  <div class="box-header with-border">
-                    <h3 class="box-title">{{ group.name }}</h3>
-                  </div>
-                  <div class="box-body">
-                    <div class="row">
-                      <div
-                        class="col-md-4"
-                        v-for="odd in group.odds"
-                        :key="odd.id"
-                      >
-                        <button
-                          class="btn btn-default btn-block btn-flat"
-                          style="margin-bottom: 5px"
-                          :class="{'btn-primary': selectionsIds.includes(odd.id)}"
-                          @click="addPalpite(odd.uuid, odd.id, match.sport, match.id, group.name, odd.odd, odd.cotacao, match.league, match.date, match.home, match.away, odd.type, odd.cotacaoOriginal, match.logo_home, match.logo_away)"
-                        >
-                          {{ odd.odd }} - {{ odd.cotacao | formatCotacao() }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="row text-center" v-else>
-              <clip-loader
-                :loading="loading_odds"
-                :color="'#3c8dbc'"
-                :size="'45px'"
-              ></clip-loader>
-            </div>
-          </div>
-        </div>
-        <!-- /.modal-content -->
-      </div>
-      <!-- /.modal-dialog -->
     </div>
 
     <footer class="main-footer" style="background: var(--footer_bg--color, #f4f6f9); padding: 30px 20px 15px; color: var(--footer_text--color, #555); border-top: 1px solid #dee2e6;">
@@ -3414,14 +2776,98 @@ export default {
       }
     }, 15000);
 
-    // Modal stacking issues are now natively handled by custom.css overrides
-    // (.modal z-index: 100000, .modal-backdrop z-index: 99999, .wrapper z-index: auto)
-    $(document).on('shown.bs.modal', '.modal', function () {
-      $(this).addClass('in show'); // Força a exibição suave sem bugar o Vue
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL SYSTEM - CLEAN, NO GAMBIO
+    // ═══════════════════════════════════════════════════════════════
+    // Problem: AdminLTE push-menu re-adds sidebar-collapse via cookie,
+    // and @media rules in AdminLTE.min.css hide .logo-lg with high
+    // specificity that CSS !important can't always beat.
+    // Solution: Inject <style> tag into <head> with max specificity.
+    var self = this;
+    self._modalOpenCount = 0;
+    self._modalStyleTag = null;
+
+    // Create the injected <style> element (injected on modal open, removed on close)
+    self._injectModalStyle = function () {
+      if (self._modalStyleTag) return;
+      var style = document.createElement('style');
+      style.id = 'ihub-modal-fix';
+      style.textContent = [
+        '/* Auto-injected by IHUB modal system */',
+        'body.modal-open .main-header .logo > .logo-lg {',
+        '  display: block !important;',
+        '  visibility: visible !important;',
+        '  opacity: 1 !important;',
+        '}',
+        'body.modal-open .main-header .logo > .logo-mini {',
+        '  display: none !important;',
+        '}',
+        'body.modal-open .main-header .logo {',
+        '  width: 230px !important;',
+        '  min-width: 230px !important;',
+        '}',
+        'body.modal-open.sidebar-mini.sidebar-collapse .main-header .logo > .logo-lg {',
+        '  display: block !important;',
+        '}',
+        'body.modal-open.sidebar-mini.sidebar-collapse .main-header .logo > .logo-mini {',
+        '  display: none !important;',
+        '}',
+        'body.modal-open.sidebar-mini.sidebar-collapse .main-header .logo {',
+        '  width: 230px !important;',
+        '  min-width: 230px !important;',
+        '}'
+      ].join('\n');
+      document.head.appendChild(style);
+      self._modalStyleTag = style;
+    };
+
+    self._removeModalStyle = function () {
+      if (self._modalStyleTag) {
+        self._modalStyleTag.remove();
+        self._modalStyleTag = null;
+      }
+    };
+
+    // Use MutationObserver to catch sidebar-collapse re-addition by AdminLTE
+    self._modalObserver = new MutationObserver(function (mutations) {
+      if (self._modalOpenCount <= 0) return;
+      mutations.forEach(function (m) {
+        if (m.type === 'attributes' && m.attributeName === 'class') {
+          // Re-remove sidebar-collapse if AdminLTE re-adds it while modal is open
+          if (document.body.classList.contains('sidebar-collapse')) {
+            document.body.classList.remove('sidebar-collapse');
+          }
+          // Ensure modal-open stays
+          if (!document.body.classList.contains('modal-open')) {
+            document.body.classList.add('modal-open');
+          }
+        }
+      });
+    });
+    self._modalObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    $(document).on('show.bs.modal', '.modal', function () {
+      self._modalOpenCount++;
+      self._injectModalStyle();
+      document.body.classList.remove('sidebar-collapse');
+      document.body.classList.add('modal-open');
+    });
+
+    $(document).on('hidden.bs.modal', '.modal', function () {
+      self._modalOpenCount = Math.max(0, self._modalOpenCount - 1);
+      if (self._modalOpenCount === 0) {
+        self._removeModalStyle();
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+        $('.modal-backdrop').remove();
+      }
     });
   },
   beforeDestroy() {
     this.stopAutoplay();
+    if (this._bodyObserver) {
+      this._bodyObserver.disconnect();
+    }
     if (this._clockInterval) {
       clearInterval(this._clockInterval);
     }
@@ -3430,6 +2876,12 @@ export default {
     }
     if (this._liveRefreshInterval) {
       clearInterval(this._liveRefreshInterval);
+    }
+    if (this._modalObserver) {
+      this._modalObserver.disconnect();
+    }
+    if (this._modalStyleTag) {
+      this._modalStyleTag.remove();
     }
   },
   data() {
