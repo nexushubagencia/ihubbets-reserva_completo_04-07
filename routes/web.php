@@ -15,8 +15,6 @@ use App\Http\Controllers\Admin\ResultController;
 use App\Http\Controllers\Admin\RiskController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\LiveStatisticsController;
-use App\Http\Controllers\Admin\FinancialReportController;
-use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\FeaturedMatchesController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -518,7 +516,9 @@ Route::middleware(['web'])->group(function () {
 });
 
 // ============================================================
-// CAMBISTA PANEL (Rotas separadas)
+// PANEIS SEPARADOS (Rotas por papel de usuario)
 // ============================================================
 require __DIR__.'/cambista.php';
+require __DIR__.'/gerente.php';
+require __DIR__.'/cliente.php';
 

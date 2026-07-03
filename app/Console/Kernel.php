@@ -8,18 +8,21 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
+        // API-Football (provedor principal)
         Commands\ApiFootball\InsertMatches::class,
         Commands\ApiFootball\UpdateOdds::class,
         Commands\ApiFootball\LiveOdds::class,
         Commands\ApiFootball\SettleBets::class,
         Commands\ApiFootball\ManageLeagues::class,
         Commands\ApiFootball\InsertMatchesFootballData::class,
+
+        // Cache - versoes modernas (USE ESTAS)
         Commands\Cache\LiveHoje::class,
         Commands\Cache\LiveAmanha::class,
         Commands\Cache\Live::class,
         Commands\Cache\AtualizaHome::class,
-        Commands\LiveAfterTomorow::class,
-        Commands\LiveScore::class,
+
+        // Utilitarios
         Commands\LoadDay::class,
         Commands\Ligas::class,
         Commands\LigasMain::class,
@@ -32,39 +35,26 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        // Live - atualiza partidas ao vivo a cada 1 minuto
+        // === API-Football (provedor principal) ===
         $schedule->command('apifootball:live')->everyMinute()->withoutOverlapping();
-
-        // Scores ao vivo
-        $schedule->command('command:liveScore')->everyMinute()->withoutOverlapping();
-
-        // Broadcast de dados atualizados para o frontend
-        $schedule->command('command:liveHoje')->everyFiveMinutes()->withoutOverlapping();
-        $schedule->command('command:liveAmanha')->everyFiveMinutes()->withoutOverlapping();
-        $schedule->command('command:liveAfter')->everyFiveMinutes()->withoutOverlapping();
-        $schedule->command('command:live')->everyMinute()->withoutOverlapping();
-
-        // Carregar ligas
-        $schedule->command('command:loadLigas')->everyTenMinutes()->withoutOverlapping();
-        $schedule->command('command:loadLigasMain')->everyTenMinutes()->withoutOverlapping();
-
-        // Load day names
-        $schedule->command('command:loadDay')->dailyAt('00:01');
-
-        // Sincronizar partidas (buscar novas)
         $schedule->command('ihub:sync-matches')->hourly()->withoutOverlapping();
-
-        // Odds - atualizar com cuidado para nao estourar quota
         $schedule->command('ihub:sync-live')->everyFiveMinutes()->withoutOverlapping();
-
-        // Liquidar apostas
         $schedule->command('ihub:settle-api-bets')->everyFiveMinutes()->withoutOverlapping();
 
-        // Loto - processar resultados diariamente as 19:30 (apos sorteio 19:00)
+        // === Cache - broadcast de dados para o frontend ===
+        $schedule->command('command:liveHoje')->everyFiveMinutes()->withoutOverlapping();
+        $schedule->command('command:liveAmanha')->everyFiveMinutes()->withoutOverlapping();
+
+        // === Ligas ===
+        $schedule->command('command:loadLigas')->everyTenMinutes()->withoutOverlapping();
+        $schedule->command('command:loadLigasMain')->everyTenMinutes()->withoutOverlapping();
+        $schedule->command('command:loadDay')->dailyAt('00:01');
+
+        // === Loto - resultados diarios as 19:30 ===
         $schedule->command('command:sendResultsQuina')->dailyAt('19:30')->withoutOverlapping();
         $schedule->command('command:sendResultSena')->dailyAt('19:30')->withoutOverlapping();
 
-        // Multi-sport live scores (basquete e volei quando em temporada)
+        // === Multi-sport live (basquete e volei - off-season) ===
         $schedule->command('apifootball:live-multi --sport=basketball')->everyMinute()->withoutOverlapping();
         $schedule->command('apifootball:live-multi --sport=volleyball')->everyMinute()->withoutOverlapping();
     }
