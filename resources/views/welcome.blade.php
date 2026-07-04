@@ -109,6 +109,59 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script src="/js/banner-engine.js?v={{ time() }}"></script>
+
+    <!-- PROFESSIONAL: Intercepta setInterval para evitar refresh agressivo -->
+    <script>
+    (function() {
+        'use strict';
+        var _origSetInterval = window.setInterval;
+        var _origClearInterval = window.clearInterval;
+        var _stats = { homeChanged: 0, liveChanged: 0, logoChanged: 0, total: 0 };
+
+        window.setInterval = function(fn, delay) {
+            var fnStr = fn.toString();
+            var newDelay = delay;
+            _stats.total++;
+
+            // Home: 30s → 300s (5 minutos) - evita piscar
+            if (fnStr.indexOf('loadMatchHoje') !== -1 && delay === 30000) {
+                newDelay = 300000;
+                _stats.homeChanged++;
+            }
+            // Ao vivo: 15s → 30s (ainda rápido)
+            if (fnStr.indexOf('loadVivo') !== -1 && delay === 15000) {
+                newDelay = 30000;
+                _stats.liveChanged++;
+            }
+            // Logo fix: 200ms → 500ms (menos agressivo)
+            if (fnStr.indexOf('_forceLogoVisible') !== -1 && delay === 200) {
+                newDelay = 500;
+                _stats.logoChanged++;
+            }
+
+            return _origSetInterval.call(window, fn, newDelay);
+        };
+
+        window.clearInterval = _origClearInterval;
+
+        // Exibe diagnóstico no console quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                console.log('╔═══════════════════════════════════╗');
+                console.log('║  IHUB - REFRESH PROFISSIONAL      ║');
+                console.log('╠═══════════════════════════════════╣');
+                console.log('║ Home:  30s → 300s (5min)          ║');
+                console.log('║ Live:  15s →  30s                 ║');
+                console.log('║ Logo: 200ms → 500ms               ║');
+                console.log('╠═══════════════════════════════════╣');
+                console.log('║ Total intervals: ' + _stats.total + '                ║');
+                console.log('║ Modificados:     ' + (_stats.homeChanged + _stats.liveChanged + _stats.logoChanged) + '                ║');
+                console.log('╚═══════════════════════════════════╝');
+            }, 2000);
+        });
+    })();
+    </script>
+
     <script src="/js/front_nexus_hibrido.js?v={{ time() }}"></script>
 
     <!-- FIX: Bloqueia display:flex e width forçados no logo que causam deslocamento ao abrir modal -->
@@ -137,80 +190,9 @@
     </script>
 
     <!-- ATUALIZAÇÃO PROFISSIONAL: Polling inteligente sem piscar -->
-    <script>
-    (function() {
-        'use strict';
-
-        // Cancela o auto-refresh de 30s da home (causa piscar)
-        setTimeout(function() {
-            if (window.app && window.app._matchRefreshInterval) {
-                clearInterval(window.app._matchRefreshInterval);
-                console.log('[IHUB] Auto-refresh da home desativado (profissional)');
-            }
-        }, 1000);
-
-        // Substitui o polling ao vivo por fetch silencioso
-        setTimeout(function() {
-            if (window.app && window.app._liveRefreshInterval) {
-                clearInterval(window.app._liveRefreshInterval);
-
-                // Implementa polling inteligente ao vivo (15s)
-                var lastLiveData = null;
-
-                function fetchLiveScores() {
-                    if (!window.app || !window.app.live) return;
-
-                    fetch('/api/live-scores?t=' + Date.now())
-                        .then(function(r) { return r.json(); })
-                        .then(function(data) {
-                            // Só atualiza se os dados mudaram
-                            var newData = JSON.stringify(data);
-                            if (lastLiveData !== newData) {
-                                lastLiveData = newData;
-                                if (window.app.loadVivo) {
-                                    window.app.loadVivo();
-                                }
-                            }
-                        })
-                        .catch(function(err) {
-                            console.error('[IHUB] Erro ao buscar live scores:', err);
-                        });
-                }
-
-                // Polling a cada 15s
-                setInterval(fetchLiveScores, 15000);
-                console.log('[IHUB] Polling ao vivo inteligente ativado (15s)');
-            }
-        }, 1000);
-
-        // Cache de 5 minutos para pré-live (atualiza silencioso)
-        setTimeout(function() {
-            var lastHomeData = null;
-
-            function fetchHomeMatches() {
-                fetch('/api/home-matches?t=' + Date.now())
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        var newData = JSON.stringify(data);
-                        if (lastHomeData !== newData) {
-                            lastHomeData = newData;
-                            // Atualiza só se mudou (sem piscar)
-                            if (window.app && window.app.loadMatchHoje) {
-                                window.app.loadMatchHoje();
-                            }
-                        }
-                    })
-                    .catch(function(err) {
-                        console.error('[IHUB] Erro ao buscar home matches:', err);
-                    });
-            }
-
-            // Polling a cada 5 minutos (300s)
-            setInterval(fetchHomeMatches, 300000);
-            console.log('[IHUB] Cache home atualizado a cada 5 minutos');
-        }, 1000);
-    })();
-    </script>
+    @if(config('app.debug'))
+    <script>console.log('[IHUB] Polling profissional ativo. Home:5min | Ao vivo:30s | Logo:500ms');</script>
+    @endif
 
     <!-- CALCULA LARGURA DA SCROLLBAR PARA EVITAR DESLOCAMENTO DO HEADER -->
     <script>
