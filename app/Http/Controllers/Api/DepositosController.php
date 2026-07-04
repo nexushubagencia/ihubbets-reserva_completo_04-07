@@ -15,8 +15,9 @@ class DepositosController extends Controller
 {
     private function generateToken(): ?string
     {
-        $clientId = env('PRIMEPAG_CLIENT_ID');
-        $clientSecret = env('PRIMEPAG_CLIENT_SECRET');
+        $clientId = config('services.primepag.client_id');
+        $clientSecret = config('services.primepag.client_secret');
+        $baseUrl = config('services.primepag.base_url', 'https://api.primepag.com.br');
 
         if (empty($clientId) || empty($clientSecret)) {
             Log::error('DepositosController: PrimePag credentials not configured');
@@ -31,7 +32,7 @@ class DepositosController extends Controller
                 'Content-Type' => 'application/json',
             ])
             ->timeout(30)
-            ->post('https://api.primepag.com.br/auth/generate_token', [
+            ->post("{$baseUrl}/auth/generate_token", [
                 'grant_type' => 'client_credentials',
             ]);
 
@@ -39,6 +40,8 @@ class DepositosController extends Controller
                 $data = $response->json();
                 return $data['access_token'] ?? null;
             }
+
+            Log::error('PrimePag token error', ['status' => $response->status(), 'body' => $response->body()]);
         } catch (\Exception $e) {
             Log::error('DepositosController token error: ' . $e->getMessage());
         }
@@ -59,15 +62,17 @@ class DepositosController extends Controller
 
             $token = $this->generateToken();
             if (!$token) {
+                \DB::rollBack();
                 return response()->json(['error' => 'Erro ao autenticar com gateway de pagamento'], 500);
             }
 
             $user = auth()->user();
             $depositoId = uniqid('dep_');
+            $baseUrl = config('services.primepag.base_url', 'https://api.primepag.com.br');
 
             // Aplica promoção se selecionada
             $promocaoId = $request->input('promocao_id');
-            if ($promocaoId && method_exists($user, 'promocao_ativa_id')) {
+            if ($promocaoId) {
                 $user->promocao_ativa_id = $promocaoId;
                 $user->saldo_bonus = 0;
                 $user->rollover_atual = 0;
@@ -81,20 +86,22 @@ class DepositosController extends Controller
                 'Content-Type' => 'application/json',
             ])
             ->timeout(30)
-            ->post('https://api.primepag.com.br/v1/pix/qrcodes', [
+            ->post("{$baseUrl}/v1/pix/qrcodes", [
                 'value_cents' => (int) ($request->valor * 100),
                 'generator_name' => $request->nome,
-                'generator_document' => $request->cpf,
+                'generator_document' => preg_replace('/\D/', '', $request->cpf),
                 'deposit_id' => $depositoId,
             ]);
 
             if (!$response->successful()) {
                 \DB::rollBack();
+                Log::error('PrimePag QR error', ['status' => $response->status(), 'body' => $response->body()]);
                 return response()->json(['error' => 'Erro ao gerar QR Code'], 500);
             }
 
             $qrData = $response->json();
-            $qrCode = $qrData['qrcode'] ?? null;
+            $qrCode = $qrData['qrcode'] ?? $qrData;
+            $referenceCode = $qrCode['reference_code'] ?? ($qrData['reference_code'] ?? null);
 
             // Registra depósito
             $deposito = PixDeposit::create([
@@ -103,17 +110,7 @@ class DepositosController extends Controller
                 'status' => 'Aguardando pagamento',
                 'amount' => $request->valor,
                 'reference_id' => $depositoId,
-                'gateway_ref' => $qrCode['reference_code'] ?? null,
-            ]);
-
-            // Configura webhook para notificação
-            $appUrl = env('APP_URL');
-            Http::withHeaders([
-                'Authorization' => "Basic " . base64_encode(env('PRIMEPAG_CLIENT_ID') . ':' . env('PRIMEPAG_CLIENT_SECRET')),
-                'Content-Type' => 'application/json',
-            ])->post('https://api.primepag.com.br/v1/webhooks/1', [
-                'url' => $appUrl . "/api/webhook/confirmar-deposito",
-                'authorization' => "Test-auth",
+                'gateway_ref' => $referenceCode,
             ]);
 
             \DB::commit();
@@ -121,6 +118,7 @@ class DepositosController extends Controller
             return response()->json([
                 'qrcode' => $qrCode,
                 'deposito_id' => $deposito->id,
+                'reference_id' => $depositoId,
             ]);
         } catch (\Exception $e) {
             \DB::rollBack();

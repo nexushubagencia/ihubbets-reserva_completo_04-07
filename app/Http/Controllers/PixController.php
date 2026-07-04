@@ -14,24 +14,35 @@ class PixController extends Controller
         try {
             \DB::beginTransaction();
 
-            $referenceCode = $request->message['reference_code'] ?? null;
+            $message = $request->input('message', []);
+            $referenceCode = $message['reference_code'] ?? null;
+            $statusPagamento = $message['status'] ?? 'paid';
+
             if (!$referenceCode) {
+                \DB::rollBack();
                 return response()->json(['result' => false, 'error' => 'Reference code missing'], 400);
             }
 
-            $deposit = PixDeposit::where('gateway_ref', $referenceCode)->first();
-            if (!$deposit) {
-                // Tenta buscar por reference_id
-                $deposit = PixDeposit::where('reference_id', $referenceCode)->first();
+            // Só processa status de pagamento confirmado
+            if (!in_array(strtolower($statusPagamento), ['paid', 'pago', 'approved', 'completed'])) {
+                \DB::rollBack();
+                return response()->json(['result' => true, 'message' => 'Status ignorado: ' . $statusPagamento]);
             }
+
+            $deposit = PixDeposit::where('gateway_ref', $referenceCode)
+                ->orWhere('reference_id', $referenceCode)
+                ->first();
 
             if (!$deposit) {
                 \DB::rollBack();
                 return response()->json(['result' => false, 'error' => 'Deposit not found'], 404);
             }
 
-            $deposit->status = 'Pago';
-            $deposit->save();
+            // 🛡️ Proteção contra duplo crédito
+            if ($deposit->status === 'Pago' || $deposit->paid_at) {
+                \DB::rollBack();
+                return response()->json(['result' => true, 'message' => 'Deposit already processed']);
+            }
 
             $user = User::find($deposit->user_id);
             if (!$user) {
@@ -39,19 +50,22 @@ class PixController extends Controller
                 return response()->json(['result' => false, 'error' => 'User not found'], 404);
             }
 
-            $valorDeposito = ($request->message['value_cents'] ?? 0) / 100;
+            $valorDeposito = ($message['value_cents'] ?? ($deposit->amount * 100)) / 100;
+            $valorDeposito = max(0, $valorDeposito);
 
-            // Creditar saldo
-            if (property_exists($user, 'credito')) {
-                $user->credito = ($user->credito ?? 0) + $valorDeposito;
-            } else {
-                $user->balance = ($user->balance ?? 0) + $valorDeposito;
-            }
+            // Atualiza depósito
+            $deposit->status = 'Pago';
+            $deposit->paid_amount = $valorDeposito;
+            $deposit->paid_at = now();
+            $deposit->save();
+
+            // Creditar saldo (clientes online usam balance)
+            $user->balance = ($user->balance ?? 0) + $valorDeposito;
 
             // Aplicar bônus se promoção ativa
             if (method_exists($user, 'giveBonusOnDeposit')) {
                 $user->giveBonusOnDeposit($valorDeposito);
-            } elseif (method_exists($user, 'promocao_ativa_id') && $user->promocao_ativa_id) {
+            } elseif ($user->promocao_ativa_id) {
                 $promocao = \App\Models\Promocao::find($user->promocao_ativa_id);
                 if ($promocao && $promocao->status) {
                     $bonusAmount = ($valorDeposito * $promocao->porcentagem) / 100;
@@ -64,9 +78,22 @@ class PixController extends Controller
 
             $user->save();
 
+            // Registra transação financeira
+            \DB::table('transactions')->insert([
+                'site_id'     => $deposit->site_id,
+                'user_id'     => $user->id,
+                'type'        => 'deposit',
+                'amount'      => $valorDeposito,
+                'gateway_ref' => $deposit->reference_id,
+                'status'      => 'completed',
+                'description' => "Depósito PIX confirmado (Ref: {$referenceCode})",
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ]);
+
             \DB::commit();
 
-            return response()->json(['result' => true, 'message' => 'Ok']);
+            return response()->json(['result' => true, 'message' => 'Deposit confirmed']);
         } catch (\Exception $e) {
             \DB::rollBack();
             Log::error('PixController confirmarDeposito error: ' . $e->getMessage());

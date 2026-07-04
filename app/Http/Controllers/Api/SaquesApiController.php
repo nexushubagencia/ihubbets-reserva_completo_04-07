@@ -36,7 +36,7 @@ class SaquesApiController extends Controller
 
         try {
             $user = auth()->user();
-            $saldo = $user->credito ?? $user->balance ?? 0;
+            $saldo = ($user->balance ?? 0) + ($user->credito ?? 0);
 
             if ($request->valor > $saldo) {
                 return response()->json(['error' => 'Valor superior ao saldo disponível.'], 422);
@@ -50,7 +50,7 @@ class SaquesApiController extends Controller
 
             \DB::beginTransaction();
 
-            Saque::create([
+            $saque = Saque::create([
                 'user_id' => $user->id,
                 'site_id' => config('tenant.site_id', 1),
                 'valor' => $request->valor,
@@ -59,13 +59,30 @@ class SaquesApiController extends Controller
                 'tipo_pix' => $request->tipo_pix,
             ]);
 
-            // Debitar saldo
-            if (property_exists($user, 'credito')) {
-                $user->credito = ($user->credito ?? 0) - $request->valor;
-            } else {
-                $user->balance = ($user->balance ?? 0) - $request->valor;
+            // Debitar saldo (prioriza saldo real)
+            $remaining = $request->valor;
+            $fromBalance = min($remaining, $user->balance ?? 0);
+            $user->balance = ($user->balance ?? 0) - $fromBalance;
+            $remaining -= $fromBalance;
+
+            if ($remaining > 0) {
+                $user->credito = ($user->credito ?? 0) - $remaining;
             }
+
             $user->save();
+
+            // Registra transação de solicitação
+            \DB::table('transactions')->insert([
+                'site_id'     => $saque->site_id,
+                'user_id'     => $user->id,
+                'type'        => 'withdrawal_request',
+                'amount'      => $saque->valor,
+                'gateway_ref' => (string) $saque->id,
+                'status'      => 'pending',
+                'description' => "Solicitação de saque PIX (Ref: {$saque->id})",
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ]);
 
             \DB::commit();
 
