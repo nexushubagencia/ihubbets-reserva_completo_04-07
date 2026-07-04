@@ -31,6 +31,9 @@ class Kernel extends ConsoleKernel
         Commands\SendResultsQuina::class,
         Commands\SendResultsSena::class,
         Commands\LiveScoreMultiSport::class,
+
+        // Playfiver Casino
+        Commands\SyncPlayfiverGames::class,
     ];
 
     protected function schedule(Schedule $schedule): void

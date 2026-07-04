@@ -1325,7 +1325,7 @@
                 </li>
                 <li class="modality-item-demo" style="border-right: none; flex: 0 0 auto; flex-shrink: 0;">
                   <a href="/cassino" style="color: #fbbf24; text-decoration: none; display: flex; align-items: center; justify-content: center; font-weight: 600; text-transform: uppercase;">
-                    <img src="/img/icons/casino.png" class="modality-icon-img" onerror="this.style.display='none'"> Cassino
+                    <img src="/img/icons/casino.svg" class="modality-icon-img" onerror="this.style.display='none'"> Cassino
                   </a>
                 </li>
               </ul>

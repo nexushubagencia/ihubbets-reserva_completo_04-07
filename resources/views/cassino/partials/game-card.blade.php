@@ -4,11 +4,11 @@
             <span class="badge-popular"><i class="fas fa-fire me-1"></i>TOP</span>
         @endif
 
-        <img src="{{ $game->image_url ?? '/img/casino-placeholder.jpg' }}"
+        <img src="{{ $game->image_url ?? '/img/casino-placeholder.svg' }}"
              alt="{{ $game->name }}"
              class="game-image"
              loading="lazy"
-             onerror="this.src='/img/casino-placeholder.jpg'">
+             onerror="this.src='/img/casino-placeholder.svg'">
 
         <div class="play-overlay">
             <button class="btn btn-play" onclick="event.stopPropagation(); @auth launchGame('{{ $game->game_code }}', '{{ addslashes($game->name) }}') @else window.location.href = '/login' @endauth">
