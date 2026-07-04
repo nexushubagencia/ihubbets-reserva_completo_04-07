@@ -8,6 +8,7 @@ use App\Models\Odd;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\RateLimiterService;
 
 class LiveOdds extends Command
 {
@@ -26,6 +27,11 @@ class LiveOdds extends Command
         if (empty($apiKey)) {
             $this->error("API key nao configurada em services.apifootball.api_key");
             return self::FAILURE;
+        }
+
+        if (!RateLimiterService::canMakeRequest()) {
+            $this->warn("Rate limit atingido. Pulando atualização ao vivo.");
+            return self::SUCCESS;
         }
 
         $this->info("Buscando partidas ao vivo...");

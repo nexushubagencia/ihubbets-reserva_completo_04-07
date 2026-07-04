@@ -13,7 +13,7 @@ return [
     'title' => 'IHUB BETS - Sistema de Apostas Esportivas',
     'title_prefix' => '',
     'title_postfix' => ' | IHUB BETS',
-    'version_system' => '1.0.0',
+    'version_system' => '2.1.0',
     'name_site' => 'IHUB',
     'url_system' => 'IHUB BETS',
     'year_system' => '2026',

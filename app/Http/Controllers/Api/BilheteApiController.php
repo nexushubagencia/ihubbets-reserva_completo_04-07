@@ -957,7 +957,7 @@ class BilheteApiController extends Controller
             $palpites = $bet->palpites()->get();
             foreach ($palpites as $p) {
                 $eventId = $p->match_id ?? 0;
-                $live = \App\Models\MatchEvent::where('event_id', $eventId)->first();
+                $live = \App\Models\MatchModel::where('event_id', $eventId)->first();
                 
                 $pData = [
                     'id'              => $p->id,

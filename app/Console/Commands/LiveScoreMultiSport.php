@@ -52,7 +52,7 @@ class LiveScoreMultiSport extends Command
         foreach ($matches as $match) {
             $event = MatchModel::find($match->id);
             broadcast(new LoadMatchLiveScore($event));
-            LoadMatchLive::dispatchNow($event, $match->id);
+            LoadMatchLive::dispatchSync($event, $match->id);
             $count++;
         }
 

@@ -78,7 +78,7 @@ class SettleApiBets extends Command
 
     protected function processItem(BetItem $item)
     {
-        $match = Game::where('event_id', $item->match_id)->first();
+        $match = \App\Models\MatchModel::where('event_id', $item->match_id)->first();
         
         if (!$match) {
             $this->warn("Partida não encontrada para o item {$item->id} (Match ID: {$item->match_id})");

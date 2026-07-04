@@ -12,7 +12,7 @@ class BonusController extends Controller
     public function getActivePromotions()
     {
         try {
-            $user = auth('api')->user();
+            $user = auth()->user();
             $promocoes = Promocao::where('status', true)->get();
 
             return response()->json([
@@ -31,7 +31,7 @@ class BonusController extends Controller
     public function claimBonus(Request $request)
     {
         try {
-            $user = auth('api')->user();
+            $user = auth()->user();
 
             if (!empty($user->promocao_ativa_id)) {
                 return response()->json(['message' => 'Você já possui um bônus ativo!'], 400);
@@ -55,7 +55,7 @@ class BonusController extends Controller
     public function cancelBonus()
     {
         try {
-            $user = auth('api')->user();
+            $user = auth()->user();
 
             $user->saldo_bonus = 0;
             $user->rollover_meta = 0;
@@ -78,7 +78,7 @@ class BonusController extends Controller
         $request->validate(['code' => 'required|string']);
 
         try {
-            $user = auth('api')->user();
+            $user = auth()->user();
 
             if (!empty($user->promocao_ativa_id)) {
                 return response()->json(['success' => false, 'message' => 'Você já possui um bônus ativo.'], 400);
@@ -109,7 +109,7 @@ class BonusController extends Controller
     public function myBonus()
     {
         try {
-            $user = auth('api')->user();
+            $user = auth()->user();
 
             $promocao = null;
             if (!empty($user->promocao_ativa_id)) {

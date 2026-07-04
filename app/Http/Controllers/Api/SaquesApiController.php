@@ -13,7 +13,7 @@ class SaquesApiController extends Controller
     public function listSaques()
     {
         try {
-            $userId = auth('api')->user()->id;
+            $userId = auth()->user()->id;
             $saques = Saque::where('user_id', $userId)
                 ->orderBy('id', 'desc')
                 ->with('user')
@@ -35,7 +35,7 @@ class SaquesApiController extends Controller
         ]);
 
         try {
-            $user = auth('api')->user();
+            $user = auth()->user();
             $saldo = $user->credito ?? $user->balance ?? 0;
 
             if ($request->valor > $saldo) {

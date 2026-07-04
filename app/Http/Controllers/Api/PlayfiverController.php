@@ -32,7 +32,7 @@ class PlayfiverController extends Controller
 
     public function launchGame(Request $request)
     {
-        $user = auth('api')->user();
+        $user = auth()->user();
         if (!$user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }

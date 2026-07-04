@@ -37,8 +37,9 @@ class Kernel extends ConsoleKernel
     {
         // === API-Football (provedor principal) ===
         $schedule->command('apifootball:live')->everyMinute()->withoutOverlapping();
-        $schedule->command('ihub:sync-matches')->hourly()->withoutOverlapping();
-        $schedule->command('ihub:sync-live')->everyFiveMinutes()->withoutOverlapping();
+        // DESABILITADO: BetsAPI token retorna 403 - usar API-Football
+        // $schedule->command('ihub:sync-matches')->hourly()->withoutOverlapping();
+        // $schedule->command('ihub:sync-live')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('ihub:settle-api-bets')->everyFiveMinutes()->withoutOverlapping();
 
         // === Cache - broadcast de dados para o frontend ===
@@ -54,9 +55,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('command:sendResultsQuina')->dailyAt('19:30')->withoutOverlapping();
         $schedule->command('command:sendResultSena')->dailyAt('19:30')->withoutOverlapping();
 
-        // === Multi-sport live (basquete e volei - off-season) ===
-        $schedule->command('apifootball:live-multi --sport=basketball')->everyMinute()->withoutOverlapping();
-        $schedule->command('apifootball:live-multi --sport=volleyball')->everyMinute()->withoutOverlapping();
+        // === Multi-sport live (OFF-SEASON - desabilitado até setembro) ===
+        // $schedule->command('apifootball:live-multi --sport=basketball')->everyMinute()->withoutOverlapping();
+        // $schedule->command('apifootball:live-multi --sport=volleyball')->everyMinute()->withoutOverlapping();
     }
 
     protected function commands(): void

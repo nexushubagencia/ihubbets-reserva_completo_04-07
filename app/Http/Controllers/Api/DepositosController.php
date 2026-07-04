@@ -62,7 +62,7 @@ class DepositosController extends Controller
                 return response()->json(['error' => 'Erro ao autenticar com gateway de pagamento'], 500);
             }
 
-            $user = auth('api')->user();
+            $user = auth()->user();
             $depositoId = uniqid('dep_');
 
             // Aplica promoção se selecionada
@@ -132,7 +132,7 @@ class DepositosController extends Controller
     public function listDepositos()
     {
         try {
-            $userId = auth('api')->user()->id;
+            $userId = auth()->user()->id;
             $depositos = PixDeposit::where('user_id', $userId)
                 ->orderBy('id', 'desc')
                 ->with('user')
