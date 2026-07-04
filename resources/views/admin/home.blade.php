@@ -354,10 +354,10 @@ $(document).ready(function () {
             $('#m-saldo').text(formatMoeda(total));
 
             // ═══ USUARIOS ═══
-            $('#u-bilhetes').text(qtd);
+            $('#u-bilhetes').text(data.bilhetes_usuarios || 0);
             $('#u-usuarios').text(data.total_usuarios || 0);
-            $('#u-entradas').text(formatMoeda(e));
-            $('#u-aberto').text(formatMoeda(a));
+            $('#u-entradas').text(formatMoeda(data.entradas_usuarios || 0));
+            $('#u-aberto').text(formatMoeda(data.entradas_abertas_usuarios || 0));
             $('#u-disponivel').text(formatMoeda(data.saldo_usuarios || 0));
             $('#u-saque').text(formatMoeda(data.saques_pendentes || 0));
             $('#u-depositos').text(formatMoeda(data.depositos_hoje || 0));
