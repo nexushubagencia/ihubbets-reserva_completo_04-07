@@ -19,7 +19,7 @@ class BettingLogic
     public static function cancel($betId, User $performer)
     {
         return DB::transaction(function () use ($betId, $performer) {
-            $siteId = config('tenant.site_id', 1);
+            $siteId = app('tenant.site_id');
             $bet = Bet::where('id', $betId)->where('site_id', $siteId)->lockForUpdate()->first();
 
             if (!$bet || $bet->status === 'cancelled') {
@@ -38,22 +38,31 @@ class BettingLogic
             // Atualizar contadores do Cambista (Vendedor)
             $seller = User::find($bet->user_id);
             if ($seller) {
-                $seller->decrement('entradas', $bet->amount);
-                $seller->decrement('comissoes', $bet->commission_amount ?? 0);
-                $seller->decrement('quantidade_aposta', 1);
-                
-                // Se for aposta simples/casadinha, decrementa o contador específico se existir
-                if (isset($seller->entrada_simples)) {
-                    // Lógica para separar simples/casadinha aqui
+                $seller->entradas = max(0, $seller->entradas - $bet->amount);
+                $seller->comissoes = max(0, $seller->comissoes - ($bet->commission_amount ?? 0));
+                $seller->quantidade_aposta = max(0, $seller->quantidade_aposta - 1);
+
+                // Estorna saldo na carteira correta
+                $selections = is_string($bet->selections) ? json_decode($bet->selections, true) : $bet->selections;
+                $count = is_array($selections) ? count($selections) : 1;
+                if ($count > 1) {
+                    $seller->entrada_casadinha = max(0, $seller->entrada_casadinha - $bet->amount);
+                    $seller->balance_bonus = ($seller->balance_bonus ?? 0) + $bet->amount;
+                } else {
+                    $seller->entrada_simples = max(0, $seller->entrada_simples - $bet->amount);
+                    $seller->balance = ($seller->balance ?? 0) + $bet->amount;
                 }
+
+                $seller->save();
             }
 
             // Atualizar contadores do Gerente
             $manager = User::find($bet->manager_id);
             if ($manager) {
-                $manager->decrement('entradas', $bet->amount);
-                $manager->decrement('comissoes', $bet->commission_amount ?? 0);
-                $manager->decrement('quantidade_aposta', 1);
+                $manager->entradas = max(0, $manager->entradas - $bet->amount);
+                $manager->comissoes = max(0, $manager->comissoes - ($bet->commission_amount ?? 0));
+                $manager->quantidade_aposta = max(0, $manager->quantidade_aposta - 1);
+                $manager->save();
             }
 
             $bet->update(['status' => 'cancelled']);

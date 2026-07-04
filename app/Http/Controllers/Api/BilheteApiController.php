@@ -1099,20 +1099,28 @@ class BilheteApiController extends Controller
 
             $user = User::find($bilhete->user_id);
             if ($user) {
-                $user->entradas = ($user->entradas ?? 0) - $returnAmount;
+                // Subtrai do aporte/entrada (efeito financeiro de resgate antecipado)
+                $user->entradas = max(0, ($user->entradas ?? 0) - $returnAmount);
+
+                // Credita o valor do cash-out na carteira correta do usuário
                 if ($bilhete->total_palpites > 1) {
-                    $user->entrada_casadinha = ($user->entrada_casadinha ?? 0) - $returnAmount;
+                    $user->entrada_casadinha = max(0, ($user->entrada_casadinha ?? 0) - $returnAmount);
+                    $user->balance_bonus = ($user->balance_bonus ?? 0) + $returnAmount;
                 } else {
-                    $user->entrada_simples = ($user->entrada_simples ?? 0) - $returnAmount;
+                    $user->entrada_simples = max(0, ($user->entrada_simples ?? 0) - $returnAmount);
+                    $user->balance = ($user->balance ?? 0) + $returnAmount;
                 }
-                $user->comissoes = ($user->comissoes ?? 0) - ($bilhete->comicao ?? 0);
+
+                // Estorna comissão proporcional ao cash-out (não ao valor total)
+                $comissaoCashout = ($bilhete->comicao ?? 0) * ($taxa / 100);
+                $user->comissoes = max(0, ($user->comissoes ?? 0) - $comissaoCashout);
                 $user->save();
             }
 
             $gerente = User::find($bilhete->gerente_id ?? null);
             if ($gerente) {
-                $gerente->entradas = ($gerente->entradas ?? 0) - $returnAmount;
-                $gerente->comissoes = ($gerente->comissoes ?? 0) - ($bilhete->comicao ?? 0);
+                $gerente->entradas = max(0, ($gerente->entradas ?? 0) - $returnAmount);
+                $gerente->comissoes = max(0, ($gerente->comissoes ?? 0) - $comissaoCashout);
                 $gerente->save();
             }
 

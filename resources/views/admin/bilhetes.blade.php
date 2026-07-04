@@ -301,6 +301,9 @@
                 <button class="btn btn-dark" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
             </div>
+        </div>
+    </div>
+</div>
 @stop
 
 @section('css')

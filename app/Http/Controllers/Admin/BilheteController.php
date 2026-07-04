@@ -298,6 +298,10 @@ class BilheteController extends Controller
             $user = User::find($bilhete->user_id);
             $gerente = User::find($bilhete->gerente_id);
 
+            if (!$user) {
+                return response()->json(['message' => 'Usuário do bilhete não encontrado'], 404);
+            }
+
             $isCliente = ($user->nivel == 'cliente' || $user->role == 'client');
 
             // 1. Reverter o efeito do status antigo
