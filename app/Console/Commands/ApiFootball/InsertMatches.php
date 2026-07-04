@@ -80,9 +80,11 @@ class InsertMatches extends Command
 
         $this->info("Esporte: {$sportConfig['sport_name']} | Ligas ativas: " . count($activeLeagues));
 
-        $today     = Carbon::today()->format('Y-m-d');
-        $tomorrow  = Carbon::tomorrow()->format('Y-m-d');
-        $dates     = [$today, $tomorrow];
+        $dates = [];
+        for ($i = 0; $i < 5; $i++) {
+            $dates[] = Carbon::today()->addDays($i)->format('Y-m-d');
+        }
+        $this->info("Buscando partidas para 5 dias: " . implode(', ', $dates));
 
         foreach ($dates as $date) {
             $this->info("Buscando partidas para {$date}...");

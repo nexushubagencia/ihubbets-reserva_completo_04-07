@@ -136,6 +136,82 @@
     })();
     </script>
 
+    <!-- ATUALIZAÇÃO PROFISSIONAL: Polling inteligente sem piscar -->
+    <script>
+    (function() {
+        'use strict';
+
+        // Cancela o auto-refresh de 30s da home (causa piscar)
+        setTimeout(function() {
+            if (window.app && window.app._matchRefreshInterval) {
+                clearInterval(window.app._matchRefreshInterval);
+                console.log('[IHUB] Auto-refresh da home desativado (profissional)');
+            }
+        }, 1000);
+
+        // Substitui o polling ao vivo por fetch silencioso
+        setTimeout(function() {
+            if (window.app && window.app._liveRefreshInterval) {
+                clearInterval(window.app._liveRefreshInterval);
+
+                // Implementa polling inteligente ao vivo (15s)
+                var lastLiveData = null;
+
+                function fetchLiveScores() {
+                    if (!window.app || !window.app.live) return;
+
+                    fetch('/api/live-scores?t=' + Date.now())
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            // Só atualiza se os dados mudaram
+                            var newData = JSON.stringify(data);
+                            if (lastLiveData !== newData) {
+                                lastLiveData = newData;
+                                if (window.app.loadVivo) {
+                                    window.app.loadVivo();
+                                }
+                            }
+                        })
+                        .catch(function(err) {
+                            console.error('[IHUB] Erro ao buscar live scores:', err);
+                        });
+                }
+
+                // Polling a cada 15s
+                setInterval(fetchLiveScores, 15000);
+                console.log('[IHUB] Polling ao vivo inteligente ativado (15s)');
+            }
+        }, 1000);
+
+        // Cache de 5 minutos para pré-live (atualiza silencioso)
+        setTimeout(function() {
+            var lastHomeData = null;
+
+            function fetchHomeMatches() {
+                fetch('/api/home-matches?t=' + Date.now())
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var newData = JSON.stringify(data);
+                        if (lastHomeData !== newData) {
+                            lastHomeData = newData;
+                            // Atualiza só se mudou (sem piscar)
+                            if (window.app && window.app.loadMatchHoje) {
+                                window.app.loadMatchHoje();
+                            }
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error('[IHUB] Erro ao buscar home matches:', err);
+                    });
+            }
+
+            // Polling a cada 5 minutos (300s)
+            setInterval(fetchHomeMatches, 300000);
+            console.log('[IHUB] Cache home atualizado a cada 5 minutos');
+        }, 1000);
+    })();
+    </script>
+
     <!-- CALCULA LARGURA DA SCROLLBAR PARA EVITAR DESLOCAMENTO DO HEADER -->
     <script>
     (function(){

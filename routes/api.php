@@ -69,6 +69,10 @@ Route::group(['middleware' => ['web', 'api']], function () {
     Route::get('/get-days-list', [App\Http\Controllers\Api\MatchApiController::class, 'getDaysList']);
     Route::get('/site-list-odds/{id}', [App\Http\Controllers\Api\MatchApiController::class, 'getOdds']);
     Route::get('/site-list-odds-live/{id}', [App\Http\Controllers\Api\MatchApiController::class, 'getOdds']);
+
+    // Polling inteligente (profissional - sem piscar)
+    Route::get('/live-scores', [App\Http\Controllers\Api\LiveScoresController::class, 'liveScores']);
+    Route::get('/home-matches', [App\Http\Controllers\Api\LiveScoresController::class, 'homeMatches']);
     
     // API-Football Status / Quota
     Route::get('/api-status', [App\Http\Controllers\Api\MatchApiController::class, 'getApiStatus']);
