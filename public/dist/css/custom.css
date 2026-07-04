@@ -1741,20 +1741,16 @@ body.modal-open .modal .modal-content {
 /* ═══════════════════════════════════════════════════════════════
    FIX: PREVINE DESLOCAMENTO AO ABRIR MODAIS
    ═══════════════════════════════════════════════════════════════
-   O front_nexus_hibrido.js já seta padding-right:0px!important
-   no body quando modal abre. O MutationObserver no welcome.blade.php
-   bloqueia display:flex no logo que causava o shift.
+   Bootstrap adiciona padding-right no body ao abrir modal.
+   Isso desloca .main-header que é position:static.
+   Forçamos padding-right:0 para eliminar o shift.
    ═══════════════════════════════════════════════════════════════ */
-
-/* ═══════════════════════════════════════════════════════════════
-   FIX: PREVINE DESLOCAMENTO AO ABRIR MODAIS (via JavaScript)
-   ═══════════════════════════════════════════════════════════════
-   O JS no master.blade.php mede a scrollbar em tempo real
-   e aplica padding-right no body quando modal abre.
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Force logo full width */
-body:not(.sidebar-collapse) .main-header .logo {
+body.modal-open,
+body.modal-open .wrapper,
+body.modal-open .main-header,
+body.modal-open .content-wrapper {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
 }
 
 .wrapper, .content-wrapper { z-index: auto !important; }
