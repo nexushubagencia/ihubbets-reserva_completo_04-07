@@ -2762,19 +2762,19 @@ export default {
       this.currentTime = new Date();
     }, 1000);
 
-    // Auto-refresh das partidas a cada 30s para capturar jogos ao vivo
+    // Auto-refresh das partidas a cada 5min (profissional - evita piscar)
     this._matchRefreshInterval = setInterval(() => {
       if (this.hoje && !this.live) {
         this.loadMatchHoje();
       }
-    }, 30000);
+    }, 300000);
 
-    // Auto-refresh para AO VIVO a cada 15s (mais rapido para dados ao vivo)
+    // Auto-refresh para AO VIVO a cada 30s (leve, via fetch)
     this._liveRefreshInterval = setInterval(() => {
       if (this.live) {
         this.loadVivo();
       }
-    }, 15000);
+    }, 30000);
 
     // ═══════════════════════════════════════════════════════════════
     // MODAL SYSTEM - CLEAN, NO GAMBIO
