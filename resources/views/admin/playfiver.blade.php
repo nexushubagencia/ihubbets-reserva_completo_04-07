@@ -105,7 +105,8 @@ function loadGames() {
 }
 
 function syncGames() {
-    alert('Sincronização via API Playfiver. Execute: php artisan playfiver:sync');
+    loadGames();
+    alert('Lista de jogos atualizada!');
 }
 
 document.addEventListener('DOMContentLoaded', loadGames);

@@ -307,10 +307,25 @@
 
     </div>
 
+    {{-- ═══ GRÁFICO 7 DIAS ═══ --}}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="info-section">
+                <div class="section-header" style="background: #3b82f6;">
+                    <i class="fas fa-chart-area"></i> Performance dos Últimos 7 Dias
+                </div>
+                <div class="p-3">
+                    <canvas id="chart-7-dias" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @stop
 
 @section('js')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 function formatMoeda(n) {
     n = parseFloat(n || 0);
@@ -361,8 +376,99 @@ $(document).ready(function () {
             $('#u-disponivel').text(formatMoeda(data.saldo_usuarios || 0));
             $('#u-saque').text(formatMoeda(data.saques_pendentes || 0));
             $('#u-depositos').text(formatMoeda(data.depositos_hoje || 0));
+
+            // ═══ GRÁFICO 7 DIAS ═══
+            renderChart7Dias(data.chart_7_days || {});
         }
     });
 });
+
+var chart7DiasInstance = null;
+
+function renderChart7Dias(chartData) {
+    var ctx = document.getElementById('chart-7-dias');
+    if (!ctx) return;
+
+    var labels = Object.keys(chartData);
+    var entradas = labels.map(function(d) { return parseFloat(chartData[d].entradas || 0); });
+    var saidas = labels.map(function(d) { return parseFloat(chartData[d].saidas || 0); });
+    var abertas = labels.map(function(d) { return parseFloat(chartData[d].abertas || 0); });
+
+    // Formata labels como dd/mm
+    var displayLabels = labels.map(function(d) {
+        var parts = d.split('-');
+        return parts[2] + '/' + parts[1];
+    });
+
+    if (chart7DiasInstance) {
+        chart7DiasInstance.destroy();
+    }
+
+    chart7DiasInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: displayLabels,
+            datasets: [
+                {
+                    label: 'Entradas',
+                    data: entradas,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 3
+                },
+                {
+                    label: 'Saídas',
+                    data: saidas,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 3
+                },
+                {
+                    label: 'Em Aberto',
+                    data: abertas,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { usePointStyle: true, padding: 20 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + formatMoeda(context.raw);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
 </script>
 @stop

@@ -33,7 +33,7 @@ function fd(d){
 }
 $(document).ready(function(){
     $('#confrontos-loading').show();
-    $.get('/admin/list-confrontos',function(data){
+    $.get('/admin/confrontos-list',function(data){
         var tb=$('#confrontos-tbody');tb.empty();$('#confrontos-loading').hide();
         if(!data||!data.length){tb.append('<tr><td colspan="7">Nenhum confronto encontrado</td></tr>');return;}
         data.forEach(function(c){
