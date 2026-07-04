@@ -2,73 +2,61 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\Traducao;
+use Illuminate\Support\Facades\Cache;
 
 class TraducaoController extends Controller
 {
     public function index(Request $request)
     {
-        $siteId = config('tenant.site_id', 1);
+        $query = Traducao::query();
 
-        $query = Traducao::where('site_id', $siteId);
-
-        if ($request->filled('tipo')) {
-            $query->where('tipo', $request->tipo);
+        if ($request->filled('busca')) {
+            $query->where('texto_original', 'like', '%' . $request->busca . '%')
+                  ->orWhere('texto_traduzido', 'like', '%' . $request->busca . '%');
         }
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('texto_original', 'LIKE', "%{$search}%")
-                  ->orWhere('texto_traduzido', 'LIKE', "%{$search}%");
-            });
-        }
+        $traducoes = $query->orderBy('id', 'desc')->paginate(30);
 
-        $traducoes = $query->orderBy('tipo')->orderBy('texto_original')->paginate(50)->appends($request->query());
-        $tipos = Traducao::where('site_id', $siteId)->distinct()->pluck('tipo')->sort()->values();
-
-        return view('admin.traducoes', compact('traducoes', 'tipos'));
+        return view('admin.traducoes', compact('traducoes'));
     }
 
     public function store(Request $request)
     {
-        $siteId = config('tenant.site_id', 1);
-
-        $data = $request->validate([
-            'tipo' => 'required|string|max:255',
-            'texto_original' => 'required|string',
-            'texto_traduzido' => 'required|string',
+        $request->validate([
+            'tipo' => 'required|in:liga,time',
+            'texto_original' => 'required|string|max:255',
+            'texto_traduzido' => 'required|string|max:255',
         ]);
 
-        $data['site_id'] = $siteId;
-
-        $traducao = Traducao::where('site_id', $siteId)
-            ->where('tipo', $data['tipo'])
-            ->where('texto_original', $data['texto_original'])
+        $traducao = Traducao::where('tipo', $request->tipo)
+            ->where('texto_original', $request->texto_original)
             ->first();
 
         if ($traducao) {
-            $traducao->update(['texto_traduzido' => $data['texto_traduzido']]);
+            $traducao->update(['texto_traduzido' => $request->texto_traduzido]);
         } else {
-            Traducao::create($data);
+            Traducao::create([
+                'tipo' => $request->tipo,
+                'texto_original' => $request->texto_original,
+                'texto_traduzido' => $request->texto_traduzido,
+            ]);
         }
 
-        Traducao::limparCache($siteId);
+        Cache::forget('traducoes_todas');
 
-        return redirect()->back()->with('success', 'Tradução salva com sucesso!');
+        return redirect()->back()->with('sucesso', 'Tradução salva com sucesso!');
     }
 
     public function destroy($id)
     {
-        $siteId = config('tenant.site_id', 1);
-
-        $traducao = Traducao::where('site_id', $siteId)->findOrFail($id);
+        $traducao = Traducao::findOrFail($id);
         $traducao->delete();
 
-        Traducao::limparCache($siteId);
+        Cache::forget('traducoes_todas');
 
-        return redirect()->back()->with('success', 'Tradução removida com sucesso!');
+        return redirect()->back()->with('sucesso', 'Tradução removida com sucesso!');
     }
 }

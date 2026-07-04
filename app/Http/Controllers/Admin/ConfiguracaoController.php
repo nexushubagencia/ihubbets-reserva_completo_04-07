@@ -191,4 +191,32 @@ class ConfiguracaoController extends Controller
         $liga = MainLeague::find($id);
         $liga->delete();
     }
+
+    public function uploadLogo(Request $request)
+    {
+        if ($request->hasFile('logo')) {
+            $file = $request->file('logo');
+            $extension = $file->getClientOriginalExtension();
+            if (in_array(strtolower($extension), ['png', 'jpg', 'jpeg'])) {
+                $file->move(public_path('img'), 'logo.png');
+                return response()->json(['message' => 'Logo atualizada com sucesso!']);
+            }
+            return response()->json(['message' => 'Formato de imagem inválido. Use PNG, JPG ou JPEG.'], 400);
+        }
+        return response()->json(['message' => 'Nenhum arquivo enviado.'], 400);
+    }
+
+    public function uploadFavicon(Request $request)
+    {
+        if ($request->hasFile('favicon')) {
+            $file = $request->file('favicon');
+            $extension = $file->getClientOriginalExtension();
+            if (in_array(strtolower($extension), ['png', 'jpg', 'jpeg', 'ico'])) {
+                $file->move(public_path('img'), 'favicon.png');
+                return response()->json(['message' => 'Favicon atualizado com sucesso!']);
+            }
+            return response()->json(['message' => 'Formato de imagem inválido. Use PNG, JPG, JPEG ou ICO.'], 400);
+        }
+        return response()->json(['message' => 'Nenhum arquivo enviado.'], 400);
+    }
 }

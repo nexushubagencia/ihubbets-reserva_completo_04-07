@@ -298,37 +298,55 @@ class BilheteController extends Controller
             $user = User::find($bilhete->user_id);
             $gerente = User::find($bilhete->gerente_id);
 
+            $isCliente = ($user->nivel == 'cliente' || $user->role == 'client');
+
             // 1. Reverter o efeito do status antigo
             if ($oldStatus == 'Ganhou') {
-                $user->saidas -= $bilhete->retorno_possivel;
-                if ($gerente) $gerente->saidas -= $bilhete->retorno_possivel;
-            } elseif (in_array($oldStatus, ['Cancelado', 'Devolvido', 'Cashout'])) {
-                $user->entradas += $bilhete->valor_apostado;
-                if ($gerente) $gerente->entradas += $bilhete->valor_apostado;
-                $user->comissoes += $bilhete->comicao;
-                if ($gerente) $gerente->comissoes += $bilhete->comicao;
-                if ($bilhete->total_palpites > 1) {
-                    $user->entrada_casadinha += $bilhete->valor_apostado;
+                if ($isCliente) {
+                    $user->credito -= $bilhete->retorno_possivel;
                 } else {
-                    $user->entrada_simples += $bilhete->valor_apostado;
-                    if ($gerente) $gerente->entrada_simples += $bilhete->valor_apostado;
+                    $user->saidas -= $bilhete->retorno_possivel;
+                    if ($gerente) $gerente->saidas -= $bilhete->retorno_possivel;
+                }
+            } elseif (in_array($oldStatus, ['Cancelado', 'Devolvido', 'Cashout'])) {
+                if ($isCliente) {
+                    $user->credito -= $bilhete->valor_apostado;
+                } else {
+                    $user->entradas += $bilhete->valor_apostado;
+                    if ($gerente) $gerente->entradas += $bilhete->valor_apostado;
+                    $user->comissoes += $bilhete->comicao;
+                    if ($gerente) $gerente->comissoes += $bilhete->comicao;
+                    if ($bilhete->total_palpites > 1) {
+                        $user->entrada_casadinha += $bilhete->valor_apostado;
+                    } else {
+                        $user->entrada_simples += $bilhete->valor_apostado;
+                        if ($gerente) $gerente->entrada_simples += $bilhete->valor_apostado;
+                    }
                 }
             }
 
             // 2. Aplicar o efeito do novo status
             if ($newStatus == 'Ganhou') {
-                $user->saidas += $bilhete->retorno_possivel;
-                if ($gerente) $gerente->saidas += $bilhete->retorno_possivel;
-            } elseif (in_array($newStatus, ['Cancelado', 'Devolvido', 'Cashout'])) {
-                $user->entradas -= $bilhete->valor_apostado;
-                if ($gerente) $gerente->entradas -= $bilhete->valor_apostado;
-                $user->comissoes -= $bilhete->comicao;
-                if ($gerente) $gerente->comissoes -= $bilhete->comicao;
-                if ($bilhete->total_palpites > 1) {
-                    $user->entrada_casadinha -= $bilhete->valor_apostado;
+                if ($isCliente) {
+                    $user->credito += $bilhete->retorno_possivel;
                 } else {
-                    $user->entrada_simples -= $bilhete->valor_apostado;
-                    if ($gerente) $gerente->entrada_simples -= $bilhete->valor_apostado;
+                    $user->saidas += $bilhete->retorno_possivel;
+                    if ($gerente) $gerente->saidas += $bilhete->retorno_possivel;
+                }
+            } elseif (in_array($newStatus, ['Cancelado', 'Devolvido', 'Cashout'])) {
+                if ($isCliente) {
+                    $user->credito += $bilhete->valor_apostado;
+                } else {
+                    $user->entradas -= $bilhete->valor_apostado;
+                    if ($gerente) $gerente->entradas -= $bilhete->valor_apostado;
+                    $user->comissoes -= $bilhete->comicao;
+                    if ($gerente) $gerente->comissoes -= $bilhete->comicao;
+                    if ($bilhete->total_palpites > 1) {
+                        $user->entrada_casadinha -= $bilhete->valor_apostado;
+                    } else {
+                        $user->entrada_simples -= $bilhete->valor_apostado;
+                        if ($gerente) $gerente->entrada_simples -= $bilhete->valor_apostado;
+                    }
                 }
             }
 

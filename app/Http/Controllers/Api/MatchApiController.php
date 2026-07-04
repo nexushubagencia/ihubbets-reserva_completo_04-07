@@ -23,7 +23,7 @@ class MatchApiController extends ApiController
     {
         $siteId = config('tenant.site_id', 1);
         $return = [];
-        $assetsCdn = env('ASSETS_CDN_URL', 'https://assets.betsapi.com/v1/');
+        $assetsCdn = config('services.assets_cdn_url', 'https://assets.betsapi.com/v1/');
 
         // Determinar a data baseado no parâmetro
         $targetDate = match(strtolower($day)) {
@@ -262,7 +262,7 @@ class MatchApiController extends ApiController
     {
         $siteId = config('tenant.site_id', 1);
         $return = [];
-        $assetsCdn = env('ASSETS_CDN_URL', 'https://assets.betsapi.com/v1/');
+        $assetsCdn = config('services.assets_cdn_url', 'https://assets.betsapi.com/v1/');
 
         try {
             // 1. Jogos da API
@@ -333,7 +333,7 @@ class MatchApiController extends ApiController
         $return = [];
         
         // CDN de Assets (Team/League Logos)
-        $assetsCdn = env('ASSETS_CDN_URL', 'https://assets.betsapi.com/v1/');
+        $assetsCdn = config('services.assets_cdn_url', 'https://assets.betsapi.com/v1/');
 
         try {
             // 1. Jogos da API (Game Model)

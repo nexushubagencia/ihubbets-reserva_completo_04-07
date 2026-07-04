@@ -90,6 +90,9 @@ class ClientesController extends Controller
 
             $cliente->delete();
             return response()->json(['success' => true, 'message' => 'Cliente excluído com sucesso!']);
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('ClientesController::destroy QueryException: ' . $e->getMessage());
+            return response()->json(['error' => 'Cliente possui registros associados (apostas, financeiro) e não pode ser excluído. Bloqueie-o ao invés de excluir.'], 400);
         } catch (\Exception $e) {
             \Log::error('ClientesController::destroy error: ' . $e->getMessage());
             return response()->json(['error' => 'Erro ao excluir cliente.'], 400);

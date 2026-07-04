@@ -172,6 +172,8 @@ Route::middleware(['auth', 'admin', 'tenant', 'activity'])->prefix('admin')->gro
     Route::get('list-configuracoes', [ConfiguracaoController::class, 'index']);
     Route::put('configuracoes/{id}', [ConfiguracaoController::class, 'update']);
     Route::put('edit-configuracao/{id}', [ConfiguracaoController::class, 'update']); // Alias PUT
+    Route::post('upload-logo', [ConfiguracaoController::class, 'uploadLogo']);
+    Route::post('upload-favicon', [ConfiguracaoController::class, 'uploadFavicon']);
 
     // ============================================================
     // CONFRONTOS & LIGAS
@@ -377,6 +379,13 @@ Route::middleware(['auth', 'admin', 'tenant', 'activity'])->prefix('admin')->gro
     Route::get('saques-admin/list', [\App\Http\Controllers\Admin\SaquesAdminController::class, 'list']);
     Route::post('saques-admin/{saque}/confirm', [\App\Http\Controllers\Admin\SaquesAdminController::class, 'confirm']);
     Route::post('saques-admin/{saque}/reject', [\App\Http\Controllers\Admin\SaquesAdminController::class, 'reject']);
+
+    // ============================================================
+    // TRADUÇÕES
+    // ============================================================
+    Route::get('traducoes', [\App\Http\Controllers\Admin\TraducaoController::class, 'index'])->name('admin.traducoes');
+    Route::post('traducoes', [\App\Http\Controllers\Admin\TraducaoController::class, 'store']);
+    Route::delete('traducoes/{id}', [\App\Http\Controllers\Admin\TraducaoController::class, 'destroy']);
 
     // ============================================================
     // PLAYFIVER CASINO

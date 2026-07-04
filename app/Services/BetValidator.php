@@ -383,6 +383,18 @@ class BetValidator
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            // Enviar email de alerta
+            $emailAlerta = DB::table('configuracaos')
+                ->where('site_id', $this->siteId)
+                ->value('email_alerta');
+
+            if ($emailAlerta && isset($bet['id'])) {
+                $aposta = \App\Models\Bet::find($bet['id']);
+                if ($aposta) {
+                    \App\Jobs\sendAlertaBet::dispatch($aposta, $emailAlerta);
+                }
+            }
         } catch (\Throwable $e) {
             // Não deixar falha no alerta quebrar a aposta
         }

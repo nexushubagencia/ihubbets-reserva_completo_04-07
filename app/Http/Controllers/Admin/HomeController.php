@@ -99,6 +99,12 @@ class HomeController extends Controller
             $this->arr['saques_pendentes'] = (float) $totalSaquesPendentes;
             $this->arr['depositos_hoje'] = (float) $totalDepositosHoje;
 
+            // Stats de apostas dos clientes online
+            $clienteIds = User::where('site_id', $siteId)->where('nivel', 'cliente')->pluck('id');
+            $this->arr['bilhetes_usuarios'] = Aposta::whereIn('user_id', $clienteIds)->count();
+            $this->arr['entradas_usuarios'] = (float) Aposta::whereIn('user_id', $clienteIds)->where('status', '!=', 'Cancelado')->sum('valor_apostado');
+            $this->arr['entradas_abertas_usuarios'] = (float) Aposta::whereIn('user_id', $clienteIds)->where('status', 'Aberto')->sum('valor_apostado');
+
             // 🚀 Gráfico 7 dias
             $last7Days = [];
             for ($i = 6; $i >= 0; $i--) {
