@@ -45,6 +45,7 @@ use App\Http\Controllers\Admin\ClientesController;
 */
 
 Route::get('/', [\App\Http\Controllers\Api\ApiController::class, 'index']);
+Route::get('/cassino', [\App\Http\Controllers\CassinoController::class, 'index'])->name('cassino.index');
 Route::get('/generate-css', [SettingsController::class, 'generateCss'])->name('generate-css');
 
 // Banner de Compartilhamento (Gerador de Imagem)
