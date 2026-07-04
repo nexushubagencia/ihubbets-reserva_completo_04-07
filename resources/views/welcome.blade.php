@@ -172,9 +172,20 @@
         var logoMini = document.querySelector('.main-header .logo .logo-mini');
         if (!logo) return;
 
+        var blockedProps = ['display', 'width', 'min-width', 'align-items'];
+
+        // Intercepta setProperty ANTES do JS aplicar
+        var origSetProperty = CSSStyleDeclaration.prototype.setProperty;
+        CSSStyleDeclaration.prototype.setProperty = function(prop, val, pri) {
+            if (this === logo.style && blockedProps.indexOf(prop) !== -1 && pri === 'important') {
+                return;
+            }
+            return origSetProperty.call(this, prop, val, pri);
+        };
+
+        // Remove estilos que já foram aplicados
         function fixLogo() {
-            var propsToRemove = ['display', 'width', 'min-width', 'align-items'];
-            propsToRemove.forEach(function(p) {
+            blockedProps.forEach(function(p) {
                 if (logo.style.getPropertyPriority(p) === 'important') {
                     logo.style.removeProperty(p);
                 }
