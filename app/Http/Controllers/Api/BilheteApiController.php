@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use App\Services\BetValidator;
 use App\Models\Aposta;
+use App\Services\UnifiedBetService;
 
 
 /**
@@ -25,6 +26,12 @@ use App\Models\Aposta;
 class BilheteApiController extends Controller
 {
     private $arr = [];
+    private UnifiedBetService $unifiedBet;
+
+    public function __construct(UnifiedBetService $unifiedBet)
+    {
+        $this->unifiedBet = $unifiedBet;
+    }
 
     /**
      * 👤 Dados do cambista logado (saldos e totais)
@@ -342,6 +349,9 @@ class BilheteApiController extends Controller
 
             DB::commit();
 
+            // 🔄 Espelha para tabela moderna (bets/bet_items) para liquidação automática
+            $this->unifiedBet->createFromAposta($bet);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Bilhete validado com sucesso!',
@@ -504,6 +514,10 @@ class BilheteApiController extends Controller
             ]);
 
             DB::commit();
+
+            // 🔄 Espelha para tabela moderna (bets/bet_items) para liquidação automática
+            $this->unifiedBet->createFromAposta($bet);
+
             return response()->json($this->formatBilhete($bet));
         } catch (\Exception $e) {
             DB::rollBack();
@@ -648,6 +662,10 @@ class BilheteApiController extends Controller
             ]);
 
             DB::commit();
+
+            // 🔄 Espelha para tabela moderna (bets/bet_items) para liquidação automática
+            $this->unifiedBet->createFromAposta($bet);
+
             return response()->json($this->formatBilhete($bet));
         } catch (\Exception $e) {
             DB::rollBack();
@@ -858,6 +876,10 @@ class BilheteApiController extends Controller
             ]);
 
             DB::commit();
+
+            // 🔄 Sincroniza cancelamento com tabela moderna
+            $this->unifiedBet->cancel($bet);
+
             return response()->json(['message' => 'Bilhete cancelado com sucesso']);
 
         } catch (\Exception $e) {
@@ -1138,6 +1160,10 @@ class BilheteApiController extends Controller
             ]);
 
             DB::commit();
+
+            // 🔄 Sincroniza cash-out com tabela moderna
+            $this->unifiedBet->cashOut($bilhete, $returnAmount);
+
             return response()->json([
                 'message' => 'Cash-out realizado com sucesso!',
                 'return_amount' => $returnAmount,

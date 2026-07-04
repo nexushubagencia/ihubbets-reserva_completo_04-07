@@ -10,9 +10,17 @@ use App\Models\Configuracao;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Services\UnifiedBetService;
 
 class BilheteController extends Controller
 {
+    private UnifiedBetService $unifiedBet;
+
+    public function __construct(UnifiedBetService $unifiedBet)
+    {
+        $this->unifiedBet = $unifiedBet;
+    }
+
     public function indexView()
     {
         return view('admin.bilhetes');
@@ -230,6 +238,9 @@ class BilheteController extends Controller
             $bilhete->save();
             DB::commit();
 
+            // 🔄 Sincroniza status com tabela moderna
+            $this->unifiedBet->syncStatus($bilhete);
+
             return response()->json(['message' => 'Bilhete atualizado com sucesso']);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -369,6 +380,10 @@ class BilheteController extends Controller
             if ($gerente) $gerente->save();
 
             DB::commit();
+
+            // 🔄 Sincroniza status com tabela moderna
+            $this->unifiedBet->syncStatus($bilhete);
+
             return response()->json(['message' => 'sucesso'], 200);
 
         } catch (\Exception $e) {

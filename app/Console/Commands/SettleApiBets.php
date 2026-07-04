@@ -39,13 +39,17 @@ class SettleApiBets extends Command
      */
     public function handle()
     {
-        $this->info("Iniciando liquidação de apostas da API...");
+        // Console não possui middleware de tenant; assume site padrão 1
+        $siteId = config('tenant.site_id', 1);
+        app()->instance('tenant.site_id', $siteId);
+
+        $this->info("Iniciando liquidação de apostas da API (site: {$siteId})...");
 
         $processedBets = [];
 
         BetItem::where('status', 'pending')
             ->whereHas('bet', function($q) {
-                $q->where('status', 'pending');
+                $q->where('status', 'open');
             })
             ->chunk(500, function ($pendingItems) use (&$processedBets) {
                 if ($pendingItems->isEmpty()) {

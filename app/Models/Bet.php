@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Bet extends Model
 {
     protected $fillable = [
-        'site_id', 'user_id', 'manager_id', 'cambista_id', 'client_name', 'amount',
-        'commission_percent', 'commission_amount', 'manager_commission_amount',
-        'potential_payout', 'status', 'selections',
+        'site_id', 'legacy_aposta_id', 'user_id', 'online_user_id', 'manager_id',
+        'cambista_id', 'client_name', 'amount', 'commission_percent', 'commission_amount',
+        'manager_commission_amount', 'potential_payout', 'status', 'selections',
         'ticket_code', 'cashout_pin', 'cash_out_amount', 'can_cash_out', 'is_bonus_bet'
     ];
 
