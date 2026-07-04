@@ -2802,20 +2802,12 @@ export default {
         'body.modal-open .main-header .logo > .logo-mini {',
         '  display: none !important;',
         '}',
-        'body.modal-open .main-header .logo {',
-        '  width: 230px !important;',
-        '  min-width: 230px !important;',
-        '}',
         'body.modal-open.sidebar-mini.sidebar-collapse .main-header .logo > .logo-lg {',
         '  display: block !important;',
         '}',
         'body.modal-open.sidebar-mini.sidebar-collapse .main-header .logo > .logo-mini {',
         '  display: none !important;',
         '}',
-        'body.modal-open.sidebar-mini.sidebar-collapse .main-header .logo {',
-        '  width: 230px !important;',
-        '  min-width: 230px !important;',
-        '}'
       ].join('\n');
       document.head.appendChild(style);
       self._modalStyleTag = style;
