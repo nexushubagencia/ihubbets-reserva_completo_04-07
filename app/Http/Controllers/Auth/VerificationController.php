@@ -3,39 +3,63 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\VerifiesEmails;
+use App\Models\VerifyUser;
+use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 
 class VerificationController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Email Verification Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller is responsible for handling email verification for any
-    | user that recently registered with the application. Emails may also
-    | be re-sent if the user didn't receive the original email message.
-    |
-    */
-
-    use VerifiesEmails;
-
-    /**
-     * Where to redirect users after verification.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/home';
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function verify($code)
     {
-        $this->middleware('auth');
-        $this->middleware('signed')->only('verify');
-        $this->middleware('throttle:6,1')->only('verify', 'resend');
+        $verify = VerifyUser::where('code', $code)
+            ->where('used', false)
+            ->where('type', 'email')
+            ->first();
+
+        if (!$verify) {
+            return redirect('/')->with('warning', 'Link de verificação inválido ou já utilizado.');
+        }
+
+        if ($verify->expires_at && $verify->expires_at->isPast()) {
+            return redirect('/')->with('warning', 'Link de verificação expirado.');
+        }
+
+        $user = User::find($verify->user_id);
+        if (!$user) {
+            return redirect('/')->with('warning', 'Usuário não encontrado.');
+        }
+
+        $user->verified = 1;
+        $user->save();
+
+        $verify->used = true;
+        $verify->save();
+
+        return redirect('/')->with('success', 'Email verificado com sucesso! Agora você pode fazer login.');
+    }
+
+    public static function sendVerification(User $user)
+    {
+        $code = Str::random(40);
+
+        VerifyUser::create([
+            'user_id' => $user->id,
+            'code' => $code,
+            'type' => 'email',
+            'used' => false,
+            'expires_at' => now()->addHours(24),
+        ]);
+
+        $verifyUrl = url('/verificar/' . $code);
+
+        try {
+            Mail::raw("Clique no link para verificar seu email: {$verifyUrl}", function ($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('Verifique seu email - IHUB BETS');
+            });
+        } catch (\Exception $e) {
+            \Log::error('Erro ao enviar email de verificação: ' . $e->getMessage());
+        }
     }
 }

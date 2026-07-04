@@ -59,6 +59,9 @@ Route::get('/share/banner/{id}', function($id) {
 
 Auth::routes();
 
+// Email Verification
+Route::get('/verificar/{code}', [App\Http\Controllers\Auth\VerificationController::class, 'verify']);
+
 // Logout via GET (AdminLTE user menu)
 Route::get('/logout', function () {
     \Illuminate\Support\Facades\Auth::logout();
