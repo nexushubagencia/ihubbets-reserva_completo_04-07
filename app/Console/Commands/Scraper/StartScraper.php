@@ -94,10 +94,15 @@ class StartScraper extends Command
 
     private function isProcessRunning(string $pid): bool
     {
+        // Sanitizar PID - deve ser um número inteiro válido
+        if (!ctype_digit($pid) || (int)$pid <= 0) {
+            return false;
+        }
+
         if (PHP_OS_FAMILY === 'Windows') {
             $output = null;
             exec("tasklist /FI \"PID eq {$pid}\" 2>&1", $output);
-            return str_contains(implode(' ', $output), (string) $pid);
+            return str_contains(implode(' ', $output), $pid);
         }
 
         return file_exists("/proc/{$pid}");

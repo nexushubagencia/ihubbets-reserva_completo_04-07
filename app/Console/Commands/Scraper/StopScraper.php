@@ -43,17 +43,24 @@ class StopScraper extends Command
 
     private function killProcess(string $pid): bool
     {
+        // Sanitizar PID - deve ser um número inteiro válido
+        if (!ctype_digit($pid) || (int)$pid <= 0) {
+            return false;
+        }
+
+        $pid = (int) $pid;
+
         if (PHP_OS_FAMILY === 'Windows') {
             $output = null;
             exec("taskkill /PID {$pid} /F 2>&1", $output, $exitCode);
             return $exitCode === 0;
         }
 
-        posix_kill((int) $pid, SIGTERM);
+        posix_kill($pid, SIGTERM);
         usleep(500000);
 
         if (file_exists("/proc/{$pid}")) {
-            posix_kill((int) $pid, SIGKILL);
+            posix_kill($pid, SIGKILL);
         }
 
         return !file_exists("/proc/{$pid}");
