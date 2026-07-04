@@ -35,7 +35,7 @@ class Bet extends Model
     protected static function booted()
     {
         static::addGlobalScope('site', function ($query) {
-            $query->where('site_id', config('tenant.site_id', 1));
+            $query->where('site_id', app('tenant.site_id'));
         });
     }
 }
