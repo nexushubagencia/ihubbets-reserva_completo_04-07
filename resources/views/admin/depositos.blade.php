@@ -18,8 +18,9 @@
                     <h3 class="card-title text-lg font-weight-bold text-secondary">
                         <i class="fas fa-list-ul mr-2 text-primary"></i> Relatório de Depósitos (Mercado Pago)
                     </h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool text-primary" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i></button>
+                    <div class="card-tools d-flex align-items-center">
+                        <input type="date" id="filter_date" class="form-control form-control-sm mr-2" style="max-width: 150px;" title="Filtrar por data">
+                        <button type="button" class="btn btn-tool text-primary" id="btn-reload"><i class="fas fa-sync-alt"></i></button>
                     </div>
                 </div>
                 <div class="card-body pt-0">
@@ -85,6 +86,9 @@ $(document).ready(function() {
         language: { url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Portuguese-Brasil.json" },
         ajax: {
             url: "{{ route('admin.depositos-list') }}",
+            data: function(d) {
+                d.date = $('#filter_date').val();
+            },
             dataSrc: ''
         },
         order: [[4, 'desc']],
@@ -136,6 +140,14 @@ $(document).ready(function() {
         drawCallback: function() {
             $('.dataTables_paginate > .paginate_button').addClass('btn btn-sm btn-light mx-1 shadow-sm');
         }
+    });
+
+    $('#filter_date').on('change', function() {
+        table.ajax.reload();
+    });
+    
+    $('#btn-reload').on('click', function() {
+        table.ajax.reload();
     });
 });
 </script>
