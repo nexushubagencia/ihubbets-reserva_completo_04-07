@@ -154,11 +154,7 @@ Route::group(['middleware' => ['web', 'api']], function () {
     });
     Route::get('/get-game-list', function() { return response()->json([]); });
     Route::post('/play-game', function(Request $request) {
-        $gameId = $request->input('game_id') ?? $request->input('gameId');
-        if (!$gameId) {
-            return response()->json(['error' => 'game_id obrigatório'], 422);
-        }
-        return app(\App\Http\Controllers\Api\Casino\CasinoGameController::class)->launch($request, $gameId);
+        return response()->json(['error' => 'Cassino desativado'], 404);
     });
 
     // ═══════ ROTAS PÚBLICAS RESTAURADAS DO ORIGINAL ═══════
@@ -326,20 +322,6 @@ Route::group(['prefix' => 'saque', 'middleware' => ['web', 'auth']], function ()
     Route::post('/novo', [App\Http\Controllers\Api\SaquesApiController::class, 'novoSaque']);
     Route::get('/listar', [App\Http\Controllers\Api\SaquesApiController::class, 'listSaques']);
 });
-
-// ═══════ CASINO V3 API ═══════
-Route::group(['middleware' => ['web']], function () {
-    Route::get('/casino/games', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'index']);
-    Route::get('/casino/games/featured', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'featured']);
-    Route::get('/casino/games/all', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'allGames']);
-    Route::get('/casino/game/{id}', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'show']);
-    Route::post('/casino/games/{gameId}/launch', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'launch']);
-    Route::post('/casino/game/{id}/favorite', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'toggleFavorite']);
-    Route::post('/casino/game/{id}/like', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'toggleLike']);
-});
-
-// ═══════ CASINO V3 WEBHOOKS ═══════
-Route::post('/webhook/casino/playfiver', [App\Http\Controllers\Api\Casino\CasinoWebhookController::class, 'playfiver']);
 
 // ═══════ DEPOSITOS PIX (PRIMEPAG) ═══════
 Route::group(['middleware' => ['web', 'auth']], function () {

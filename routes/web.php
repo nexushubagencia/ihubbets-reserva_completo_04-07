@@ -45,7 +45,6 @@ use App\Http\Controllers\Admin\ClientesController;
 */
 
 Route::get('/', [\App\Http\Controllers\Api\ApiController::class, 'index']);
-Route::get('/cassino', [\App\Http\Controllers\CassinoController::class, 'index'])->name('cassino.index');
 Route::get('/generate-css', [SettingsController::class, 'generateCss'])->name('generate-css');
 
 // Banner de Compartilhamento (Gerador de Imagem)
@@ -428,16 +427,6 @@ Route::middleware(['auth', 'admin', 'tenant', 'activity'])->prefix('admin')->gro
     Route::put('traducoes/{id}', [\App\Http\Controllers\Admin\TraducaoController::class, 'update'])->name('admin.traducoes.update');
     Route::delete('traducoes/{id}', [\App\Http\Controllers\Admin\TraducaoController::class, 'destroy'])->name('admin.traducoes.destroy');
     Route::post('traducoes/import', [\App\Http\Controllers\Admin\TraducaoController::class, 'importFromApi'])->name('admin.traducoes.import');
-
-    // ============================================================
-    // CASINO V3
-    // ============================================================
-    Route::get('casino/games', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'games'])->name('admin.casino.games');
-    Route::get('casino/providers', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'providers'])->name('admin.casino.providers');
-    Route::get('casino/categories', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'categories'])->name('admin.casino.categories');
-    Route::get('casino/orders', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'orders'])->name('admin.casino.orders');
-    Route::get('casino/keys', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'keys'])->name('admin.casino.keys');
-    Route::post('casino/keys', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'saveKeys']);
 
     // ============================================================
     // PROMOÇÕES (CRUD Completo)

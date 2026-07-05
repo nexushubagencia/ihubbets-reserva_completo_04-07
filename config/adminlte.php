@@ -639,50 +639,7 @@ return [
         ],
 
         // ============================================================
-        // 9. CASSINO (desativado por padrão, master ativa)
-        // ============================================================
-        ['header' => 'CASSINO', 'module' => 'cassino'],
-        [
-            'text' => 'Gerenciar Cassino',
-            'icon' => 'fas fa-fw fa-dice',
-            'can'  => 'adm',
-            'module' => 'cassino',
-            'submenu' => [
-                [
-                    'text' => 'Jogos',
-                    'url'  => 'admin/casino/games',
-                    'icon' => 'fas fa-fw fa-gamepad',
-                    'module' => 'cassino',
-                ],
-                [
-                    'text' => 'Provedores',
-                    'url'  => 'admin/casino/providers',
-                    'icon' => 'fas fa-fw fa-cubes',
-                    'module' => 'cassino',
-                ],
-                [
-                    'text' => 'Categorias',
-                    'url'  => 'admin/casino/categories',
-                    'icon' => 'fas fa-fw fa-tags',
-                    'module' => 'cassino',
-                ],
-                [
-                    'text' => 'Apostas',
-                    'url'  => 'admin/casino/orders',
-                    'icon' => 'fas fa-fw fa-history',
-                    'module' => 'cassino',
-                ],
-                [
-                    'text' => 'Chaves de API',
-                    'url'  => 'admin/casino/keys',
-                    'icon' => 'fas fa-fw fa-key',
-                    'module' => 'cassino',
-                ],
-            ]
-        ],
-
-        // ============================================================
-        // 10. PERSONALIZAÇÃO
+        // 9. PERSONALIZAÇÃO
         // ============================================================
         ['header' => 'PERSONALIZAÇÃO'],
         [
