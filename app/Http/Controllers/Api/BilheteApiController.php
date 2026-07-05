@@ -1174,4 +1174,113 @@ class BilheteApiController extends Controller
             return response()->json(['message' => 'Erro ao processar cash-out'], 500);
         }
     }
+
+    // Apostas Loto (Migrado do REI BET)
+    public function sendApostaLoto(Request $request)
+    {
+        $siteId = config('tenant.site_id', 1);
+        $user = \App\Models\User::where('id', auth()->user()->id)->lockForUpdate()->first();
+
+        if ($user && ($user->situacao ?? '') == 'ativo') {
+            $hora = date('Hi');
+
+            $conf = \App\Models\Configuracao::where('site_id', $siteId)->first();
+            $bloq_aposta_madrugada = $conf->bloq_aposta_madrugada ?? 'Nao';
+
+            if ($bloq_aposta_madrugada == 'Sim' && $hora >= '0100' &&  $hora <= '0559') {
+                return response()->json(['message' => 'error'], 404);
+            }
+
+            // Gera cupom
+            $valorMaximo = 7;
+            $varcaracteres = 'ABCDEFGHIJLMNOPRSTUVXZYW0123456789ABCDGHSMHHHK';
+            $cupom = strtoupper(Str::random($valorMaximo));
+
+            // Comissão
+            $comissao = $request->valor_apostado * ($user->comissao_loto ?? 0) / 100;
+
+            DB::beginTransaction();
+            try {
+                $aposta = \App\Models\Aposta::create([
+                    'user_id'               => $user->id,
+                    'adm_id'                => $user->adm_id ?? 1,
+                    'gerente_id'            => $user->gerente_id,
+                    'site_id'               => $siteId,
+                    'modalidade'            => 'Loto',
+                    'cupom'                 => $cupom,
+                    'status'                => 'Aberto',
+                    'concurso'              => $request->concurso,
+                    'valor_apostado'        => $request->valor_apostado,
+                    'retorno_possivel'      => $request->retorno_possivel,
+                    'vendedor'              => $user->name,
+                    'cliente'               => $request->cliente,
+                    'tipo'                  => $request->tipo,
+                    'comicao'               => $comissao,
+                    'cotacao'               => $request->cotacao,
+                    'total_palpites'        => count($request->palpites ?? []),
+                    'andamento_palpites'    => count($request->palpites ?? []),
+                    'acertos_palpites'      => 0,
+                    'erros_palpites'        => 0,
+                    'devolvidos_palpites'   => 0,
+                ]);
+
+                foreach ($request->palpites as $palpite) {
+                    \App\Models\PalpiteLoto::create([
+                        'aposta_id'     => $aposta->id,
+                        'tipo'          => $request->tipo,
+                        'dezena'        => $palpite['num'] ?? $palpite,
+                        'status'        => 'Aberto',
+                        'concurso'      => $request->concurso,
+                    ]);
+                }
+
+                // Atualizações Usuário (desconta saldo)
+                if (in_array($user->role ?? '', ['cliente', 'client'])) {
+                    if ($user->saldo >= $request->valor_apostado) {
+                        $user->saldo -= $request->valor_apostado;
+                    } else {
+                        DB::rollBack();
+                        return response()->json(['message' => 'Saldo insuficiente'], 422);
+                    }
+                }
+
+                $user->quantidade_aposta = ($user->quantidade_aposta ?? 0) + 1;
+                $user->entrada_loto = ($user->entrada_loto ?? 0) + $request->valor_apostado;
+                $user->comissoes = ($user->comissoes ?? 0) + $comissao;
+                $user->save();
+
+                if ($user->gerente_id) {
+                    $gerente = \App\Models\User::find($user->gerente_id);
+                    if ($gerente) {
+                        $gerente->quantidade_aposta = ($gerente->quantidade_aposta ?? 0) + 1;
+                        $gerente->entradas = ($gerente->entradas ?? 0) + $request->valor_apostado;
+                        $gerente->comissoes = ($gerente->comissoes ?? 0) + $comissao;
+                        $gerente->save();
+                    }
+                }
+
+                // Transação unificada
+                DB::table('transactions')->insert([
+                    'site_id'    => $siteId,
+                    'user_id'    => $user->id,
+                    'type'       => 'bet',
+                    'amount'     => -$request->valor_apostado,
+                    'gateway_ref'=> "bet_{$aposta->id}",
+                    'status'     => 'completed',
+                    'description'=> "Aposta Loto (Cupom: {$cupom})",
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::commit();
+                return response()->json(['id' => $aposta->id, 'cupom' => $cupom]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::error('Loto Bet Error: ' . $e->getMessage());
+                return response()->json(['message' => 'Erro interno ao processar aposta'], 500);
+            }
+        }
+
+        return response()->json(['message' => 'Usuário inativo ou não autorizado'], 403);
+    }
 }

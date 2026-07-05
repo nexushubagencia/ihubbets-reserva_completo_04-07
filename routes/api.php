@@ -224,6 +224,7 @@ Route::group(['middleware' => ['web', 'auth', 'throttle:30,1']], function () {
     // Envio de apostas (Autenticado - Aposta Direta)
     Route::post('/send-aposta-auth', [App\Http\Controllers\Api\BilheteApiController::class, 'sendAposta']);
     Route::post('/send-aposta-site-auth', [App\Http\Controllers\Api\BilheteApiController::class, 'sendApostaSite']);
+    Route::post('/send-aposta-loto', [App\Http\Controllers\Api\BilheteApiController::class, 'sendApostaLoto']);
 
     // Envio aposta Live
     Route::post('/send-aposta-live', [App\Http\Controllers\Api\BilheteApiController::class, 'sendApostaLive']);
