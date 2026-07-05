@@ -3,48 +3,76 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PlayfiverGame;
-use App\Models\PlayfiverProvider;
-use App\Models\Site;
+use App\Models\Casino\CasinoGame;
+use App\Models\Casino\CasinoProvider;
 
 class CassinoController extends Controller
 {
     public function index(Request $request)
     {
-        $siteId = config('tenant.site_id', 1);
-        $site = Site::find($siteId) ?? Site::first();
-
-        $providers = PlayfiverProvider::where('site_id', $siteId)
+        $providers = CasinoProvider::withCount(['games' => fn ($q) => $q->where('status', 1)])
+            ->having('games_count', '>', 0)
             ->where('status', 1)
             ->orderBy('name')
             ->get();
 
-        $gamesQuery = PlayfiverGame::where('site_id', $siteId)
-            ->where('status', 1);
-
         if ($request->filled('provider')) {
-            $gamesQuery->where('provider', $request->provider);
+            return $this->showProvider($request, $providers);
         }
 
-        if ($request->filled('search')) {
-            $gamesQuery->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('provider', 'like', "%{$request->search}%");
+        $search = $request->input('search');
+
+        $topGamesQuery = CasinoGame::with('provider')->where('status', 1);
+        if ($search) {
+            $topGamesQuery->where(function ($q) use ($search) {
+                $q->where('game_name', 'like', "%{$search}%")
+                  ->orWhere('game_code', 'like', "%{$search}%")
+                  ->orWhereHas('provider', fn ($pq) => $pq->where('name', 'like', "%{$search}%"));
             });
         }
+        $topGames = $topGamesQuery->orderByDesc('views')
+            ->orderBy('game_name')
+            ->limit(18)
+            ->get();
 
-        $games = $gamesQuery->orderBy('is_popular', 'desc')
-            ->orderBy('name')
+        $gamesByProvider = [];
+        foreach ($providers as $provider) {
+            $query = CasinoGame::where('provider_id', $provider->id)
+                ->where('status', 1);
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('game_name', 'like', "%{$search}%")
+                      ->orWhere('game_code', 'like', "%{$search}%");
+                });
+            }
+            $games = $query->orderByDesc('is_featured')
+                ->orderByDesc('views')
+                ->orderBy('game_name')
+                ->limit(18)
+                ->get();
+            if ($games->isNotEmpty()) {
+                $gamesByProvider[$provider->name] = $games;
+            }
+        }
+
+        return view('cassino.index', compact('providers', 'topGames', 'gamesByProvider'));
+    }
+
+    protected function showProvider(Request $request, $providers)
+    {
+        $provider = CasinoProvider::where('name', $request->provider)
+            ->orWhere('code', $request->provider)
+            ->firstOrFail();
+
+        $games = CasinoGame::with('provider')
+            ->where('provider_id', $provider->id)
+            ->where('status', 1)
+            ->orderByDesc('is_featured')
+            ->orderByDesc('views')
+            ->orderBy('game_name')
             ->paginate(48)
             ->withQueryString();
 
-        $popularGames = PlayfiverGame::where('site_id', $siteId)
-            ->where('status', 1)
-            ->where('is_popular', 1)
-            ->orderBy('name')
-            ->limit(12)
-            ->get();
-
-        return view('cassino.index', compact('site', 'providers', 'games', 'popularGames'));
+        return view('cassino.provider', compact('providers', 'provider', 'games'));
     }
 }

@@ -54,27 +54,62 @@ class ConfiguracaoController extends Controller
     public function index()
     {
         $siteId = app('tenant.site_id');
-        $config = Configuracao::where('site_id', $siteId)->get();
+        $config = Configuracao::where('site_id', $siteId)->first();
         $site = Site::find($siteId);
-        
-        if ($config->isNotEmpty() && $site) {
-            $config[0]->mercadopago_access_token = $site->pix_client_secret;
-            $config[0]->social_instagram = $site->social_instagram;
-            $config[0]->social_facebook = $site->social_facebook;
-            $config[0]->social_twitter = $site->social_twitter;
-            $config[0]->social_youtube = $site->social_youtube;
-            $config[0]->whatsapp_number = $site->whatsapp_number;
-            $config[0]->about_us = $site->about_us;
-            $config[0]->op_futebol = $site->op_futebol;
-            $config[0]->op_quininha = $site->op_quininha;
-            $config[0]->op_seninha = $site->op_seninha;
-            $config[0]->op_basquete = $site->op_basquete;
-            $config[0]->op_tenis = $site->op_tenis;
-            $config[0]->op_volei = $site->op_volei;
-            $config[0]->op_ufcbox = $site->op_ufcbox;
+
+        if (!$config) {
+            $config = Configuracao::create([
+                'site_id' => $siteId,
+                'valor_mini_aposta' => 1,
+                'valor_max_aposta' => 1000,
+                'premio_max' => 20000,
+                'menor_valor_loto' => 1,
+                'max_valor_loto' => 1000,
+                'cotacao_mini_bilhete' => 1.01,
+                'cotacao_max_bilhete' => 1000.00,
+                'quantidade_jogos_mini_bilhete' => 1,
+                'quantidade_jogos_max_bilhete' => 30,
+                'bloquear_odd_abaixo' => 1.01,
+                'travar_odd_acima' => 500,
+                'aposta_ativa' => 'Sim',
+                'bloq_aposta_madrugada' => 'Não',
+                'cambista_pode_cancelar' => 'Sim',
+                'tempo_limite_camb_cancela_aposta' => 30,
+                'futebol_ao_vivo' => 'Sim',
+                'time_live' => 80,
+                'cotacao_live' => 1.01,
+                'op_futebol' => 'Sim',
+                'op_basquete' => 'Não',
+                'op_tenis' => 'Não',
+                'op_volei' => 'Não',
+                'op_ufcbox' => 'Não',
+                'op_quininha' => 'Não',
+                'op_seninha' => 'Não',
+                'op_cassino' => 'Não',
+                'comissao_premio' => 0,
+                'max_bonus_conversion' => 500,
+                'alerta_aposta_acima' => 100,
+            ]);
         }
-        
-        return $config;
+
+        if ($site) {
+            $config->mercadopago_access_token = $site->pix_client_secret;
+            $config->social_instagram = $site->social_instagram;
+            $config->social_facebook = $site->social_facebook;
+            $config->social_twitter = $site->social_twitter;
+            $config->social_youtube = $site->social_youtube;
+            $config->whatsapp_number = $site->whatsapp_number;
+            $config->op_futebol = $site->op_futebol ?? $config->op_futebol;
+            $config->op_quininha = $site->op_quininha ?? $config->op_quininha;
+            $config->op_seninha = $site->op_seninha ?? $config->op_seninha;
+            $config->op_basquete = $site->op_basquete ?? $config->op_basquete;
+            $config->op_tenis = $site->op_tenis ?? $config->op_tenis;
+            $config->op_volei = $site->op_volei ?? $config->op_volei;
+            $config->op_ufcbox = $site->op_ufcbox ?? $config->op_ufcbox;
+            $config->op_cassino = $site->op_cassino ?? $config->op_cassino;
+        }
+
+        return collect([$config]);
     }
 
     public function update(Request $request, $id)
@@ -94,7 +129,6 @@ class ConfiguracaoController extends Controller
                 'social_twitter' => $data['social_twitter'] ?? null,
                 'social_youtube' => $data['social_youtube'] ?? null,
                 'whatsapp_number' => $data['whatsapp_number'] ?? null,
-                'about_us' => $data['about_us'] ?? null,
                 'op_futebol' => $data['op_futebol'] ?? null,
                 'op_quininha' => $data['op_quininha'] ?? null,
                 'op_seninha' => $data['op_seninha'] ?? null,
@@ -102,19 +136,19 @@ class ConfiguracaoController extends Controller
                 'op_tenis' => $data['op_tenis'] ?? null,
                 'op_volei' => $data['op_volei'] ?? null,
                 'op_ufcbox' => $data['op_ufcbox'] ?? null,
+                'op_cassino' => $data['op_cassino'] ?? null,
             ];
 
-            // Remove from configuracao payload to avoid column not found in 'configuracaos' table
             $fieldsToRemove = [
                 'mercadopago_access_token', 'social_instagram', 'social_facebook', 
-                'social_twitter', 'social_youtube', 'whatsapp_number', 'about_us'
+                'social_twitter', 'social_youtube', 'whatsapp_number',
+                'op_futebol', 'op_quininha', 'op_seninha', 'op_basquete', 'op_tenis', 'op_volei', 'op_ufcbox', 'op_cassino'
             ];
 
             foreach ($fieldsToRemove as $f) {
                 if (isset($data[$f])) unset($data[$f]);
             }
 
-            // Garante que campos de 'op_' sejam mantidos se existirem no payload
             $configuracao->update($data);
 
             $siteId = app('tenant.site_id');

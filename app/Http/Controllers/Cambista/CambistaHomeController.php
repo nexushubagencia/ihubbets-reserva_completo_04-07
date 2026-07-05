@@ -26,22 +26,22 @@ class CambistaHomeController extends Controller
             ->where('user_id', $user->id)
             ->where('site_id', $siteId)
             ->whereDate('created_at', $today)
-            ->whereNotIn('status', ['Cancelado'])
-            ->sum('valor_apostado');
+            ->whereNotIn('status', ['cancelled'])
+            ->sum('amount');
 
         $saidasHoje = (float) DB::table('bets')
             ->where('user_id', $user->id)
             ->where('site_id', $siteId)
             ->whereDate('created_at', $today)
-            ->where('status', 'Ganhou')
-            ->sum('retorno_possivel');
+            ->where('status', 'won')
+            ->sum('potential_payout');
 
         $comissoesHoje = (float) DB::table('bets')
             ->where('user_id', $user->id)
             ->where('site_id', $siteId)
             ->whereDate('created_at', $today)
-            ->whereNotIn('status', ['Cancelado'])
-            ->sum('comicao');
+            ->whereNotIn('status', ['cancelled'])
+            ->sum('commission_amount');
 
         $bilhetesAbertos = DB::table('bets')
             ->where('user_id', $user->id)

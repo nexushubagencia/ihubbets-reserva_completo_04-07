@@ -8,7 +8,11 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
-        // API-Football (provedor principal)
+        // BetsAPI (provedor PRINCIPAL)
+        Commands\BetsApi\BetsApiInsertMatches::class,
+        Commands\BetsApi\BetsApiUpdateOdds::class,
+
+        // API-Football (backup/reserva)
         Commands\ApiFootball\InsertMatches::class,
         Commands\ApiFootball\UpdateOdds::class,
         Commands\ApiFootball\LiveOdds::class,
@@ -38,11 +42,20 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        // === API-Football (provedor principal) ===
-        $schedule->command('apifootball:live')->everyMinute()->withoutOverlapping();
-        // DESABILITADO: BetsAPI token retorna 403 - usar API-Football
-        // $schedule->command('ihub:sync-matches')->hourly()->withoutOverlapping();
-        // $schedule->command('ihub:sync-live')->everyFiveMinutes()->withoutOverlapping();
+        // === BetsAPI (PROVEDOR PRINCIPAL) ===
+        $schedule->command('betsapi:insert_matches --sport=football --pages=3')->everySixHours()->withoutOverlapping();
+        $schedule->command('betsapi:insert_matches --sport=basketball --pages=2')->daily()->withoutOverlapping();
+        $schedule->command('betsapi:insert_matches --sport=tennis --pages=2')->daily()->withoutOverlapping();
+        $schedule->command('betsapi:insert_matches --sport=volleyball --pages=1')->daily()->withoutOverlapping();
+        $schedule->command('betsapi:insert_matches --sport=mma --pages=1')->daily()->withoutOverlapping();
+
+        $schedule->command('betsapi:update_odds --sport=football')->everyFifteenMinutes()->withoutOverlapping();
+        $schedule->command('betsapi:update_odds --sport=basketball --live=1')->everyFiveMinutes()->withoutOverlapping();
+        $schedule->command('betsapi:update_odds --sport=football --live=1')->everyMinute()->withoutOverlapping();
+
+        // === API-Football (BACKUP - desabilitado se BetsAPI ativo) ===
+        // $schedule->command('apifootball:live')->everyMinute()->withoutOverlapping();
+
         $schedule->command('ihub:settle-api-bets')->everyFiveMinutes()->withoutOverlapping();
 
         // === Cache - broadcast de dados para o frontend ===
@@ -57,10 +70,6 @@ class Kernel extends ConsoleKernel
         // === Loto - resultados diarios as 19:30 ===
         $schedule->command('command:sendResultsQuina')->dailyAt('19:30')->withoutOverlapping();
         $schedule->command('command:sendResultSena')->dailyAt('19:30')->withoutOverlapping();
-
-        // === Multi-sport live (OFF-SEASON - desabilitado até setembro) ===
-        // $schedule->command('apifootball:live-multi --sport=basketball')->everyMinute()->withoutOverlapping();
-        // $schedule->command('apifootball:live-multi --sport=volleyball')->everyMinute()->withoutOverlapping();
     }
 
     protected function commands(): void

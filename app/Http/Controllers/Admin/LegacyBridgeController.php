@@ -46,7 +46,7 @@ class LegacyBridgeController extends Controller
                 "id" => $b->id,
                 "titulo" => "Banner",
                 "link" => "#",
-                "foto" => $b->image,
+                "foto" => $b->image_path,
                 "status" => 1
             ];
         });

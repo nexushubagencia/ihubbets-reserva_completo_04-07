@@ -19,7 +19,7 @@ class UserController extends Controller
 
         // Se for Gerente, filtra apenas os DELE
         if ($user->role === 'manager') {
-            $query->where('manager_id', $user->id);
+            $query->where('gerente_id', $user->id);
         }
 
         $users = $query->get();
@@ -40,7 +40,7 @@ class UserController extends Controller
             'password' => 'required|string|min:6',
             'role' => 'required|in:manager,cambista,admin',
             'region_id' => 'nullable|exists:regions,id',
-            'manager_id' => 'nullable|exists:master_users,id',
+            'gerente_id' => 'nullable|exists:master_users,id',
             'commission_percent' => 'nullable|numeric|max:100',
             'can_cancel_tickets' => 'nullable|boolean'
         ]);
@@ -50,7 +50,7 @@ class UserController extends Controller
 
         // Se for gerente criando, ele é o pai automático
         if ($currentUser->role === 'manager') {
-            $data['manager_id'] = $currentUser->id;
+            $data['gerente_id'] = $currentUser->id;
             $data['role'] = 'cambista'; // Gerente só pode criar cambista
         }
         
@@ -65,7 +65,7 @@ class UserController extends Controller
         $currentUser = auth()->user();
 
         // Segurança: Gerente só edita o dele
-        if ($currentUser->role === 'manager' && $user->manager_id !== $currentUser->id) {
+        if ($currentUser->role === 'manager' && $user->gerente_id !== $currentUser->id) {
             return redirect()->back()->with('error', 'Acesso negado.');
         }
 
@@ -74,7 +74,7 @@ class UserController extends Controller
             'balance' => 'sometimes|numeric',
             'commission_percent' => 'sometimes|numeric|max:100',
             'password' => 'nullable|string|min:6',
-            'status' => 'sometimes|in:active,blocked',
+            'status' => 'sometimes|in:1,0',
             'can_cancel_tickets' => 'sometimes|boolean'
         ]);
 
@@ -99,7 +99,7 @@ class UserController extends Controller
         $currentUser = auth()->user();
 
         // SEGURANÇA: Gerente só bloqueia o cambista DELE.
-        if ($currentUser->role === 'manager' && $user->manager_id !== $currentUser->id) {
+        if ($currentUser->role === 'manager' && $user->gerente_id !== $currentUser->id) {
             return redirect()->back()->with('error', 'Acesso negado.');
         }
 
@@ -108,7 +108,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'Você não tem permissão para bloquear um Administrador.');
         }
 
-        $user->status = ($user->status === 'active') ? 'blocked' : 'active';
+        $user->status = ($user->status == 1) ? 0 : 1;
         $user->save();
 
         return redirect()->back()->with('success', 'Status do usuário alterado!');
@@ -124,9 +124,9 @@ class UserController extends Controller
         $query = User::where('site_id', $siteId)->where('role', 'player');
 
         if ($user->role === 'cambista') {
-            $query->where('manager_id', $user->id); // Cambista vê os clientes que ele cadastrou
+            $query->where('cambista_id', $user->id); // Cambista vê os clientes que ele cadastrou
         } elseif ($user->role === 'manager') {
-            $query->whereIn('manager_id', User::where('manager_id', $user->id)->pluck('id'));
+            $query->whereIn('gerente_id', User::where('gerente_id', $user->id)->pluck('id'));
         }
 
         $users = $query->get();

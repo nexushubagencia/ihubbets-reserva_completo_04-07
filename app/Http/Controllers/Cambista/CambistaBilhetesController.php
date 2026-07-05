@@ -48,7 +48,7 @@ class CambistaBilhetesController extends Controller
         $user = Auth::user();
         $siteId = app('tenant.site_id');
 
-        $bilhete = Aposta::with('palpites')
+        $bilhete = DB::table('bets')
             ->where('id', $id)
             ->where('user_id', $user->id)
             ->where('site_id', $siteId)
@@ -58,7 +58,10 @@ class CambistaBilhetesController extends Controller
             return redirect()->route('cambista.bilhetes')->with('error', 'Bilhete não encontrado.');
         }
 
-        $config = Configuracao::where('site_id', $siteId)->first();
+        $palpites = DB::table('bet_items')->where('bet_id', $bilhete->id)->get();
+        $bilhete->palpites = $palpites;
+
+        $config = DB::table('configuracaos')->where('site_id', $siteId)->first();
         $podeCancelar = $config && $config->cambista_pode_cancelar;
 
         return view('cambista.bilhete-detail', compact('user', 'bilhete', 'podeCancelar'));
@@ -69,12 +72,13 @@ class CambistaBilhetesController extends Controller
         $user = Auth::user();
         $siteId = app('tenant.site_id');
 
-        $config = Configuracao::where('site_id', $siteId)->first();
+        $config = DB::table('configuracaos')->where('site_id', $siteId)->first();
         if (!$config || !$config->cambista_pode_cancelar) {
             return back()->with('error', 'Você não tem permissão para cancelar apostas.');
         }
 
-        $bilhete = Aposta::where('id', $id)
+        $bilhete = DB::table('bets')
+            ->where('id', $id)
             ->where('user_id', $user->id)
             ->where('site_id', $siteId)
             ->first();
@@ -99,36 +103,26 @@ class CambistaBilhetesController extends Controller
             $cambista = \App\Models\User::find($user->id);
 
             $cambista->quantidade_aposta = max(0, $cambista->quantidade_aposta - 1);
-            $cambista->entradas = max(0, $cambista->entradas - $bilhete->valor_apostado);
-            $cambista->comissoes = max(0, $cambista->comissoes - $bilhete->comicao);
+            $cambista->entradas = max(0, $cambista->entradas - $bilhete->amount);
+            $cambista->comissoes = max(0, $cambista->comissoes - $bilhete->commission_amount);
 
-            if (in_array($bilhete->modalidade, ['Quininha', 'Seninha'])) {
-                $cambista->saldo_loto += $bilhete->valor_apostado;
-            } else {
-                $cambista->balance += $bilhete->valor_apostado;
-                $cambista->saldo_simples += $bilhete->valor_apostado;
-                if ($bilhete->total_palpites > 1) {
-                    $cambista->entrada_casadinha = max(0, $cambista->entrada_casadinha - $bilhete->valor_apostado);
-                } else {
-                    $cambista->entrada_simples = max(0, $cambista->entrada_simples - $bilhete->valor_apostado);
-                }
-            }
+            $cambista->balance += $bilhete->amount;
+            $cambista->saldo_simples += $bilhete->amount;
 
             $cambista->save();
 
-            $bilhete->status = 'Cancelado';
-            $bilhete->save();
+            DB::table('bets')->where('id', $bilhete->id)->update(['status' => 'cancelled']);
 
-            DB::table('palpites')->where('aposta_id', $bilhete->id)->update(['status' => 'Cancelado']);
+            DB::table('bet_items')->where('bet_id', $bilhete->id)->update(['status' => 'cancelled']);
 
             DB::table('transactions')->insert([
                 'site_id'     => $siteId,
                 'user_id'     => $user->id,
                 'type'        => 'bet_cancelled',
-                'amount'      => $bilhete->valor_apostado,
+                'amount'      => $bilhete->amount,
                 'gateway_ref' => "aposta_{$bilhete->id}_cambista_cancel",
                 'status'      => 'completed',
-                'description' => "Bilhete #{$bilhete->codigo_bilhete} cancelado pelo cambista",
+                'description' => "Bilhete #{$bilhete->ticket_code} cancelado pelo cambista",
                 'created_at'  => now(),
                 'updated_at'  => now(),
             ]);

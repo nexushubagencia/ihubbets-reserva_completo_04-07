@@ -183,6 +183,7 @@ class ApiController extends Controller
                     "op_ufcbox" => $site->op_ufcbox ?? 'Sim',
                     "op_futebol" => $site->op_futebol ?? 'Sim',
                     "op_volei" => $site->op_volei ?? 'Sim',
+                    "op_cassino" => $site->op_cassino ?? 'Não',
                 ]
             ),
             "settings" => [
@@ -273,6 +274,7 @@ class ApiController extends Controller
             'op_tenis' => $site->op_tenis ?? 'Sim',
             'op_quininha' => ($site->active_loto ?? 1) ? ($site->op_quininha ?? 'Não') : 'Não',
             'op_seninha' => ($site->active_loto ?? 1) ? ($site->op_seninha ?? 'Não') : 'Não',
+            'op_cassino' => $site->op_cassino ?? 'Não',
             // Datas
             'op_hoje' => 'sim',
             'op_amanha' => 'sim',

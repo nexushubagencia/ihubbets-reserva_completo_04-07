@@ -7,6 +7,7 @@ use App\Models\MatchModel;
 use App\Models\ApifootballLeague;
 use App\Models\Teams;
 use App\Services\ApiProviderService;
+use App\Services\TranslationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -169,6 +170,10 @@ class InsertMatches extends Command
         $leagueId   = $fixture['league']['id'] ?? 0;
         $leagueName = $fixture['league']['name'] ?? '';
         $leagueCC   = $fixture['league']['country'] ?? '';
+
+        $homeName = TranslationService::traduzirTime($homeName);
+        $awayName = TranslationService::traduzirTime($awayName);
+        $leagueName = TranslationService::traduzirLiga($leagueName, $leagueCC);
 
         $homeGoals  = $fixture['goals']['home'] ?? 0;
         $awayGoals  = $fixture['goals']['away'] ?? 0;

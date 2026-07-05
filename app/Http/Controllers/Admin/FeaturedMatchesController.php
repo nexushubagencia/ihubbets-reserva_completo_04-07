@@ -35,7 +35,7 @@ class FeaturedMatchesController extends Controller
         }
 
         $site = \App\Models\Site::find($siteId);
-        $settings = \DB::table('site_settings')->where('site_id', $site->id)->first();
+        $settings = $site ? \DB::table('site_settings')->where('site_id', $site->id)->first() : null;
         $themeColor = $settings->button_odds_color ?? '#1aa6d0';
 
         return view('admin.featured.index', compact('featured', 'manualEvents', 'themeColor'));

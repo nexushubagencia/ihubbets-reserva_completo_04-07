@@ -47,6 +47,7 @@ class Configuracao extends Model
     'op_tenis',
     'op_volei',
     'op_e_sports',
+    'op_cassino',
     // Live
     'futebol_ao_vivo',
     'time_live',

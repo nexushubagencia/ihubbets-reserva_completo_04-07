@@ -461,6 +461,7 @@ class MasterPanelController extends Controller
                 'active_extrato'      => $request->has('active_extrato') ? 1 : 0,
                 'active_banner_generator' => $request->has('active_banner_generator') ? 1 : 0,
                 'active_gateway_deposito' => $request->has('active_gateway_deposito') ? 1 : 0,
+                'active_casino'           => $request->has('active_casino') ? 1 : 0,
                 'created_at'     => now(),
                 'updated_at'     => now(),
             ]);
@@ -540,6 +541,7 @@ class MasterPanelController extends Controller
                 'active_extrato'      => $request->has('active_extrato') ? 1 : 0,
                 'active_banner_generator' => $request->has('active_banner_generator') ? 1 : 0,
                 'active_gateway_deposito' => $request->has('active_gateway_deposito') ? 1 : 0,
+                'active_casino'           => $request->has('active_casino') ? 1 : 0,
                 'updated_at'    => now(),
             ]);
 

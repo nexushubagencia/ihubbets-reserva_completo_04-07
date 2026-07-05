@@ -80,11 +80,6 @@ return [
         'master_token'=> env('SCRAPER_MASTER_TOKEN'),
     ],
 
-    'playfiver' => [
-        'token'  => env('API_PLAYFIVER_TOKEN', ''),
-        'secret' => env('API_PLAYFIVER_SECRET', ''),
-    ],
-
     'primepag' => [
         'client_id'     => env('PRIMEPAG_CLIENT_ID', ''),
         'client_secret' => env('PRIMEPAG_CLIENT_SECRET', ''),

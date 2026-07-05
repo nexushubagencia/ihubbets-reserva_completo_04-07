@@ -69,6 +69,13 @@ class OddsController extends Controller
     public function update(Request $request, $id)
     {
         $mercado = ConfigOdd::find($id);
-        $mercado->update($request->all());
+        if (!$mercado) {
+            return response()->json(['success' => false, 'message' => 'Odd não encontrada.'], 404);
+        }
+        $mercado->update($request->only([
+            'mercado_name', 'user_id', 'site_id', 'porcentagem',
+            'header', 'mercado_full_name', 'name', 'status'
+        ]));
+        return response()->json(['success' => true]);
     }
 }

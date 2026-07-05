@@ -36,13 +36,12 @@ class ModuleFilter implements FilterInterface
             'bonus'            => 'active_bonus',
             'featured'         => 'active_marketing',
             'configuracoes'    => 'active_configuracoes',
-            'relatorios'       => 'active_relatorios',
             'riscos'           => 'active_riscos',
-            'online_users'     => 'active_online_users',
             'lancamentos'      => 'active_lancamentos',
             'extrato'          => 'active_extrato',
             'banner_generator' => 'active_banner_generator',
             'gateway_deposito' => 'active_gateway_deposito',
+            'cassino'          => 'active_casino',
         ];
 
         // Se o módulo está no mapa, verifica se está ativo

@@ -3336,12 +3336,12 @@ export default {
         this.server.linkApp = this.site_info.apk_name;
 
         // Adiciona o Sobre Nós dinâmico
-        if (this.configuracoes && this.configuracoes.length > 0) {
-          this.server.footer_sobre = this.configuracoes[0].about_us;
-        } else if (this.site_info.configuracoes && this.site_info.configuracoes.length > 0) {
-          this.server.footer_sobre = this.site_info.configuracoes[0].about_us;
-        } else if (this.site_info.about_us) {
+        if (this.site_info.about_us) {
           this.server.footer_sobre = this.site_info.about_us;
+        } else if (this.configuracoes && this.configuracoes.length > 0 && this.configuracoes[0].about_us) {
+          this.server.footer_sobre = this.configuracoes[0].about_us;
+        } else if (this.site_info.configuracoes && this.site_info.configuracoes.length > 0 && this.site_info.configuracoes[0].about_us) {
+          this.server.footer_sobre = this.site_info.configuracoes[0].about_us;
         }
       } else {
         this.server.host = process.env.MIX_ECHO_HOST;

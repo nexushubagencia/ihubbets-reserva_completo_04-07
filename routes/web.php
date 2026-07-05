@@ -363,18 +363,54 @@ Route::middleware(['auth', 'admin', 'tenant', 'activity'])->prefix('admin')->gro
     });
 
     // ============================================================
-    // API-FOOTBALL & SCRAPER
+    // API-FOOTBALL, BETSAPI & SCRAPER
     // ============================================================
+    Route::get('betsapi', function() {
+        $betsApi = app(\App\Services\BetsApiService::class);
+        $status = $betsApi->testConnection();
+        $provider = app(\App\Services\ApiProviderService::class);
+        return view('admin.betsapi', ['status' => $status, 'activeProvider' => $provider->getActiveProvider()]);
+    })->name('admin.betsapi');
+
+    Route::post('betsapi/switch', function(\Illuminate\Http\Request $request) {
+        $provider = app(\App\Services\ApiProviderService::class);
+        $provider->setActiveProvider('bets-api');
+        return redirect()->back()->with('success', 'Provedor alterado para BetsAPI!');
+    })->name('admin.betsapi.switch');
+
+    Route::post('betsapi/sync', function() {
+        $exitCode = \Artisan::call('betsapi:insert_matches', ['--sport' => 'football', '--pages' => 3]);
+        $output = \Artisan::output();
+        return redirect()->back()->with('success', 'Sincronização BetsAPI iniciada!' . ($output ? '<br><small>' . e($output) . '</small>' : ''));
+    })->name('admin.betsapi.sync');
+
     Route::get('api-football', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'index'])->name('admin.api-football');
-    Route::post('api-football/leagues', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'updateLeagues']);
-    Route::post('api-football/sync', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'syncNow']);
-    Route::post('api-football/provider', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'switchProvider']);
+    Route::post('api-football/leagues', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'updateLeagues'])->name('admin.api-football.update');
+    Route::post('api-football/sync', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'syncNow'])->name('admin.api-football.sync');
+    Route::post('api-football/provider', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'switchProvider'])->name('admin.api-football.provider');
+    Route::post('api-football/update-key', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'updateKey'])->name('admin.api-football.update-key');
+    Route::post('api-football/save-markets', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'saveMarkets'])->name('admin.api-football.save-markets');
+    Route::post('api-football/run-odds', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'runOdds'])->name('admin.api-football.run-odds');
+    Route::post('api-football/run-live', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'runLive'])->name('admin.api-football.run-live');
+    Route::get('api-football/status', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'getStatus'])->name('admin.api-football.status');
+    Route::get('api-football/logs', [\App\Http\Controllers\Admin\ApiFootballAdminController::class, 'getLogs'])->name('admin.api-football.logs');
+    Route::post('api-football/toggle-league', function(\Illuminate\Http\Request $request) {
+        $league = \App\Models\ApifootballLeague::where('id', $request->league_id)->first();
+        if ($league) {
+            $league->active = !$league->active;
+            $league->save();
+            return response()->json(['success' => true, 'active' => $league->active, 'message' => 'Liga atualizada!']);
+        }
+        return response()->json(['success' => false, 'message' => 'Liga não encontrada.'], 404);
+    })->name('admin.api-football.toggle-league');
 
     Route::get('scraper', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'index'])->name('admin.scraper');
-    Route::post('scraper/config', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'updateConfig']);
-    Route::post('scraper/start', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'startScraper']);
-    Route::post('scraper/stop', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'stopScraper']);
-    Route::post('scraper/sync', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'syncNow']);
+    Route::post('scraper/config', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'updateConfig'])->name('admin.scraper.update');
+    Route::post('scraper/start', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'startScraper'])->name('admin.scraper.start');
+    Route::post('scraper/stop', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'stopScraper'])->name('admin.scraper.stop');
+    Route::post('scraper/sync', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'syncNow'])->name('admin.scraper.sync');
+    Route::post('scraper/save-markets', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'saveMarkets'])->name('admin.scraper.save-markets');
+    Route::get('scraper/logs', [\App\Http\Controllers\Admin\ApiScraperAdminController::class, 'getLogs'])->name('admin.scraper.logs');
 
     // ============================================================
     // SAQUES (Admin via SaquesAdminController - integração PrimePag)
@@ -388,14 +424,20 @@ Route::middleware(['auth', 'admin', 'tenant', 'activity'])->prefix('admin')->gro
     // TRADUÇÕES
     // ============================================================
     Route::get('traducoes', [\App\Http\Controllers\Admin\TraducaoController::class, 'index'])->name('admin.traducoes');
-    Route::post('traducoes', [\App\Http\Controllers\Admin\TraducaoController::class, 'store']);
-    Route::delete('traducoes/{id}', [\App\Http\Controllers\Admin\TraducaoController::class, 'destroy']);
+    Route::post('traducoes', [\App\Http\Controllers\Admin\TraducaoController::class, 'store'])->name('admin.traducoes.store');
+    Route::put('traducoes/{id}', [\App\Http\Controllers\Admin\TraducaoController::class, 'update'])->name('admin.traducoes.update');
+    Route::delete('traducoes/{id}', [\App\Http\Controllers\Admin\TraducaoController::class, 'destroy'])->name('admin.traducoes.destroy');
+    Route::post('traducoes/import', [\App\Http\Controllers\Admin\TraducaoController::class, 'importFromApi'])->name('admin.traducoes.import');
 
     // ============================================================
-    // PLAYFIVER CASINO
+    // CASINO V3
     // ============================================================
-    Route::get('playfiver', function() { return view('admin.playfiver'); })->name('admin.playfiver');
-    Route::get('cassino/apostas', function() { return view('admin.apostas-cassino'); })->name('admin.cassino.apostas');
+    Route::get('casino/games', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'games'])->name('admin.casino.games');
+    Route::get('casino/providers', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'providers'])->name('admin.casino.providers');
+    Route::get('casino/categories', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'categories'])->name('admin.casino.categories');
+    Route::get('casino/orders', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'orders'])->name('admin.casino.orders');
+    Route::get('casino/keys', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'keys'])->name('admin.casino.keys');
+    Route::post('casino/keys', [App\Http\Controllers\Admin\CasinoGameAdminController::class, 'saveKeys']);
 
     // ============================================================
     // PROMOÇÕES (CRUD Completo)
@@ -422,13 +464,6 @@ Route::middleware(['auth', 'admin', 'tenant', 'activity'])->prefix('admin')->gro
     Route::get('statistics/by-manager', [\App\Http\Controllers\Admin\StatisticsController::class, 'byManager'])->name('admin.statistics.by-manager');
     Route::get('statistics/live', [\App\Http\Controllers\Admin\LiveStatisticsController::class, 'index'])->name('admin.statistics.live');
     Route::get('statistics/live/data', [\App\Http\Controllers\Admin\LiveStatisticsController::class, 'getLiveData']);
-
-    // ============================================================
-    // TRADUÇÕES (CRUD)
-    // ============================================================
-    Route::get('traducoes', [TraducaoController::class, 'index'])->name('admin.traducoes');
-    Route::post('traducoes', [TraducaoController::class, 'store'])->name('admin.traducoes.store');
-    Route::delete('traducoes/{id}', [TraducaoController::class, 'destroy'])->name('admin.traducoes.destroy');
 
     // ============================================================
     // RESULTADOS (Processamento de Resultados)

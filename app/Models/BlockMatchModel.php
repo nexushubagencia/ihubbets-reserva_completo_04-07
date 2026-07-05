@@ -8,5 +8,5 @@ class BlockMatchModel extends Model
 {
     protected $table = 'block_matchs';
 
-    protected $fillable = ['event_id', 'site_id', 'date', 'sport', 'confronto'];
+    protected $fillable = ['event_id', 'site_id'];
 }

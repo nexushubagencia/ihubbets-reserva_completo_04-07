@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class CambistaController extends Controller
 {
-    private $cambista;
     private $user;
 
     public function __construct(User $user)

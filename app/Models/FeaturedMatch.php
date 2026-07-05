@@ -9,11 +9,15 @@ class FeaturedMatch extends Model
     protected $fillable = [
         'site_id',
         'match_id',
+        'manual_event_id',
+        'is_manual',
         'sport',
         'home_team',
         'away_team',
         'league_name',
         'match_date',
+        'badge_color',
+        'background_path',
         'order'
     ];
 

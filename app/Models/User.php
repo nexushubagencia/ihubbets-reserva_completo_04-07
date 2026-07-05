@@ -28,6 +28,7 @@ class User extends Authenticatable
         'site_id',
         'adm_id',
         'gerente_id',
+        'region_id',
         'contato',
         'endereco',
         'address',
@@ -115,6 +116,11 @@ class User extends Authenticatable
     public function cambistas()
     {
         return $this->hasMany(User::class, 'gerente_id');
+    }
+
+    public function region()
+    {
+        return $this->belongsTo(Region::class, 'region_id');
     }
 
     /**

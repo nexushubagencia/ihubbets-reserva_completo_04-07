@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\PersonalizedMatchesController;
 use App\Http\Controllers\Admin\MatchManagementController;
 use App\Http\Controllers\Admin\OddsMarketsController;
 use App\Http\Controllers\Api\PublicBetController;
-use App\Http\Controllers\Api\BetApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -99,7 +98,7 @@ Route::group(['middleware' => ['web', 'api']], function () {
 
     // ═══════ STUBS PARA ENDPOINTS DO FRONTEND (EVITAR 404) ═══════
     Route::get('/read-user-notification/{id}', function() { return response()->json(['status' => 'ok']); });
-    Route::get('/bilhete-pdf/{id}', function() { return response()->json(['status' => 'not_implemented']); });
+    Route::get('/bilhete-pdf/{id}', [App\Http\Controllers\Api\BilheteApiController::class, 'printBilheteId']);
     Route::match(['get', 'post'], '/bilhete/{id}', function($id) { return response()->json(['id' => $id]); });
     Route::match(['get', 'post'], '/support-list', function() { return response()->json([]); });
     Route::post('/close-support-chat', function() { return response()->json(['status' => 'ok']); });
@@ -113,7 +112,13 @@ Route::group(['middleware' => ['web', 'api']], function () {
     Route::get('/clientes', function() { return response()->json([]); });
     Route::post('/edit-password-seller', function() { return response()->json(['status' => 'ok']); });
     Route::get('/list-users-termos', function() { return response()->json([]); });
-    Route::get('/compartilha-imagem/{id}', function() { return response()->json(['status' => 'not_implemented']); });
+    Route::get('/compartilha-imagem/{id}', function($id) {
+        $params = \Illuminate\Support\Facades\Cache::get('share_banner_' . $id);
+        if (!$params) {
+            return response()->json(['status' => 'not_found'], 404);
+        }
+        return response()->json(['status' => 'ok', 'banner' => $params]);
+    });
     
     // Gerador de Banner de Compartilhamento (POST)
     Route::post('/compartilha-imagem', function(Request $request) {
@@ -148,7 +153,13 @@ Route::group(['middleware' => ['web', 'api']], function () {
         return response(url('/share/banner/' . $bannerId));
     });
     Route::get('/get-game-list', function() { return response()->json([]); });
-    Route::post('/play-game', function() { return response()->json(['status' => 'not_implemented']); });
+    Route::post('/play-game', function(Request $request) {
+        $gameId = $request->input('game_id') ?? $request->input('gameId');
+        if (!$gameId) {
+            return response()->json(['error' => 'game_id obrigatório'], 422);
+        }
+        return app(\App\Http\Controllers\Api\Casino\CasinoGameController::class)->launch($request, $gameId);
+    });
 
     // ═══════ ROTAS PÚBLICAS RESTAURADAS DO ORIGINAL ═══════
     Route::post('/site-search-times', [App\Http\Controllers\Api\MatchApiController::class, 'searchTeam']);
@@ -316,14 +327,19 @@ Route::group(['prefix' => 'saque', 'middleware' => ['web', 'auth']], function ()
     Route::get('/listar', [App\Http\Controllers\Api\SaquesApiController::class, 'listSaques']);
 });
 
-// ═══════ PLAYFIVER CASINO API ═══════
-Route::group(['middleware' => ['web', 'auth']], function () {
-    Route::get('/playfiver/games', [App\Http\Controllers\Api\PlayfiverController::class, 'getGames']);
-    Route::post('/playfiver/launch', [App\Http\Controllers\Api\PlayfiverController::class, 'launchGame']);
+// ═══════ CASINO V3 API ═══════
+Route::group(['middleware' => ['web']], function () {
+    Route::get('/casino/games', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'index']);
+    Route::get('/casino/games/featured', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'featured']);
+    Route::get('/casino/games/all', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'allGames']);
+    Route::get('/casino/game/{id}', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'show']);
+    Route::post('/casino/games/{gameId}/launch', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'launch']);
+    Route::post('/casino/game/{id}/favorite', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'toggleFavorite']);
+    Route::post('/casino/game/{id}/like', [App\Http\Controllers\Api\Casino\CasinoGameController::class, 'toggleLike']);
 });
 
-// ═══════ WEBHOOK PLAYFIVER ═══════
-Route::post('/webhook/playfiver', [App\Http\Controllers\Api\PlayfiverWebhookController::class, 'handle']);
+// ═══════ CASINO V3 WEBHOOKS ═══════
+Route::post('/webhook/casino/playfiver', [App\Http\Controllers\Api\Casino\CasinoWebhookController::class, 'playfiver']);
 
 // ═══════ DEPOSITOS PIX (PRIMEPAG) ═══════
 Route::group(['middleware' => ['web', 'auth']], function () {

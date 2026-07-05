@@ -456,21 +456,6 @@
             </div>
         </div>
 
-        <!-- SOBRE NÓS (Rodapé do Site) -->
-        <div class="card card-outline card-secondary mb-2 shadow-sm">
-            <div class="card-header pb-2 pt-2" data-toggle="collapse" data-target="#collapseSobreNos" style="cursor: pointer;">
-                <h3 class="card-title text-sm"><i class="fas fa-info-circle"></i> SOBRE NÓS <span class="badge badge-info text-xs">rodapé</span></h3>
-            </div>
-            <div id="collapseSobreNos" class="collapse">
-                <div class="card-body">
-                    <div class="form-group">
-                        <label class="text-xs text-muted">Texto "Sobre Nós" exibido no rodapé do site:</label>
-                        <textarea name="about_us" class="form-control" rows="5" placeholder="Escreva sobre a sua plataforma...">{{ $settings->about_us ?? '' }}</textarea>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="text-right pb-4">
             <button type="submit" class="btn btn-success px-5 shadow-sm"><i class="fas fa-save"></i> Salvar Configurações</button>
         </div>

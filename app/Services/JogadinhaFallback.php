@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\MatchModel;
 use App\Models\Odd;
 use App\Models\ApifootballLeague;
+use App\Services\TranslationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -88,6 +89,8 @@ class JogadinhaFallback
                 $leagueId   = hexdec(substr(md5($jogo['liga'] ?? 'Outros'), 0, 8));
                 $leagueName = $jogo['liga'] ?? 'Outros';
                 $country    = $jogo['pais'] ?? 'World';
+
+                $leagueName = TranslationService::traduzirLiga($leagueName, $country);
 
                 ApifootballLeague::updateOrCreate(
                     ['league_id' => $leagueId, 'sport' => 'football'],
@@ -226,15 +229,32 @@ class JogadinhaFallback
     private static function translateMarketName($name)
     {
         $map = [
-            'Ambas as equipes marcarão'            => 'Ambas Marcam',
-            'Resultado Final'                       => 'Vencedor do Encontro',
-            'Empate Anula Aposta'                   => 'Empate Anula a Aposta',
-            'Placar Exato Tempo Completo'           => 'Resultado Exato',
-            'Total de Gols Mais/Menos'              => 'Total de Gols',
-            'Handicap Asiático'                     => 'Handicap',
-            'Dupla Hipótese'                        => 'Dupla Chance',
-            'Resultado Final - 1º Tempo'            => 'Resultado 1º Tempo',
-            'Ambas equipes marcarão - 1º Tempo'     => 'Ambas Marcam 1º Tempo',
+            'Vencedor do Encontro'                         => 'Vencedor do Encontro',
+            'Ambas as equipes marcarão na partida'         => 'Ambas Marcam',
+            'Empate Anula Aposta'                          => 'Empate Anula a Aposta',
+            'Placar Exato Tempo Completo'                  => 'Resultado Exato',
+            'Total de gols na partida'                     => 'Total de Gols',
+            'Vencedor (1T)'                                => 'Vencedor do Encontro (1T)',
+            'Placar Exato (1T)'                            => 'Resultado Exato (1T)',
+            'Chance Dupla (1T)'                            => 'Dupla Chance (1T)',
+            'Par ou Ímpar?'                                => 'Gols Ímpar/Par',
+            'Chance Dupla'                                 => 'Dupla Chance',
+            'Vencedor ao Intervalo | Vencedor Final'       => 'Intervalo / Final do Jogo',
+            'Resultado Final'                              => 'Vencedor do Encontro',
+            'Dupla Hipótese'                               => 'Dupla Chance',
+            'Total de Gols Mais/Menos'                     => 'Total de Gols',
+            'Handicap Asiático'                            => 'Handicap Asiático',
+            'Resultado Final - 1º Tempo'                   => 'Vencedor do Encontro (1T)',
+            'Ambas equipes marcarão - 1º Tempo'            => 'Ambas Marcam (1T)',
+            'Placar Exato - 1º Tempo'                      => 'Resultado Exato (1T)',
+            'Chance Dupla - 1º Tempo'                      => 'Dupla Chance (1T)',
+            'Par ou Ímpar - 1º Tempo'                      => 'Gols Ímpar/Par (1T)',
+            'Total de Gols - 1º Tempo'                     => 'Gols Acima/Abaixo (1T)',
+            'Resultado Final - 2º Tempo'                   => 'Vencedor do Encontro (2T)',
+            'Placar Exato - 2º Tempo'                      => 'Resultado Exato (2T)',
+            'Chance Dupla - 2º Tempo'                      => 'Dupla Chance (2T)',
+            'Ambas equipes marcarão - 2º Tempo'            => 'Ambas Marcam (2T)',
+            'Total de Gols - 2º Tempo'                     => 'Gols Acima/Abaixo (2T)',
         ];
 
         return $map[$name] ?? $name;

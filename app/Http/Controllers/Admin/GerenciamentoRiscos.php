@@ -25,7 +25,7 @@ class GerenciamentoRiscos extends Controller
                 ->get();
         }
 
-        if ($request->opcao == 'Quantida de Bilhetes') {
+        if ($request->opcao == 'Quantidade de Bilhetes') {
             return Aposta::where('status', 'Aberto')
                 ->where('site_id', $siteId)
                 ->where('modalidade', '!=', 'Loto')
@@ -49,7 +49,7 @@ class GerenciamentoRiscos extends Controller
                 ->get();
         }
 
-        if ($request->opcao == 'Quntidade de Apostas no Bilhete') {
+        if ($request->opcao == 'Quantidade de Apostas no Bilhete') {
             return Aposta::where('status', 'Aberto')
                 ->where('site_id', $siteId)
                 ->where('modalidade', '!=', 'Loto')

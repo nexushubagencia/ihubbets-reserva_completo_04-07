@@ -14,7 +14,7 @@ class Mercado extends Model
 
        // $odd_blocks = ConfigOdd::where('status', 0)
 
-        return $this->hasMany(Odd::class)->orderBy('header', 'asc');
+        return $this->hasMany(Odd::class)->orderBy('label', 'asc');
     }
 
   

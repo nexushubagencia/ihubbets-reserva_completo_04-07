@@ -104,10 +104,12 @@ class MercadosController extends Controller
     public function update(Request $request, $id)
     {
         $mercado = ConfigMercados::find($id);
-        if ($mercado) {
-            $mercado->update($request->all());
-            return response()->json(['success' => true, 'message' => 'Mercado atualizado!']);
+        if (!$mercado) {
+            return response()->json(['success' => false, 'message' => 'Mercado não encontrado.'], 404);
         }
-        return response()->json(['success' => false, 'message' => 'Mercado não encontrado.'], 404);
+        $mercado->update($request->only([
+            'user_id', 'site_id', 'name', 'porcentagem', 'status'
+        ]));
+        return response()->json(['success' => true, 'message' => 'Mercado atualizado!']);
     }
 }

@@ -118,6 +118,8 @@
                                                             'active_extrato' => $site->active_extrato ?? 1,
                                                             'active_banner_generator' => $site->active_banner_generator ?? 1,
                                                             'active_gateway_deposito' => $site->active_gateway_deposito ?? 1,
+                                                            'active_casino' => $site->active_casino ?? 0,
+                                                            'active_bonus' => $site->active_bonus ?? 1,
                                                         ]) }})">
                                                     <i class="fas fa-cog"></i>
                                                 </button>
@@ -288,6 +290,15 @@
                                         </div>
                                         <small class="text-muted d-block ml-4">Lista de chaves p/ saque</small>
                                     </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="create_active_casino" name="active_casino" value="1">
+                                            <label class="custom-control-label" for="create_active_casino">
+                                                <i class="fas fa-dice text-warning mr-1"></i> Módulo Cassino
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block ml-4">Jogos de cassino (Playfiver)</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -455,6 +466,15 @@
                                         </div>
                                         <small class="text-muted d-block ml-4">Lista de chaves p/ saque</small>
                                     </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="edit_active_casino" name="active_casino" value="1">
+                                            <label class="custom-control-label" for="edit_active_casino">
+                                                <i class="fas fa-dice text-warning mr-1"></i> Módulo Cassino
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block ml-4">Jogos de cassino (Playfiver)</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -498,6 +518,7 @@
         $('#edit_active_extrato').prop('checked', data.active_extrato == 1);
         $('#edit_active_banner_generator').prop('checked', data.active_banner_generator == 1);
         $('#edit_active_gateway_deposito').prop('checked', data.active_gateway_deposito == 1);
+        $('#edit_active_casino').prop('checked', data.active_casino == 1);
         
         $('#modalEditSite').modal('show');
     }

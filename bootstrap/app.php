@@ -22,7 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->append(\App\Http\Middleware\TenantIdentifier::class);
         $middleware->append(\App\Http\Middleware\CheckSiteStatus::class);
-        
+        $middleware->append(\App\Http\Middleware\SetLocale::class);
+
         // Multi-Tenant: registra o alias 'tenant' para uso nas rotas admin
         $middleware->alias([
             'tenant' => \App\Http\Middleware\TenantMiddleware::class,

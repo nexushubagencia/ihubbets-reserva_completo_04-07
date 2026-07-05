@@ -93,7 +93,7 @@ class ConfrontosController extends Controller
     public function index()
     {
         $siteId = app('tenant.site_id');
-        $aferTomorow = $this->amanha->addDay()->format('Y-m-d');
+        $aferTomorow = $this->amanha->copy()->addDay()->format('Y-m-d');
 
         $arr = array();
         $bloqueadas = BlockLeague::where('site_id', $siteId)->get();
@@ -203,7 +203,13 @@ class ConfrontosController extends Controller
     public function update(Request $request, $id)
     {
         $match = MatchModel::find($id);
-        $match->update($request->all());
+        if (!$match) {
+            return response()->json(['success' => false, 'message' => 'Partida não encontrada.'], 404);
+        }
+        $match->update($request->only([
+            'visible', 'order', 'schedule', 'live_status', 'score'
+        ]));
+        return response()->json(['success' => true]);
     }
 
     public function updateOdd(Request $request, $id)
@@ -266,13 +272,21 @@ class ConfrontosController extends Controller
     public function deleteLeague($id)
     {
         $liga = BlockLeague::find($id);
+        if (!$liga) {
+            return response()->json(['success' => false, 'message' => 'Liga não encontrada.'], 404);
+        }
         $liga->delete();
+        return response()->json(['success' => true]);
     }
 
     public function deleteMatch($id)
     {
         $match = BlockMatch::find($id);
+        if (!$match) {
+            return response()->json(['success' => false, 'message' => 'Partida não encontrada.'], 404);
+        }
         $match->delete();
+        return response()->json(['success' => true]);
     }
 
     public function indexLigasBlock()

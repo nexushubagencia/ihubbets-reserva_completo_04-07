@@ -14,11 +14,19 @@ class TraducaoController extends Controller
         $query = Traducao::query();
 
         if ($request->filled('busca')) {
-            $query->where('texto_original', 'like', '%' . $request->busca . '%')
-                  ->orWhere('texto_traduzido', 'like', '%' . $request->busca . '%');
+            $busca = $request->busca;
+            $query->where(function ($q) use ($busca) {
+                $q->where('texto_original', 'like', "%{$busca}%")
+                  ->orWhere('texto_traduzido', 'like', "%{$busca}%")
+                  ->orWhere('tipo', 'like', "%{$busca}%");
+            });
         }
 
-        $traducoes = $query->orderBy('id', 'desc')->paginate(30);
+        if ($request->filled('tipo')) {
+            $query->where('tipo', $request->tipo);
+        }
+
+        $traducoes = $query->orderBy('id', 'desc')->paginate(50);
 
         return view('admin.traducoes', compact('traducoes'));
     }
@@ -31,7 +39,10 @@ class TraducaoController extends Controller
             'texto_traduzido' => 'required|string|max:255',
         ]);
 
-        $traducao = Traducao::where('tipo', $request->tipo)
+        $siteId = config('tenant.site_id', 1);
+
+        $traducao = Traducao::where('site_id', $siteId)
+            ->where('tipo', $request->tipo)
             ->where('texto_original', $request->texto_original)
             ->first();
 
@@ -39,6 +50,7 @@ class TraducaoController extends Controller
             $traducao->update(['texto_traduzido' => $request->texto_traduzido]);
         } else {
             Traducao::create([
+                'site_id' => $siteId,
                 'tipo' => $request->tipo,
                 'texto_original' => $request->texto_original,
                 'texto_traduzido' => $request->texto_traduzido,
@@ -47,7 +59,21 @@ class TraducaoController extends Controller
 
         Cache::forget('traducoes_todas');
 
-        return redirect()->back()->with('sucesso', 'Tradução salva com sucesso!');
+        return redirect()->back()->with('success', 'Tradução salva com sucesso!');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'texto_traduzido' => 'required|string|max:255',
+        ]);
+
+        $traducao = Traducao::findOrFail($id);
+        $traducao->update(['texto_traduzido' => $request->texto_traduzido]);
+
+        Cache::forget('traducoes_todas');
+
+        return response()->json(['success' => true, 'message' => 'Tradução atualizada!']);
     }
 
     public function destroy($id)
@@ -57,6 +83,31 @@ class TraducaoController extends Controller
 
         Cache::forget('traducoes_todas');
 
-        return redirect()->back()->with('sucesso', 'Tradução removida com sucesso!');
+        return redirect()->back()->with('success', 'Tradução removida com sucesso!');
+    }
+
+    public function importFromApi(Request $request)
+    {
+        $leagues = \App\Models\League::where('sport', 'football')->get();
+        $count = 0;
+
+        foreach ($leagues as $league) {
+            $exists = Traducao::where('site_id', config('tenant.site_id', 1))
+                ->where('tipo', 'liga')
+                ->where('texto_original', $league->name)
+                ->exists();
+
+            if (!$exists) {
+                Traducao::create([
+                    'site_id' => config('tenant.site_id', 1),
+                    'tipo' => 'liga',
+                    'texto_original' => $league->name,
+                    'texto_traduzido' => $league->name,
+                ]);
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "{$count} ligas importadas para tradução!");
     }
 }

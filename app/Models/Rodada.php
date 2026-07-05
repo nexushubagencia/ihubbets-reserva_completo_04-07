@@ -19,6 +19,6 @@ class Rodada extends Model
 
     public function apostas()
     {
-        return $this->hasMany(ApostaBolao::class, 'rodada_id');
+        return $this->hasMany(Aposta::class, 'rodada_id');
     }
 }

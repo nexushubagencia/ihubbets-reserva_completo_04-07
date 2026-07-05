@@ -8,11 +8,17 @@ class BannerTemplate extends Model
 {
     protected $fillable = [
         'name', 'type', 'accent_color', 'overlay_opacity',
-        'active', 'background_url', 'preview_url',
+        'active', 'is_active', 'background_url', 'preview_url',
     ];
 
     protected $casts = [
         'active'          => 'boolean',
+        'is_active'       => 'boolean',
         'overlay_opacity' => 'float',
     ];
+
+    public function getActiveAttribute()
+    {
+        return $this->attributes['active'] ?? $this->attributes['is_active'] ?? false;
+    }
 }

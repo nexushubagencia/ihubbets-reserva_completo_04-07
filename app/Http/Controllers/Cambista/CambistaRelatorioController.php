@@ -25,23 +25,23 @@ class CambistaRelatorioController extends Controller
             ->whereNotIn('status', ['Cancelado'])
             ->get();
 
-        $totalApostado = (float) $apostas->sum('valor_apostado');
-        $totalRetorno = (float) $apostas->where('status', 'Ganhou')->sum('retorno_possivel');
-        $totalComissao = (float) $apostas->sum('comicao');
+        $totalApostado = (float) $apostas->sum('amount');
+        $totalRetorno = (float) $apostas->where('status', 'won')->sum('potential_payout');
+        $totalComissao = (float) $apostas->sum('commission_amount');
         $lucro = $totalApostado - $totalRetorno;
         $totalApostas = $apostas->count();
 
         $porDia = $apostas->groupBy(function ($item) {
             return Carbon::parse($item->created_at)->format('Y-m-d');
         })->map(function ($group, $dia) {
-            $ganhas = $group->where('status', 'Ganhou');
+            $ganhas = $group->where('status', 'won');
             return [
                 'data'           => $dia,
                 'qtd_apostas'    => $group->count(),
-                'total_apostado' => (float) $group->sum('valor_apostado'),
-                'totalretorno'   => (float) $ganhas->sum('retorno_possivel'),
-                'comissao'       => (float) $group->sum('comicao'),
-                'lucro'          => (float) $group->sum('valor_apostado') - (float) $ganhas->sum('retorno_possivel'),
+                'total_apostado' => (float) $group->sum('amount'),
+                'totalretorno'   => (float) $ganhas->sum('potential_payout'),
+                'comissao'       => (float) $group->sum('commission_amount'),
+                'lucro'          => (float) $group->sum('amount') - (float) $ganhas->sum('potential_payout'),
             ];
         })->sortByDesc('data')->values();
 

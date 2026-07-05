@@ -23,7 +23,7 @@ class ApiProviderService
             Log::warning("ApiProviderService: Erro ao ler provider: {$e->getMessage()}");
         }
 
-        return self::PROVIDER_API_FOOTBALL;
+        return self::PROVIDER_BETS_API;
     }
 
     public function setActiveProvider(string $provider, ?int $siteId = null): bool

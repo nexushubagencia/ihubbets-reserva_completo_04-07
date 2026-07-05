@@ -488,21 +488,22 @@ class MatchApiController extends ApiController
             $mercados[] = [
                 'id' => md5($game->id . $marketName),
                 'name' => $marketName,
-                'odds' => $odds->map(function($odd) {
-                    // Traduz labels do inglês para português
+                'odds' =>                 $odds->map(function($odd) {
                     $label = $odd->label;
+
                     $labelMap = [
                         'Home' => 'Casa',
                         'Draw' => 'Empate',
                         'Away' => 'Fora',
                         'Yes' => 'Sim',
                         'No' => 'Não',
+                        'Odd' => 'Ímpar',
+                        'Even' => 'Par',
                     ];
-                    // Tradução exata primeiro
+
                     if (isset($labelMap[$label])) {
                         $label = $labelMap[$label];
                     } else {
-                        // Para labels compostos (ex: "Over 1.5", "Home -1.25"), traduz a parte principal
                         foreach ($labelMap as $en => $pt) {
                             if (str_starts_with($label, $en . ' ')) {
                                 $label = $pt . ' ' . substr($label, strlen($en) + 1);
@@ -510,9 +511,15 @@ class MatchApiController extends ApiController
                             }
                         }
                     }
-                    // Over/Under
+
                     $label = str_replace('Over ', 'Acima de ', $label);
                     $label = str_replace('Under ', 'Abaixo de ', $label);
+                    $label = str_replace('Home/', 'Casa/', $label);
+                    $label = str_replace('Draw/', 'Empate/', $label);
+                    $label = str_replace('Away/', 'Fora/', $label);
+                    $label = str_replace('/Home', '/Casa', $label);
+                    $label = str_replace('/Draw', '/Empate', $label);
+                    $label = str_replace('/Away', '/Fora', $label);
 
                     return [
                         'id' => $odd->id,

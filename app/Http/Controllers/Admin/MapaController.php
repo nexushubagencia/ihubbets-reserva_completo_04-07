@@ -34,7 +34,7 @@ class MapaController extends Controller
             DB::raw('sum( apostado ) as total_apostado'),
             DB::raw('count( confronto ) as quantidade')
         )
-            ->where('date_event', '>=', $this->agora->subHour(3)->format('Y-m-d H:i:s'))
+            ->where('date_event', '>=', $this->agora->copy()->subHour(3)->format('Y-m-d H:i:s'))
             ->where('site_id', $siteId)
             ->groupBy('confronto')
             ->groupBy('date_event')
