@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\MatchModel;
 use App\Models\Configuracao;
 use App\Models\BlockLeague;
-use App\Models\BlockMatchModel;
+use App\Models\BlockMatch;
 use App\Models\ConfigMercados;
 use App\Models\ConfigOdd;
 use App\Models\BlockOddMatchModel;
@@ -27,7 +27,7 @@ class LiveScoreMultiSport extends Command
         $timeLive = $config->time_live ?? 90;
 
         $leageBlock = BlockLeague::where('site_id', $siteId)->pluck('league')->toArray();
-        $blockMatch = BlockMatchModel::where('site_id', $siteId)->pluck('event_id')->toArray();
+        $blockMatch = BlockMatch::where('site_id', $siteId)->pluck('event_id')->toArray();
 
         $query = MatchModel::where('time_status', 1)
             ->where('time', '<=', $timeLive)

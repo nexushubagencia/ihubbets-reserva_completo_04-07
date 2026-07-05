@@ -12,7 +12,7 @@ use App\Models\AmanhaMatch;
 use App\Models\AferTomorrow;
 use App\Models\BlockLeague;
 use App\Models\BlockMatch;
-use App\Models\BlockMatchModel;
+
 use App\Models\ConfigMercados;
 use App\Models\ConfigOdd;
 use App\Models\Configuracao;
@@ -81,7 +81,7 @@ class LiveScore extends Command
 
                         $block_match = array();
 
-                        $matchs_bloqueadas = BlockMatchModel::where('site_id', config('tenant.site_id', 1))->get();
+                        $matchs_bloqueadas = BlockMatch::where('site_id', config('tenant.site_id', 1))->get();
 
                         foreach($matchs_bloqueadas as $match_bloqueada) {
 

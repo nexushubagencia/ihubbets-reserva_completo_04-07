@@ -11,7 +11,7 @@ use App\Models\HomeMatch;
 use App\Models\AmanhaMatch;
 use App\Models\AferTomorowMatchFlash;
 use App\Models\BlockLeague;
-use App\Models\BlockMatchModel;
+use App\Models\BlockMatch;
 use App\Models\ConfigMercados;
 use App\Models\ConfigOdd;
 use App\Models\Configuracao;
@@ -89,7 +89,7 @@ class LiveAfterTomorow extends Command
 
         $block_match = array();
 
-        $matchs_bloqueadas = BlockMatchModel::where('site_id', config('tenant.site_id', 1))->get();
+        $matchs_bloqueadas = BlockMatch::where('site_id', config('tenant.site_id', 1))->get();
 
 
 
@@ -381,7 +381,7 @@ class LiveAfterTomorow extends Command
 
         $block_match = array();
 
-        $matchs_bloqueadas = BlockMatchModel::where('site_id', config('tenant.site_id', 1))->get();
+        $matchs_bloqueadas = BlockMatch::where('site_id', config('tenant.site_id', 1))->get();
 
 
 
