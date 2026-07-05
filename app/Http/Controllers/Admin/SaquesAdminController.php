@@ -20,10 +20,13 @@ class SaquesAdminController extends Controller
     {
         try {
             $siteId = config('tenant.site_id', 1);
-            $saques = Saque::where('site_id', $siteId)
-                ->orderBy('id', 'desc')
-                ->with('user')
-                ->get();
+            $query = Saque::where('site_id', $siteId)->with('user');
+            
+            if ($request->has('date') && !empty($request->date)) {
+                $query->whereDate('created_at', $request->date);
+            }
+            
+            $saques = $query->orderBy('id', 'desc')->get();
 
             return response()->json(['result' => $saques]);
         } catch (\Exception $e) {

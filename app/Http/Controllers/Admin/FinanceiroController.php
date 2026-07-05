@@ -39,16 +39,20 @@ class FinanceiroController extends Controller
     /**
      * 📊 Lista depósitos via AJAX
      */
-    public function listDepositos()
+    public function listDepositos(\Illuminate\Http\Request $request)
     {
         $siteId = app('tenant.site_id');
-        $depositos = DB::table('transactions')
+        $query = DB::table('transactions')
             ->join('master_users', 'transactions.user_id', '=', 'master_users.id')
             ->select('transactions.*', 'master_users.name as user_name', 'master_users.username')
             ->where('transactions.site_id', $siteId)
-            ->where('transactions.type', 'deposit')
-            ->orderBy('transactions.created_at', 'desc')
-            ->get();
+            ->where('transactions.type', 'deposit');
+
+        if ($request->has('date') && !empty($request->date)) {
+            $query->whereDate('transactions.created_at', $request->date);
+        }
+
+        $depositos = $query->orderBy('transactions.created_at', 'desc')->get();
 
         return response()->json($depositos);
     }
@@ -56,15 +60,19 @@ class FinanceiroController extends Controller
     /**
      * 📊 Lista solicitações de saque via AJAX
      */
-    public function listWithdrawals()
+    public function listWithdrawals(\Illuminate\Http\Request $request)
     {
         $siteId = app('tenant.site_id');
-        $withdrawals = DB::table('withdrawal_requests')
+        $query = DB::table('withdrawal_requests')
             ->join('master_users', 'withdrawal_requests.user_id', '=', 'master_users.id')
             ->select('withdrawal_requests.*', 'master_users.name as user_name', 'master_users.username', 'master_users.pix_key', 'master_users.pix_key_type')
-            ->where('withdrawal_requests.site_id', $siteId)
-            ->orderBy('withdrawal_requests.created_at', 'desc')
-            ->get();
+            ->where('withdrawal_requests.site_id', $siteId);
+
+        if ($request->has('date') && !empty($request->date)) {
+            $query->whereDate('withdrawal_requests.created_at', $request->date);
+        }
+
+        $withdrawals = $query->orderBy('withdrawal_requests.created_at', 'desc')->get();
 
         return response()->json($withdrawals);
     }
