@@ -15,6 +15,7 @@ class MatchModel extends Model
        'sport_id',
        'sport_name',
        'league_id',
+       'league_cc',
        'league',
        'home',
        'away',

@@ -102,12 +102,20 @@ class PaymentController extends Controller
         if ($action == 'payment.updated' || $type == 'payment') {
             $paymentId = $request->input('data.id') ?? $request->input('id');
 
-            // 🛡️ Webhook HMAC Validation (se a secret estiver configurada)
-            // No futuro, isso pode vir da tabela sites: $site->mp_webhook_secret
+            // 🛡️ Webhook HMAC Validation (ESTRITO quando MP_WEBHOOK_SECRET configurado)
             $secret = env('MP_WEBHOOK_SECRET');
             $signatureHeader = $request->header('x-signature');
             
-            if ($secret && $signatureHeader) {
+            if ($secret) {
+                // Se a secret está configurada, a assinatura é OBRIGATÓRIA
+                if (!$signatureHeader) {
+                    Log::warning("Webhook MP rejeitado: x-signature ausente para site_id: {$siteId}", [
+                        'ip' => $request->ip(),
+                        'payload' => $request->all(),
+                    ]);
+                    return response()->json(['status' => 'error', 'message' => 'Signature required'], 403);
+                }
+
                 // Parse do header: ts=...,v1=...
                 $parts = explode(',', $signatureHeader);
                 $ts = null;
@@ -118,17 +126,29 @@ class PaymentController extends Controller
                     if (str_starts_with(trim($part), 'v1=')) $v1 = substr(trim($part), 3);
                 }
 
-                if ($ts && $v1) {
-                    // Padrão MP: manifest_id (opcional) + id da url (opcional). Simplificado: id
-                    $dataId = $request->input('data.id', '');
-                    $manifestData = "id:{$dataId};request-id:{$request->header('x-request-id')};ts:{$ts};";
-                    $expectedSignature = hash_hmac('sha256', $manifestData, $secret);
-                    
-                    if (!hash_equals($expectedSignature, $v1)) {
-                        Log::warning("Assinatura de Webhook Mercado Pago inválida para site_id: {$siteId}");
-                        return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
-                    }
+                if (!$ts || !$v1) {
+                    Log::warning("Webhook MP rejeitado: assinatura malformada para site_id: {$siteId}");
+                    return response()->json(['status' => 'error', 'message' => 'Malformed signature'], 403);
                 }
+
+                // Proteção contra replay attack (tolerância de 5 minutos)
+                if (abs(time() - (int)$ts) > 300) {
+                    Log::warning("Webhook MP rejeitado: timestamp expirado para site_id: {$siteId}");
+                    return response()->json(['status' => 'error', 'message' => 'Expired timestamp'], 403);
+                }
+
+                $dataId = $request->input('data.id', '');
+                $manifestData = "id:{$dataId};request-id:{$request->header('x-request-id')};ts:{$ts};";
+                $expectedSignature = hash_hmac('sha256', $manifestData, $secret);
+                
+                if (!hash_equals($expectedSignature, $v1)) {
+                    Log::warning("Webhook MP rejeitado: assinatura inválida para site_id: {$siteId}", [
+                        'ip' => $request->ip(),
+                    ]);
+                    return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
+                }
+
+                Log::info("Webhook MP: assinatura validada com sucesso para site_id: {$siteId}");
             }
 
             $site = Site::find($siteId);
@@ -191,5 +211,29 @@ class PaymentController extends Controller
         ]);
 
         return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * Consulta o status atual de um PIX.
+     * Pode receber o UUID (external_reference) ou o ID do banco.
+     */
+    public function checkPixStatus($id)
+    {
+        $deposit = PixDeposit::where('id', $id)
+            ->orWhere('external_reference', $id)
+            ->first();
+
+        if (!$deposit) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Depósito não encontrado'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => $deposit->status, // pending, approved, rejected, cancelled
+            'amount' => $deposit->amount,
+            'mp_payment_id' => $deposit->mp_payment_id
+        ]);
     }
 }

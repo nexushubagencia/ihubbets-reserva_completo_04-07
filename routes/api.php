@@ -103,14 +103,14 @@ Route::group(['middleware' => ['web', 'api']], function () {
     Route::match(['get', 'post'], '/support-list', function() { return response()->json([]); });
     Route::post('/close-support-chat', function() { return response()->json(['status' => 'ok']); });
     Route::match(['get', 'post'], '/support-chat/{id}', function() { return response()->json([]); });
-    Route::post('/support-create', function() { return response()->json(['status' => 'ok']); });
+    Route::post('/support-create', [App\Http\Controllers\Api\FrontendAuthController::class, 'supportCreate']);
     Route::post('/support-create-message', function() { return response()->json(['status' => 'ok']); });
     Route::get('/check-confirmation-account/{type}', function() { return response()->json(['status' => 'success', 'active' => true]); });
     Route::post('/pay-qr-code', function() { return response()->json(['status' => 'not_configured']); });
     Route::get('/lifetime/{id}', function() { return response()->json(['status' => 'active']); });
-    Route::get('/check_pix/{id}', function() { return response()->json(['status' => 'pending']); });
+    Route::get('/check_pix/{id}', [App\Http\Controllers\Api\PaymentController::class, 'checkPixStatus']);
     Route::get('/clientes', function() { return response()->json([]); });
-    Route::post('/edit-password-seller', function() { return response()->json(['status' => 'ok']); });
+    Route::post('/edit-password-seller', [App\Http\Controllers\Api\FrontendAuthController::class, 'changePassword'])->middleware('auth');
     Route::get('/list-users-termos', function() { return response()->json([]); });
     Route::get('/compartilha-imagem/{id}', function($id) {
         $params = \Illuminate\Support\Facades\Cache::get('share_banner_' . $id);

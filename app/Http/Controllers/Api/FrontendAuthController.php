@@ -159,4 +159,40 @@ class FrontendAuthController extends Controller
             'message' => 'Senha alterada com sucesso!'
         ]);
     }
+
+    /**
+     * Suporte - Criar ticket de suporte
+     */
+    public function supportCreate(Request $request)
+    {
+        $request->validate([
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|max:2000',
+        ], [
+            'subject.required' => 'Informe o assunto do chamado.',
+            'message.required' => 'Informe a mensagem do chamado.',
+        ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Você precisa estar logado para abrir um chamado.'
+            ], 401);
+        }
+
+        $ticket = \App\Models\SupportTicket::create([
+            'site_id' => config('tenant.site_id', 1),
+            'user_id' => $user->id,
+            'subject' => $request->subject,
+            'message' => $request->message,
+            'status'  => 'open',
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Chamado de suporte criado com sucesso! Protocolo #' . $ticket->id,
+            'ticket'  => $ticket,
+        ]);
+    }
 }

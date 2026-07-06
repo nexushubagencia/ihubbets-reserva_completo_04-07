@@ -105,22 +105,81 @@ class BetsApiInsertMatches extends Command
             return;
         }
 
+        $homeRaw = $event['home'] ?? null;
+        $awayRaw = $event['away'] ?? null;
+        $leagueRaw = $event['league'] ?? null;
+        $countryRaw = $event['country'] ?? null;
+        
         $homeName = $event['home'] ?? $event['T1'] ?? 'Time A';
         $awayName = $event['away'] ?? $event['T2'] ?? 'Time B';
         $leagueName = $event['league'] ?? $event['LG'] ?? '';
-        $country = $event['country'] ?? $event['CC'] ?? '';
         $tournament = $event['tournament'] ?? $event['TR'] ?? $leagueName;
+
+        // BetsAPI country code usually comes as 'cc' inside the event or inside the country array
+        $country = $event['cc'] ?? $event['CC'] ?? '';
+
+        $homeImageId = $event['home_logo'] ?? $event['T1I'] ?? null;
+        $awayImageId = $event['away_logo'] ?? $event['T2I'] ?? null;
+        $leagueImageId = null;
+
+        // BetsAPI pode retornar arrays como ["id", "name", "image_id"] — extrair o nome e a logo
+        if (is_array($homeName)) {
+            $homeImageId = $homeName['image_id'] ?? $homeName['id'] ?? $homeImageId;
+            $homeName = $homeName['name'] ?? $homeName[1] ?? ($homeName[0] ?? 'Time A');
+        }
+        if (is_array($awayName)) {
+            $awayImageId = $awayName['image_id'] ?? $awayName['id'] ?? $awayImageId;
+            $awayName = $awayName['name'] ?? $awayName[1] ?? ($awayName[0] ?? 'Time B');
+        }
+        if (is_array($leagueName)) {
+            $leagueImageId = $leagueName['image_id'] ?? $leagueName['id'] ?? null;
+            $leagueName = $leagueName['name'] ?? $leagueName[1] ?? ($leagueName[0] ?? '');
+        }
+        if (is_array($countryRaw) && empty($country)) {
+            // Se não veio CC na raiz, tenta achar no array country
+            $country = $countryRaw['cc'] ?? $countryRaw['name'] ?? $countryRaw[1] ?? ($countryRaw[0] ?? '');
+        } elseif (!is_array($countryRaw) && empty($country)) {
+            $country = $countryRaw;
+        }
+
+        if (empty($country) && is_array($leagueRaw) && !empty($leagueRaw['cc'])) {
+            $country = $leagueRaw['cc'];
+        }
+
+        if (is_array($tournament)) {
+            $tournament = $tournament['name'] ?? $tournament[1] ?? ($tournament[0] ?? $leagueName);
+        }
+
+        $homeName = (string) $homeName;
+        $awayName = (string) $awayName;
+        $leagueName = (string) $leagueName;
+        $country = strtolower((string) $country);
+
+        // Se cc veio vazio, inferir a partir do nome da liga
+        if (empty($country)) {
+            $country = TranslationService::inferirCcDaLiga($leagueName ?: $tournament);
+        }
 
         $homeName = TranslationService::traduzirTime($homeName);
         $awayName = TranslationService::traduzirTime($awayName);
-        $leagueName = TranslationService::traduzirLiga($leagueName ?: $tournament, $country);
+
+        // Passar o nome do país em inglês para o traduzirLiga, para que ele possa traduzir
+        $countryNameForTranslation = TranslationService::traduzirLeagueCc($country);
+        $leagueName = TranslationService::traduzirLiga($leagueName ?: $tournament, $countryNameForTranslation);
 
         $startTime = $event['time'] ?? $event['start'] ?? null;
-        $dateFormatted = $startTime
-            ? Carbon::parse($startTime)->format('Y-m-d H:i:s')
-            : Carbon::now()->format('Y-m-d H:i:s');
 
-        $timeUnix = $startTime ? Carbon::parse($startTime)->timestamp : now()->timestamp;
+        // BetsAPI retorna Unix timestamps (ex: 1783292700) — detectar e tratar
+        if ($startTime && is_numeric($startTime)) {
+            $carbonDate = Carbon::createFromTimestamp((int)$startTime);
+        } elseif ($startTime) {
+            $carbonDate = Carbon::parse($startTime);
+        } else {
+            $carbonDate = Carbon::now();
+        }
+
+        $dateFormatted = $carbonDate->format('Y-m-d H:i:s');
+        $timeUnix = $carbonDate->timestamp;
 
         $status = $event['status'] ?? $event['SS'] ?? '';
         $timeStatus = match($status) {
@@ -139,13 +198,17 @@ class BetsApiInsertMatches extends Command
             }
         }
 
-        $leagueId = hexdec(substr(md5($tournament ?: $leagueName), 0, 8));
+        // Gerar league_id dentro do range INT do MySQL (max 2147483647)
+        $leagueId = abs(crc32($tournament ?: $leagueName)) % 2147483647;
+
+        $leagueLogoUrl = $leagueImageId ? "https://assets.b365api.com/images/league/m/{$leagueImageId}.png" : null;
 
         ApifootballLeague::updateOrCreate(
-            ['league_id' => $leagueId, 'sport' => $sportName],
+            ['league_id' => $leagueId, 'sport' => $sportName, 'site_id' => $siteId],
             [
                 'name'    => $leagueName,
                 'country' => $country ?: 'World',
+                'logo'    => $leagueLogoUrl,
                 'active'  => 1,
             ]
         );
@@ -175,6 +238,9 @@ class BetsApiInsertMatches extends Command
 
         $sportInfo = $sportMap[$sportName] ?? ['sport_id' => 0, 'sport_name' => ucfirst($sportName)];
 
+        $homeLogoUrl = $homeImageId ? "https://assets.b365api.com/images/team/m/{$homeImageId}.png" : null;
+        $awayLogoUrl = $awayImageId ? "https://assets.b365api.com/images/team/m/{$awayImageId}.png" : null;
+
         $data = [
             'site_id'       => $siteId,
             'event_id'      => $fi,
@@ -188,8 +254,8 @@ class BetsApiInsertMatches extends Command
             'away'          => $awayName,
             'home_true'     => null,
             'away_true'     => null,
-            'image_id_home' => $event['home_logo'] ?? $event['T1I'] ?? null,
-            'image_id_away' => $event['away_logo'] ?? $event['T2I'] ?? null,
+            'image_id_home' => $homeLogoUrl,
+            'image_id_away' => $awayLogoUrl,
             'score'         => $score,
             'time_status'   => $timeStatus,
             'time'          => $timeUnix,
