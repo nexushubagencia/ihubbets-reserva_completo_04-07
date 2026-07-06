@@ -8,17 +8,12 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
-        // BetsAPI (provedor PRINCIPAL)
+        // BetsAPI (provedor PRINCIPAL e UNICO)
         Commands\BetsApi\BetsApiInsertMatches::class,
         Commands\BetsApi\BetsApiUpdateOdds::class,
-
-        // API-Football (backup/reserva)
-        Commands\ApiFootball\InsertMatches::class,
-        Commands\ApiFootball\UpdateOdds::class,
-        Commands\ApiFootball\LiveOdds::class,
-        Commands\ApiFootball\SettleBets::class,
-        Commands\ApiFootball\ManageLeagues::class,
-        Commands\ApiFootball\InsertMatchesFootballData::class,
+        Commands\BetsApi\BetsApiLiveStatus::class,
+        Commands\BetsApi\BetsApiLiveOdds::class,
+        Commands\BetsApi\BetsApiCacheLogos::class,
 
         // Cache - versoes modernas (USE ESTAS)
         Commands\Cache\LiveHoje::class,
@@ -36,31 +31,32 @@ class Kernel extends ConsoleKernel
         Commands\SendResultsSena::class,
         Commands\LiveScoreMultiSport::class,
 
-        // Playfiver Casino
-        Commands\SyncPlayfiverGames::class,
+        // Logos
+        Commands\DownloadFlags::class,
     ];
 
     protected function schedule(Schedule $schedule): void
     {
-        // === BetsAPI (PROVEDOR PRINCIPAL) ===
-        $schedule->command('betsapi:insert_matches --sport=football --pages=3')->everySixHours()->withoutOverlapping();
-        $schedule->command('betsapi:insert_matches --sport=basketball --pages=2')->daily()->withoutOverlapping();
-        $schedule->command('betsapi:insert_matches --sport=tennis --pages=2')->daily()->withoutOverlapping();
-        $schedule->command('betsapi:insert_matches --sport=volleyball --pages=1')->daily()->withoutOverlapping();
-        $schedule->command('betsapi:insert_matches --sport=mma --pages=1')->daily()->withoutOverlapping();
+        // === BetsAPI (PROVEDOR PRINCIPAL e UNICO) ===
+        // Atualiza partidas de todos os esportes periodicamente
+        $schedule->command('betsapi:insert_matches --sport=all --pages=5')->everySixHours()->withoutOverlapping();
 
+        // Atualiza status ao vivo a cada 2 minutos (remove jogos iniciados do pre-jogo)
+        $schedule->command('betsapi:live_status')->everyTwoMinutes()->withoutOverlapping();
+
+        // Atualiza odds pre-jogo a cada 15 minutos (futebol principal)
         $schedule->command('betsapi:update_odds --sport=football')->everyFifteenMinutes()->withoutOverlapping();
-        $schedule->command('betsapi:update_odds --sport=basketball --live=1')->everyFiveMinutes()->withoutOverlapping();
-        $schedule->command('betsapi:update_odds --sport=football --live=1')->everyMinute()->withoutOverlapping();
 
-        // === API-Football (BACKUP - desabilitado se BetsAPI ativo) ===
-        // $schedule->command('apifootball:live')->everyMinute()->withoutOverlapping();
+        // Cache de logos (TheSportsDB fallback) - 2x ao dia
+        $schedule->command('betsapi:cache_logos')->twiceDaily(6, 18)->withoutOverlapping();
 
+        // === Liquidacao de apostas ===
         $schedule->command('ihub:settle-api-bets')->everyFiveMinutes()->withoutOverlapping();
 
         // === Cache - broadcast de dados para o frontend ===
         $schedule->command('command:liveHoje')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('command:liveAmanha')->everyFiveMinutes()->withoutOverlapping();
+        $schedule->command('command:atualizaHome')->everyFiveMinutes()->withoutOverlapping();
 
         // === Ligas ===
         $schedule->command('command:loadLigas')->everyTenMinutes()->withoutOverlapping();

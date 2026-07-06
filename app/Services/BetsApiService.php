@@ -13,30 +13,41 @@ class BetsApiService
     private int $maxRetries = 3;
 
     public const SPORT_IDS = [
-        'football'   => 1,
-        'basketball' => 2,
-        'tennis'     => 3,
-        'volleyball' => 4,
-        'handball'   => 5,
-        'futsal'     => 6,
-        'ice_hockey' => 7,
-        'baseball'   => 8,
+        'football'          => 1,
+        'basketball'        => 2,
+        'tennis'            => 3,
+        'volleyball'        => 4,
+        'handball'          => 5,
+        'futsal'            => 6,
+        'ice_hockey'        => 7,
+        'baseball'          => 8,
         'american_football' => 12,
-        'esports'    => 15,
-        'boxing'     => 21,
-        'mma'        => 22,
-        'cricket'    => 18,
-        'darts'      => 17,
-        'snooker'    => 19,
-        'table_tennis' => 20,
+        'esports'           => 15,
+        'cricket'           => 18,
+        'darts'             => 17,
+        'snooker'           => 19,
+        'table_tennis'      => 20,
+        'boxing'            => 21,
+        'mma'               => 22,
     ];
 
     public const SPORT_NAMES = [
-        1 => 'Futebol', 2 => 'Basquete', 3 => 'Tênis', 4 => 'Vôlei',
-        5 => 'Handebol', 6 => 'Futsal', 7 => 'Hóquei no Gelo', 8 => 'Baseball',
-        12 => 'Futebol Americano', 15 => 'E-Sports', 21 => 'Boxe',
-        22 => 'MMA/UFC', 18 => 'Críquete', 17 => 'Dardos', 19 => 'Sinuca',
+        1  => 'Futebol',
+        2  => 'Basquete',
+        3  => 'Tênis',
+        4  => 'Vôlei',
+        5  => 'Handebol',
+        6  => 'Futsal',
+        7  => 'Hóquei no Gelo',
+        8  => 'Baseball',
+        12 => 'Futebol Americano',
+        15 => 'E-Sports',
+        18 => 'Críquete',
+        17 => 'Dardos',
+        19 => 'Sinuca',
         20 => 'Tênis de Mesa',
+        21 => 'Boxe',
+        22 => 'MMA/UFC',
     ];
 
     public function __construct()
@@ -71,57 +82,62 @@ class BetsApiService
         }
     }
 
+    /**
+     * Retorna partidas futuras (pre-jogo) de um esporte.
+     * Usa endpoint /v1/bet365/upcoming que cobre todos os esportes suportados.
+     */
     public function getUpcomingBySport(int $sportId, int $page = 1): ?array
     {
-        $endpoints = [
-            1 => '/v1/bet365/upcoming',
-            2 => '/v1/bet365/upcoming',
-            3 => '/v1/bet365/upcoming',
-            4 => '/v1/bet365/upcoming',
-        ];
-
-        $endpoint = $endpoints[$sportId] ?? '/v1/bet365/upcoming';
-        return $this->get($endpoint, ['sport_id' => $sportId, 'page' => $page]);
+        return $this->get('/v1/bet365/upcoming', ['sport_id' => $sportId, 'page' => $page]);
     }
 
+    /**
+     * Retorna TODAS as partidas ao vivo de um esporte (formato flat - usado para odds).
+     */
     public function getInPlayBySport(int $sportId): ?array
     {
         return $this->get('/v1/bet365/inplay', ['sport_id' => $sportId]);
     }
 
+    /**
+     * Retorna TODAS as partidas ao vivo (todos os esportes) em formato flat.
+     */
     public function getAllInPlay(): ?array
     {
         return $this->get('/v1/bet365/inplay');
     }
 
+    /**
+     * Retorna partidas ao vivo de um esporte em formato estruturado (home/away/league).
+     * Ideal para inserir/atualizar jogos ao vivo no banco.
+     */
+    public function getInPlayFilterBySport(int $sportId, int $page = 1): ?array
+    {
+        return $this->get('/v1/bet365/inplay_filter', ['sport_id' => $sportId, 'page' => $page]);
+    }
+
+    /**
+     * Retorna odds pre-jogo completas (v4) usando o FI (id do evento no bet365/upcoming).
+     */
     public function getPrematchOdds(int $fi): ?array
     {
         return $this->get('/v4/bet365/prematch', ['FI' => $fi]);
     }
 
-    public function getInplayOdds(int $fi): ?array
+    /**
+     * Retorna dados ao vivo de um evento especifico (inclui odds e placar).
+     */
+    public function getInplayEvent(int $fi): ?array
     {
         return $this->get('/v1/bet365/inplay', ['FI' => $fi]);
     }
 
-    public function getEventOdds(int $eventId): ?array
-    {
-        return $this->get('/v2/event/odds/summary', ['event_id' => $eventId]);
-    }
-
+    /**
+     * Retorna resultado final de um evento.
+     */
     public function getEventResult(int $eventId): ?array
     {
         return $this->get('/v1/bet365/result', ['event_id' => $eventId]);
-    }
-
-    public function getLeagues(int $sportId = 1): ?array
-    {
-        return $this->get('/v1/league', ['sport_id' => $sportId]);
-    }
-
-    public function getOddsSummary(int $fi): ?array
-    {
-        return $this->get('/v2/event/odds/summary', ['FI' => $fi]);
     }
 
     public function getRequestCount(): int

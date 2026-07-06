@@ -202,7 +202,7 @@ trait MatchFormattingTrait
             return $placeholderUrl;
         }
 
-        // API-Football salva URLs completas (ex: https://media.api-sports.io/football/teams/42.png)
+        // URL completa (local ou CDN) - retorna direto
         if (filter_var($imageId, FILTER_VALIDATE_URL)) {
             return $imageId;
         }
@@ -220,22 +220,11 @@ trait MatchFormattingTrait
             return 'https://d2x9mcd4yw5kj3.cloudfront.net/flags/soccer/m/' . $imageId . '.png';
         }
 
-        // ID numérico - monta URL da CDN correta baseada no esporte
+        // ID numérico - tenta CDN da BetsAPI
         if (is_numeric($imageId)) {
-            if (str_contains($sport, 'basquete') || str_contains($sport, 'basket')) {
-                return 'https://media.api-sports.io/basketball/teams/' . $imageId . '.png';
-            }
-            if (str_contains($sport, 'volei') || str_contains($sport, 'volley')) {
-                return 'https://media.api-sports.io/volleyball/teams/' . $imageId . '.png';
-            }
-            if (str_contains($sport, 'ufc') || str_contains($sport, 'boxe') || str_contains($sport, 'mma') || str_contains($sport, 'luta')) {
-                return 'https://media.api-sports.io/mma/fighters/' . $imageId . '.png';
-            }
-            // Default: football
-            return 'https://media.api-sports.io/football/teams/' . $imageId . '.png';
+            return 'https://assets.b365api.com/images/team/m/' . $imageId . '.png';
         }
 
-        // Fallback: tenta montar URL local
         return $placeholderUrl;
     }
 
@@ -250,9 +239,8 @@ trait MatchFormattingTrait
             return $leagueId;
         }
 
-        // ID numérico - monta URL da CDN
-        $assetsCdn = config('services.assets_cdn_url', 'https://assets.betsapi.com/v1/');
-        return $assetsCdn . 'league/' . $leagueId . '.png';
+        // ID numérico - CDN da BetsAPI
+        return 'https://assets.b365api.com/images/league/m/' . $leagueId . '.png';
     }
 
     protected function resolveFlagUrl($cc)

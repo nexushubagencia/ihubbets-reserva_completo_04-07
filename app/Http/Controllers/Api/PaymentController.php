@@ -193,26 +193,6 @@ class PaymentController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
-    public function webhookShipay(Request $request, $siteId = null)
-    {
-        Log::info('Webhook Shipay recebido', [
-            'site_id' => $siteId,
-            'payload' => $request->all()
-        ]);
-
-        return response()->json(['status' => 'ok']);
-    }
-
-    public function webhookPaggue(Request $request, $siteId = null)
-    {
-        Log::info('Webhook Paggue recebido', [
-            'site_id' => $siteId,
-            'payload' => $request->all()
-        ]);
-
-        return response()->json(['status' => 'ok']);
-    }
-
     /**
      * Consulta o status atual de um PIX.
      * Pode receber o UUID (external_reference) ou o ID do banco.

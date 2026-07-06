@@ -762,6 +762,43 @@ class BilheteApiController extends Controller
     }
 
     /**
+     * 🔍 Consulta pública de bilhete/pré-bilhete pelo código (cupom)
+     */
+    public function checkAposta($code)
+    {
+        $siteId = config('tenant.site_id', 1);
+
+        // Tenta encontrar como aposta real
+        $bet = Aposta::with('palpites')
+            ->where('site_id', $siteId)
+            ->where('codigo_bilhete', $code)
+            ->first();
+
+        if ($bet) {
+            return response()->json([
+                'status' => 'ok',
+                'tipo'   => 'aposta',
+                'data'   => $this->formatBilhete($bet),
+            ]);
+        }
+
+        // Tenta encontrar como pré-bilhete (PIN)
+        $preBet = PreBet::where('site_id', $siteId)->where('code', $code)->first();
+        if ($preBet) {
+            return response()->json([
+                'status' => 'ok',
+                'tipo'   => 'pre_bet',
+                'data'   => $this->formatPreBet($preBet),
+            ]);
+        }
+
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Bilhete não encontrado',
+        ], 404);
+    }
+
+    /**
      * 📋 Lista bilhetes do cambista
      */
     public function bilhetes()

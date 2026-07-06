@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\File;
 
 class BetsApiUpdateOdds extends Command
 {
-    protected $signature = 'betsapi:update_odds {--sport=football} {--live=0}';
-    protected $description = 'Atualiza odds da BetsAPI (Bet365) - Prematch + Live';
+    protected $signature = 'betsapi:update_odds {--sport=football}';
+    protected $description = 'Atualiza odds pre-jogo da BetsAPI (Bet365) via /v4/bet365/prematch';
 
     private const LOG_FILE = 'storage/logs/betsapi_odds.log';
     private int $updated = 0;
@@ -91,9 +91,6 @@ class BetsApiUpdateOdds extends Command
         'Home or Draw'  => 'Casa ou Empate',
         'Draw or Away'  => 'Empate ou Fora',
         'Home or Away'  => 'Casa ou Fora',
-        'Fulham or Draw' => 'Casa ou Empate',
-        'Draw or Arsenal' => 'Empate ou Fora',
-        'Fulham or Arsenal' => 'Casa ou Fora',
     ];
 
     public function handle(BetsApiService $betsApi): int
@@ -104,25 +101,23 @@ class BetsApiUpdateOdds extends Command
         }
 
         $sport = $this->option('sport');
-        $isLive = (bool) $this->option('live');
-
         $siteId = config('tenant.site_id', 1);
-        $sportMap = [
-            'football' => 1, 'basketball' => 2, 'tennis' => 3,
-            'volleyball' => 4, 'mma' => 22, 'boxing' => 21,
-        ];
 
-        $sportId = $sportMap[$sport] ?? 1;
+        if (!isset(BetsApiService::SPORT_IDS[$sport])) {
+            $this->error("Esporte inválido: {$sport}");
+            return self::FAILURE;
+        }
 
-        $mode = $isLive ? 'LIVE' : 'PREMATCH';
-        $this->info("=== Atualizando Odds ({$mode}) - {$sport} ===");
+        $sportId = BetsApiService::SPORT_IDS[$sport];
+
+        $this->info("=== Atualizando Odds Pré-Jogo - {$sport} ===");
 
         $matches = MatchModel::where('site_id', $siteId)
             ->where('sport_id', $sportId)
-            ->where('time_status', $isLive ? 1 : 0)
+            ->whereIn('time_status', [0, 1])
             ->where('date', '>=', now()->subDay())
             ->where('date', '<=', now()->addDays(5))
-            ->limit(100)
+            ->limit(150)
             ->get();
 
         if ($matches->isEmpty()) {
@@ -134,7 +129,7 @@ class BetsApiUpdateOdds extends Command
 
         foreach ($matches as $match) {
             $this->processMatchOdds($betsApi, $match, $siteId);
-            sleep(1);
+            usleep(200000); // 0.2s entre requests (BetsAPI: 3600/hora)
         }
 
         $this->info("Concluído! Inseridas: {$this->inserted} | Atualizadas: {$this->updated}");
@@ -150,6 +145,8 @@ class BetsApiUpdateOdds extends Command
         if (!$response || empty($response['results'])) {
             return;
         }
+
+        $oddType = $match->time_status == 1 ? 'live' : 'pre';
 
         $result = $response['results'][0] ?? [];
         $allMarkets = [];
@@ -178,7 +175,7 @@ class BetsApiUpdateOdds extends Command
         $inserts = [];
 
         foreach ($allMarkets as $market) {
-            $marketName = $this->translateMarketName($market['name'] ?? $marketKey ?? '');
+            $marketName = mb_substr($this->translateMarketName($market['name'] ?? ''), 0, 255);
 
             foreach ($market['odds'] as $odd) {
                 $oddValue = $odd['odds'] ?? $odd['VA'] ?? 0;
@@ -189,8 +186,7 @@ class BetsApiUpdateOdds extends Command
                 $handicap = $odd['handicap'] ?? '';
 
                 $label = $this->buildOddLabel($header, $name, $handicap);
-
-                $finalLabel = $this->translateOddLabel($label);
+                $finalLabel = mb_substr($this->translateOddLabel($label), 0, 255);
 
                 $key = $marketName . '|' . $finalLabel;
 
@@ -199,7 +195,7 @@ class BetsApiUpdateOdds extends Command
                         ->where('id', $existingOdds[$key]->id)
                         ->update([
                             'value' => (float) $oddValue,
-                            'type' => $match->time_status == 1 ? 'live' : 'pre',
+                            'type' => $oddType,
                             'updated_at' => now(),
                         ]);
                     $this->updated++;
@@ -209,7 +205,7 @@ class BetsApiUpdateOdds extends Command
                         'market_name'=> $marketName,
                         'label'      => $finalLabel,
                         'value'      => (float) $oddValue,
-                        'type'       => $match->time_status == 1 ? 'live' : 'pre',
+                        'type'       => $oddType,
                         'order'      => 1,
                         'created_at' => now(),
                         'updated_at' => now(),

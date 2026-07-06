@@ -164,6 +164,8 @@ Route::group(['middleware' => ['web', 'api']], function () {
     Route::get('/site-live-futebol', [App\Http\Controllers\Api\MatchApiController::class, 'getMatchesLive']);
     Route::get('/print-bilhete-id/{id}', [App\Http\Controllers\Api\BilheteApiController::class, 'printBilheteId']);
     Route::post('/print-bilhete-cod', [App\Http\Controllers\Api\BilheteApiController::class, 'printBilheteCod']);
+    Route::get('/check-aposta/{code}', [App\Http\Controllers\Api\BilheteApiController::class, 'checkAposta']);
+    Route::post('/check-aposta/{code}', [App\Http\Controllers\Api\BilheteApiController::class, 'checkAposta']);
 
 });
 
@@ -291,11 +293,7 @@ Route::group(['prefix' => 'scraper', 'middleware' => ['web']], function () {
     });
 });
 
-// ═══════ WEBHOOKS (NOVOS) ═══════
-Route::group(['prefix' => 'webhook', 'middleware' => ['web']], function () {
-    Route::post('/shipay/{siteId?}', [App\Http\Controllers\Api\PaymentController::class, 'webhookShipay']);
-    Route::post('/paggue/{siteId?}', [App\Http\Controllers\Api\PaymentController::class, 'webhookPaggue']);
-});
+
 
 // ═══════ AUTH API (NOVA) ═══════
 Route::group(['prefix' => 'auth', 'middleware' => ['web']], function () {
@@ -324,14 +322,7 @@ Route::group(['prefix' => 'saque', 'middleware' => ['web', 'auth']], function ()
     Route::get('/listar', [App\Http\Controllers\Api\SaquesApiController::class, 'listSaques']);
 });
 
-// ═══════ DEPOSITOS PIX (PRIMEPAG) ═══════
-Route::group(['middleware' => ['web', 'auth']], function () {
-    Route::post('/depositos/novo', [App\Http\Controllers\Api\DepositosController::class, 'novoDeposito']);
-    Route::get('/depositos/listar', [App\Http\Controllers\Api\DepositosController::class, 'listDepositos']);
-});
 
-// ═══════ WEBHOOK CONFIRMAR DEPOSITO ═══════
-Route::post('/webhook/confirmar-deposito', [App\Http\Controllers\PixController::class, 'confirmarDeposito']);
 
 // ═══════ CASH-OUT API ═══════
 Route::group(['middleware' => ['web', 'auth']], function () {
